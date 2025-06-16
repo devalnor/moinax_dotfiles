@@ -1,0 +1,24 @@
+# See `man 5 mako` for a full list of configuration options.
+
+default-timeout=15000
+
+width=600
+height=600
+
+font=FiraCode 10
+
+background-color=#1e1e1edd
+text-color=#cdd6f4
+border-color=#89b4fa
+border-radius=8
+
+[urgency=low]
+border-color=#94e2d5
+
+[urgency=normal]
+border-color=#89b4fa
+
+[urgency=critical]
+default-timeout=0
+border-color=#fab387
+
