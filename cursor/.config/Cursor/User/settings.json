@@ -10,5 +10,15 @@
   "editor.formatOnSave": true,
   "git.mergeEditor": true,
   "git.allowForcePush": true,
-  "git.confirmForcePush": false
+  "git.confirmForcePush": false,
+  "git.useForcePushIfIncludes": false,
+  "git.useForcePushWithLease": false,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "diffEditor.renderSideBySide": true,
+  "diffEditor.experimental.showMoves": true,
+  "editor.minimap.enabled": true,
+  "i18n-ally.enabledFrameworks": ["react-i18next"],
+  "i18n-ally.dirStructure": "dir",
+  "i18n-ally.displayLanguage": "dev"
 }
