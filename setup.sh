@@ -115,7 +115,7 @@ sudo systemctl enable --now NetworkManager
 if [ -d "$HOME/dotfiles" ]; then
     echo "Installing dotfiles..."
     cd "$HOME/dotfiles"
-    stow cursor dunst git hypr kitty nvim pnpm rofi starship tmux wallpapers waybar yazi zsh
+    stow cursor git gtk hypr kitty mako nvim pnpm rofi starship tmux wallpapers waybar yazi zsh
 fi
 
 # Setup SSH key
