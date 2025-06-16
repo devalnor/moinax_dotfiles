@@ -18,13 +18,12 @@
         "hyprland/window"
     ],
    "modules-center": [
+       "hyprland/workspaces",
+    ],
+    "modules-right": [
        "custom/system",
        "cpu",
        "memory",
-       "hyprland/workspaces",
-       "network" 
-    ],
-    "modules-right": [
        "mpd", 
         "pulseaudio", 
         "battery", 
@@ -42,13 +41,12 @@
         "hyprland/window"
     ],
     "modules-center": [
+        "hyprland/workspaces",
+    ],
+    "modules-right": [
         "custom/system",
         "cpu",
         "memory",
-        "hyprland/workspaces",
-       "network" 
-    ],
-    "modules-right": [
         "pulseaudio", 
         "tray",
         "clock",
