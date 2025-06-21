@@ -18,7 +18,6 @@
   "diffEditor.renderSideBySide": true,
   "diffEditor.experimental.showMoves": true,
   "editor.minimap.enabled": true,
-  "i18n-ally.enabledFrameworks": ["react-i18next"],
-  "i18n-ally.dirStructure": "dir",
-  "i18n-ally.displayLanguage": "dev"
+  "diffEditor.ignoreTrimWhitespace": true,
+  "git.openRepositoryInParentFolders": "never"
 }
