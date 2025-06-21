@@ -22,3 +22,13 @@ border-color=#89b4fa
 default-timeout=0
 border-color=#fab387
 
+# Add a section for volume notifications based on the hint
+[app-name="volume-control"]
+format=%s
+border-color=#6464FF
+progress-color=#6464FF4D
+history=0
+group-by=app-name
+anchor=top-center
+width=300
+height=60
