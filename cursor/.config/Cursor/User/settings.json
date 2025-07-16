@@ -19,5 +19,7 @@
   "diffEditor.experimental.showMoves": true,
   "editor.minimap.enabled": true,
   "diffEditor.ignoreTrimWhitespace": true,
-  "git.openRepositoryInParentFolders": "never"
+  "git.openRepositoryInParentFolders": "never",
+  "git.enableSmartCommit": true,
+  "githubPullRequests.pullBranch": "never"
 }
