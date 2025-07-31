@@ -13,10 +13,12 @@ return {
   { import = "astrocommunity.pack.json" },
   { import = "astrocommunity.pack.markdown" },
   { import = "astrocommunity.pack.tailwindcss" },
+  { import = "astrocommunity.pack.python" },
   { import = "astrocommunity.colorscheme.catppuccin" },
   { import = "astrocommunity.color.transparent-nvim" },
   { import = "astrocommunity.docker.lazydocker" },
   { import = "astrocommunity.motion.nvim-surround" },
   { import = "astrocommunity.workflow.precognition-nvim" },
   { import = "astrocommunity.scrolling.neoscroll-nvim" },
+  { import = "astrocommunity.motion.flash-nvim" },
 }
