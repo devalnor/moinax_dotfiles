@@ -29,6 +29,7 @@
     "neovim",
     "nwg-look",
     "rofi-wayland",
+    "rofimoji",
     "slack-desktop",
     "starship",
     "steam",
@@ -42,6 +43,7 @@
     "ttf-font-awesome",
     "waybar",
     "wlogout",
+    "wtype",
     "yazi",
     "zsh-autosuggestions",
     "zsh-syntax-highlighting"
