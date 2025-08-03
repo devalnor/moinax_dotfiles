@@ -1,6 +1,6 @@
 # See `man 5 mako` for a full list of configuration options.
 
-default-timeout=15000
+default-timeout=30000
 
 width=600
 height=600
