@@ -21,4 +21,5 @@ return {
   { import = "astrocommunity.workflow.precognition-nvim" },
   { import = "astrocommunity.scrolling.neoscroll-nvim" },
   { import = "astrocommunity.motion.flash-nvim" },
+  { import = "astrocommunity.recipes.ai" },
 }
