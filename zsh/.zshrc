@@ -40,6 +40,7 @@ fastfetch
 
 # Editor
 export EDITOR="nvim"
+export VISUAL="cursor"
 
 # Replace cd by zoxide
 alias cd="z"
@@ -92,3 +93,4 @@ eval "$(starship init zsh)"
 
 # Initialize zoxide
 eval "$(zoxide init zsh)"
+export PATH="$HOME/.local/bin:$PATH"
