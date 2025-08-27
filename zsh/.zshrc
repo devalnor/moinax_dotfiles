@@ -72,7 +72,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 
 # Set up fzf key bindings and fuzzy completion
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+source <(fzf --zsh)
 
 # Store the ssh key for further use in git
 eval "$(keychain --eval id_ed25519)"
