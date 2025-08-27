@@ -21,6 +21,7 @@
        "hyprland/workspaces",
     ],
     "modules-right": [
+        "network",
        "custom/system",
        "cpu",
        "memory",
@@ -38,7 +39,7 @@
     // "height": 20, // Waybar height (to be removed for auto height)
     "include": ["~/.config/waybar/modules.jsonc"],
     "modules-left": [
-        "hyprland/window"
+        "hyprland/window",
     ],
     "modules-center": [
         "hyprland/workspaces",
