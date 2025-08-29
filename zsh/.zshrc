@@ -36,7 +36,9 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#696969"
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # Show fastfetch at startup
-fastfetch
+if [ "$TERM_PROGRAM" != "vscode" ]; then 
+		fastfetch
+fi
 
 # Editor
 export EDITOR="nvim"
