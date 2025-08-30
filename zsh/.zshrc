@@ -12,6 +12,8 @@ bindkey -e
 bindkey '^[[1;5C' forward-word
 # Bind Ctrl+Left to move backward a word
 bindkey '^[[1;5D' backward-word
+# Bind Delete to delete a word
+bindkey "\e[3~" delete-char
 
 # The following lines were added by compinstall
 
@@ -53,6 +55,10 @@ alias lsa="ls -la"
 alias vim="nvim"
 alias vi="nvim"
 alias v="nvim"
+# Add shortcuts to lazygit
+alias lg="lazygit"
+# Add shortcuts to lazydocker
+alias ld="lazydocker"
 
 # Volta
 export VOLTA_HOME="$HOME/.volta"
