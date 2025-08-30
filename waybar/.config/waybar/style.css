@@ -22,19 +22,19 @@ tooltip {
 tooltip label {
   color: white;
 }
+#stats,
 .module {
   margin: 4px 2px;
   padding: 2px 8px;
-  background: rgba(0, 100, 255, 0.2);
+  background: rgba(100, 100, 255, 0.3);
   border-radius: 8px;
 }
 #window {
   margin-left: 20px;
 }
-#custom-system.module,
+#custom-system,
 #cpu,
-#memory,
-#network {
+#memory {
   margin: 0;
   padding: 0;
   background: transparent;

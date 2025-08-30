@@ -22,10 +22,8 @@
     ],
     "modules-right": [
         "network",
-       "custom/system",
-       "cpu",
-       "memory",
-       "mpd", 
+        "group/stats",
+        "mpd", 
         "pulseaudio", 
         "battery", 
         "bluethooth",
@@ -45,9 +43,7 @@
         "hyprland/workspaces",
     ],
     "modules-right": [
-        "custom/system",
-        "cpu",
-        "memory",
+        "group/stats",
         "pulseaudio", 
         "tray",
         "clock",
