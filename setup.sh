@@ -96,6 +96,53 @@ echo "You should run tmux and type [CTRL+b I] to install all plugins."
 
 echo "Extra tools installation complete."
 
+# Install Rofi themes collection
+echo "Installing Rofi themes collection..."
+ROFI_THEMES_DIR="$HOME/.local/share/rofi/themes"
+TEMP_DIR="/tmp/rofi-themes-collection"
+
+# Create Rofi themes directory if it doesn't exist
+mkdir -p "$ROFI_THEMES_DIR"
+
+# Clone the rofi-themes-collection repository
+if [ -d "$TEMP_DIR" ]; then
+    echo "Removing existing temporary directory..."
+    rm -rf "$TEMP_DIR"
+fi
+
+echo "Cloning rofi-themes-collection repository..."
+git clone https://github.com/lr-tech/rofi-themes-collection.git "$TEMP_DIR" || {
+    echo "Failed to clone rofi-themes-collection repository"
+    exit 1
+}
+
+# Copy all themes to the Rofi themes directory
+echo "Installing all Rofi themes..."
+if [ -d "$TEMP_DIR/themes" ]; then
+    cp "$TEMP_DIR/themes"/* "$ROFI_THEMES_DIR/" || {
+        echo "Failed to copy themes"
+        exit 1
+    }
+    echo "All Rofi themes installed successfully!"
+    echo "Themes installed to: $ROFI_THEMES_DIR"
+    
+    # List installed themes
+    echo "Installed themes:"
+    ls -la "$ROFI_THEMES_DIR" | grep -E '\.rasi$' | wc -l | xargs echo "Total themes:"
+else
+    echo "Warning: themes directory not found in repository"
+fi
+
+# Clean up temporary directory
+echo "Cleaning up temporary files..."
+rm -rf "$TEMP_DIR"
+
+echo "Rofi themes collection installation complete!"
+echo "To use the themes:"
+echo "1. Run 'rofi -show run' to open Rofi"
+echo "2. Run 'rofi-theme-selector' to select a theme"
+echo "3. Search for your desired theme, press Enter to preview, then Alt+a to accept"
+
 # Enable and start services
 echo "Enabling and starting services..."
 sudo systemctl enable --now bluetooth
