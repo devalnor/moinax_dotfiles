@@ -2,7 +2,7 @@
   "window.commandCenter": true,
   "workbench.activityBar.orientation": "vertical",
   "git.autofetch": true,
-  "workbench.colorTheme": "Webstorm New Dark",
+  "workbench.colorTheme": "Catppuccin Mocha",
   "editor.fontFamily": "JetBrains Mono",
   "git.confirmSync": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -22,5 +22,7 @@
   "git.enableSmartCommit": true,
   "githubPullRequests.pullBranch": "never",
   "terminal.integrated.fontFamily": "Fira Code",
-  "terminal.integrated.fontLigatures.enabled": true
+  "terminal.integrated.fontLigatures.enabled": true,
+  "workbench.iconTheme": "catppuccin-mocha",
+  "diffEditor.maxComputationTime": 0
 }
