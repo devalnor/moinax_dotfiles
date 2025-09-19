@@ -60,5 +60,5 @@ echo "Switching to '$selected_display_name' layout..."
 cp "$NEXT_LAYOUT_FILE" "$ACTIVE_MONITOR_CONF"
 
 # Send notification
-notify-send "Hyprland" "Switched to: $selected_display_name Layout"
+notify-send -u low "Hyprland" "Switched to: $selected_display_name Layout"
 echo "Monitor layout switch complete. Hyprland will reload automatically."

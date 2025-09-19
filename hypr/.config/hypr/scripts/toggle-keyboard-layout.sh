@@ -60,5 +60,5 @@ echo "Switching to '$selected_display_name' keyboard layout..."
 cp "$NEXT_LAYOUT_FILE" "$ACTIVE_INPUT_CONF"
 
 # Send notification
-notify-send "Hyprland" "Switched to: $selected_display_name Keyboard Layout"
+notify-send -u low "Hyprland" "Switched to: $selected_display_name Keyboard Layout"
 echo "Keyboard layout switch complete. Hyprland will reload automatically."

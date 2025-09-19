@@ -18,4 +18,4 @@ sink_id=$(echo "$sinks" | grep "$selected_sink" | awk '{print $1}' | sed 's/\.$/
 wpctl set-default "$sink_id"
 
 # Notify user
-notify-send "Audio Output Changed" "Switched to: $selected_sink"
+notify-send -u low "Audio Output Changed" "Switched to: $selected_sink"
