@@ -59,6 +59,8 @@ alias v="nvim"
 alias lg="lazygit"
 # Add shortcuts to lazydocker
 alias ld="lazydocker"
+# Add shortucts to find the biggest files in the current directory (even hidden files)
+alias big="sudo du -sh *(D) | sort -rh | head -n 10"
 
 # Volta
 export VOLTA_HOME="$HOME/.volta"
