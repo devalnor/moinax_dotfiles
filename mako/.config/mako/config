@@ -1,6 +1,6 @@
 # See `man 5 mako` for a full list of configuration options.
 
-default-timeout=30000
+default-timeout=5000
 
 width=600
 height=600
@@ -13,13 +13,15 @@ border-color=#89b4fa
 border-radius=8
 
 [urgency=low]
-border-color=#94e2d5
+default-timeout=3000
+border-color=#6464FF
 
 [urgency=normal]
+default-timeout=15000
 border-color=#89b4fa
 
 [urgency=critical]
-default-timeout=0
+default-timeout=30000
 border-color=#fab387
 
 # Add a section for volume notifications based on the hint
