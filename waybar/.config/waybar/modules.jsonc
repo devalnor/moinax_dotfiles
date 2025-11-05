@@ -86,7 +86,7 @@
   "cpu": {
     "format": "CPU {usage}% ",
     // "on-click": "alacritty -e htop"
-    "on-click": "kitty btop",
+    "on-click": "kitty -T btop btop",
   },
   // Memory
   "memory": {
