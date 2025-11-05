@@ -14,6 +14,10 @@ bindkey '^[[1;5C' forward-word
 bindkey '^[[1;5D' backward-word
 # Bind Delete to delete a word
 bindkey "\e[3~" delete-char
+# Home key binding: Move cursor to the beginning of the line
+bindkey '\e[H' beginning-of-line
+# End key binding: Move cursor to the end of the line
+bindkey '\e[F' end-of-line
 
 # The following lines were added by compinstall
 
