@@ -24,5 +24,10 @@
   "terminal.integrated.fontFamily": "Fira Code",
   "terminal.integrated.fontLigatures.enabled": true,
   "workbench.iconTheme": "catppuccin-mocha",
-  "diffEditor.maxComputationTime": 0
+  "diffEditor.maxComputationTime": 0,
+  "editor.fontLigatures": true,
+  "javascript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "editor.inlayHints.enabled": "offUnlessPressed",
+  "git.replaceTagsWhenPull": true
 }
