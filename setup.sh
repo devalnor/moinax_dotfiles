@@ -119,7 +119,7 @@ git clone https://github.com/lr-tech/rofi-themes-collection.git "$TEMP_DIR" || {
 # Copy all themes to the Rofi themes directory
 echo "Installing all Rofi themes..."
 if [ -d "$TEMP_DIR/themes" ]; then
-    cp "$TEMP_DIR/themes"/* "$ROFI_THEMES_DIR/" || {
+    cp -r "$TEMP_DIR/themes"/* "$ROFI_THEMES_DIR/" || {
         echo "Failed to copy themes"
         exit 1
     }
