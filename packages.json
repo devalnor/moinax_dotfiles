@@ -4,6 +4,8 @@
     "blueman",
     "bluez-utils",
     "btop",
+    "cmake",
+    "cpio",
     "cursor-bin",
     "extra/cliphist",
     "git-delta",
