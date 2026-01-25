@@ -1,0 +1,42 @@
+# Fedora base packages
+# These are installed via dnf
+
+packages:
+  core:
+    # Shell and terminal
+    - zsh
+    - zsh-autosuggestions
+    - zsh-syntax-highlighting
+    - starship
+    - kitty
+    - tmux
+    
+    # Core utilities
+    - git
+    - stow
+    - bat
+    - eza
+    - fzf
+    - fastfetch
+    - tealdeer  # tldr implementation for Fedora
+    - btop
+    - keychain
+    - jq
+    - yq
+    - lazygit
+    
+    # File management
+    - yazi
+
+    # Fonts
+    - fira-code-fonts
+    - fontawesome-fonts
+    - google-noto-fonts-common
+
+  copr:
+    # COPR repositories to enable (processed before package installation)
+    # Note: Only include COPRs that exist and support current Fedora version
+    repositories:
+      - atim/starship      # Starship prompt
+      - atim/lazygit       # Git TUI
+      - lihaohong/yazi     # Terminal file manager
