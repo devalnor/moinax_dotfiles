@@ -335,8 +335,11 @@ cleanup_stow_symlinks() {
     local removed_count=0
     for path in "${stow_patterns[@]}"; do
         if [ -L "$path" ]; then
-            rm -f "$path"
-            removed_count=$((removed_count + 1))
+            if rm -f "$path" 2>/dev/null || sudo rm -f "$path"; then
+                removed_count=$((removed_count + 1))
+            else
+                print_warning "Could not remove symlink: $path"
+            fi
         fi
     done
     
