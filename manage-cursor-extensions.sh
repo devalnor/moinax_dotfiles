@@ -43,10 +43,10 @@ do_install() {
         print_info "Run export first to create the extensions list."
         exit 1
     fi
-    
+
     local count=0
     local total=$(grep -v '^#' "$EXTENSIONS_FILE" | grep -v '^$' | wc -l | tr -d ' ')
-    
+
     print_info "Installing $total Cursor extensions..."
     while IFS= read -r ext || [ -n "$ext" ]; do
         [[ -z "$ext" || "$ext" =~ ^# ]] && continue
@@ -63,7 +63,7 @@ main() {
     echo "Cursor Extensions Manager"
     echo "========================="
     echo ""
-    
+
     # Use gum if available, otherwise simple select
     if command -v gum &> /dev/null; then
         ACTION=$(gum choose "Export (update list)" "Install extensions" "Cancel") || ACTION="Cancel"
@@ -79,7 +79,7 @@ main() {
             *) ACTION="Cancel" ;;
         esac
     fi
-    
+
     case "$ACTION" in
         "Export (update list)") do_export ;;
         "Install extensions") do_install ;;
@@ -87,7 +87,7 @@ main() {
     esac
 }
 
-# Allow direct command: ./cursor-extensions.sh export|install
+# Allow direct command: ./manage-cursor-extensions.sh export|install
 case "${1:-}" in
     export) do_export ;;
     install) do_install ;;

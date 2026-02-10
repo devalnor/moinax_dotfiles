@@ -15,9 +15,9 @@ services: []
 packages:
   arch:
     # File managers
-    - thunar
-    - thunar-archive-plugin
-    - thunar-volman
+    - dolphin
+    - ffmpegthumbnailer
+    - kdegraphics-thumbnailers
     
     # Backup and snapshots
     - timeshift
@@ -37,9 +37,9 @@ packages:
 
   fedora:
     # File managers
-    - thunar
-    - thunar-archive-plugin
-    - thunar-volman
+    - dolphin
+    - ffmpegthumbnailer
+    - kdegraphics-thumbnailers
     
     # Backup and snapshots
     - timeshift

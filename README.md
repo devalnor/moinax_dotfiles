@@ -33,17 +33,18 @@ The interactive installer will:
 
 | Group | Description |
 |-------|-------------|
-| **Hyprland** | Wayland compositor with waybar, rofi, mako, wlogout |
-| **Development** | Docker, Neovim, Cursor, Git tools, build tools |
-| **Gaming** | Steam, Discord, gamemode |
-| **Multimedia** | mpv, OBS, ffmpeg, GIMP, Inkscape |
-| **Productivity** | Thunar, Timeshift, Yazi file manager, themes |
+| **Hyprland** | Hyprland stack with `hypridle`, `hyprlock`, `hyprpaper`, `waybar`, `rofi`, `mako`, `wlogout`, clipboard tooling (`cliphist`, `wl-clipboard`) and Wayland helpers |
+| **Development** | `neovim`, Cursor, Git tooling (`gh`, `lazygit`, `delta`), containers (`docker`, `docker-compose`, `lazydocker`), and build/task tools (`cmake`, `gcc`/`base-devel`, `just`) |
+| **Gaming** | Steam + Discord with performance helpers (`mangohud`, `gamemode`) |
+| **Multimedia** | Media and creation tools (`mpv`, `obs-studio`, `ffmpeg`, ImageMagick, GIMP, Inkscape) |
+| **Productivity** | File managers (Dolphin + Yazi), thumbnail support (`ffmpegthumbnailer`, `kdegraphics-thumbnailers`), backup/snapshots (`timeshift`, `timeshift-autosnap`, `grub-btrfs` on Arch), communication/browser apps (Slack, Chrome), archive tools, and themes/icons |
 
 ## Structure
 
 ```
 dotfiles/
 ├── setup.sh                 # Bootstrap script (entry point)
+├── manage-cursor-extensions.sh # Export/install Cursor extensions list
 ├── install/
 │   ├── installer.sh         # Main interactive installer
 │   ├── distros/
@@ -73,6 +74,30 @@ dotfiles/
 └── README.md
 ```
 
+## Cursor Extensions Script
+
+This repo includes `manage-cursor-extensions.sh` to keep Cursor extensions reproducible across machines.
+
+It reads/writes the extension list at `home/dot_config/Cursor/extensions.txt`.
+
+### Usage
+
+```bash
+# Interactive menu
+./manage-cursor-extensions.sh
+
+# Export currently installed extensions to extensions.txt
+./manage-cursor-extensions.sh export
+
+# Install all extensions from extensions.txt
+./manage-cursor-extensions.sh install
+```
+
+### Notes
+
+- Requires the `cursor` CLI in your `PATH`.
+- `install` is idempotent: already-installed extensions are skipped/reinstalled safely.
+
 ## Adding a New Distribution
 
 1. Create `install/distros/<distro>.sh` with package manager functions
@@ -91,21 +116,56 @@ install_packages() {
 
 ## Manual Chezmoi Usage
 
-If you prefer to manage dotfiles manually with Chezmoi:
+If you previously used GNU Stow, this is the main behavior change to keep in mind:
+
+- **Stow mental model**: repo files are symlinked into `$HOME`, so editing the repo is "live" immediately.
+- **Chezmoi mental model**: repo files are the **source state** and your home directory is the **target state**. Changes are applied when you run `chezmoi apply` (or related commands).
+
+### First-time setup (manual)
 
 ```bash
 # Initialize chezmoi with this repo
 chezmoi init --source=~/dotfiles/home
 
-# Preview changes
+# Verify source is correct (important)
+chezmoi source-path
+```
+
+### Daily commands (most useful)
+
+```bash
+# See what would change before touching your home files
 chezmoi diff
 
-# Apply dotfiles
+# Apply source state to your home directory
 chezmoi apply
 
-# Update from repo
+# Edit a managed file safely (writes back to source state)
+chezmoi edit ~/.zshrc
+
+# Check what changed in source state
+chezmoi status
+
+# Pull and apply latest changes from your remote dotfiles repo
 chezmoi update
 ```
+
+### Typical workflow after editing this repo
+
+```bash
+cd ~/dotfiles
+git pull
+chezmoi diff
+chezmoi apply
+```
+
+### Can Chezmoi auto-apply?
+
+Yes, but it is not the default behavior.
+
+- **Recommended default**: keep manual `chezmoi diff` + `chezmoi apply` so changes are explicit.
+- **Possible auto-apply**: run a file watcher (e.g. `inotifywait`/`entr`) or a user `systemd` path service that triggers `chezmoi apply` when files in `~/dotfiles/home` change.
+- **Caveat**: fully automatic apply can surprise you during partial edits; many users prefer explicit applies for safer config management.
 
 ## Post-Installation
 
@@ -123,7 +183,7 @@ After running the installer:
 - **Editor**: Neovim (AstroNvim-based), Cursor
 - **Git**: delta for diffs, lazygit
 - **Multiplexer**: tmux with TPM
-- **File Manager**: yazi, thunar
+- **File Manager**: yazi, dolphin
 - **Hyprland**: hypridle, hyprlock, hyprpaper, waybar, rofi, mako
 
 ## Credits

@@ -17,10 +17,6 @@ packages:
     - imagemagick
     - gimp
     - inkscape
-    # Dolphin file manager + thumbnailers for rich previews
-    - dolphin
-    - ffmpegthumbnailer
-    - kdegraphics-thumbnailers
 
   fedora:
     - mpv
@@ -29,10 +25,6 @@ packages:
     - ImageMagick
     - gimp
     - inkscape
-    # Dolphin file manager + thumbnailers for rich previews
-    - dolphin
-    - ffmpegthumbnailer
-    - kdegraphics-thumbnailers
 
   fedora_repos:
     # RPM Fusion for codecs
