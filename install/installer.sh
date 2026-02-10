@@ -403,6 +403,17 @@ setup_dotfiles() {
     local chezmoi_config="$HOME/.config/chezmoi/chezmoi.toml"
     mkdir -p "$(dirname "$chezmoi_config")"
     
+    # Keep existing sourceDir if user already has a working config (e.g. from manual fix or previous run)
+    local source_dir="$DOTFILES_DIR/home"
+    if [[ -f "$chezmoi_config" ]]; then
+        local existing_source
+        existing_source=$(grep -E '^\s*sourceDir\s*=' "$chezmoi_config" | head -1 | sed -E 's/^[^=]*=\s*["]?([^"]*)["]?.*/\1/' | tr -d '"' | tr -d "'")
+        if [[ -n "$existing_source" && -d "$existing_source" ]]; then
+            source_dir="$existing_source"
+            print_info "Preserving existing chezmoi sourceDir: $source_dir"
+        fi
+    fi
+    
     # Determine boolean flags for groups
     local install_hyprland="false"
     local install_development="false"
@@ -421,6 +432,9 @@ setup_dotfiles() {
     done
     
     cat > "$chezmoi_config" << EOF
+# Use this repo's home directory as chezmoi source (so 'chezmoi diff' etc. work without -S)
+sourceDir = "$source_dir"
+
 [data]
     distro = "$DISTRO"
     install_hyprland = $install_hyprland
@@ -434,14 +448,14 @@ EOF
     
     # Initialize chezmoi with the dotfiles repo
     print_info "Initializing chezmoi (this may take a while for large dotfiles)..."
-    print_info "Source directory: $DOTFILES_DIR/home"
+    print_info "Source directory: $source_dir"
     
     # Count files to give user an idea of progress
-    local file_count=$(find "$DOTFILES_DIR/home" -type f | wc -l)
+    local file_count=$(find "$source_dir" -type f | wc -l)
     print_info "Processing ~$file_count files..."
     
     # Run chezmoi (without --verbose to avoid noisy diffs)
-    if chezmoi init --source="$DOTFILES_DIR/home" --apply; then
+    if chezmoi init --source="$source_dir" --apply; then
         print_success "Dotfiles applied successfully"
     else
         print_warning "Chezmoi completed with some warnings"

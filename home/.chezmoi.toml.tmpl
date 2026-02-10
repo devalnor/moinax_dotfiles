@@ -43,6 +43,15 @@
 {{-   $install_productivity = promptBool "Install Productivity tools" -}}
 {{- end -}}
 
+{{- $source_dir := "" -}}
+{{- if hasKey . "sourceDir" -}}
+{{-   $source_dir = .sourceDir -}}
+{{- else -}}
+{{-   $source_dir = .chezmoi.sourceDir -}}
+{{- end -}}
+
+sourceDir = {{ $source_dir | quote }}
+
 [data]
     distro = {{ $distro | quote }}
     install_hyprland = {{ $install_hyprland }}
