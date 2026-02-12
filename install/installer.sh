@@ -23,6 +23,12 @@ else
     exit 1
 fi
 
+# Installer state
+SELECTED_GROUP_NAMES=()
+SERVICES_TO_ENABLE=()
+declare -A GROUP_PACKAGE_MODE=()
+declare -A GROUP_CUSTOM_PACKAGE_LIST=()
+
 # Check if gum is available
 check_gum() {
     if ! command_exists gum; then
@@ -64,48 +70,145 @@ select_groups() {
     echo ""
     
     local groups_dir="$DOTFILES_DIR/packages/groups"
-    local options=()
-    local descriptions=()
-    
-    # Read available groups
-    for group_file in "$groups_dir"/*.yaml; do
-        if [ -f "$group_file" ]; then
-            local name=$(basename "$group_file" .yaml)
-            local desc=""
-            local icon=""
-            
-            # Parse description and icon from YAML
-            if command_exists yq; then
-                desc=$(yq -r '.description // ""' "$group_file")
-                icon=$(yq -r '.icon // ""' "$group_file")
-            else
-                desc=$(grep "^description:" "$group_file" | sed 's/description:[[:space:]]*//')
-                icon=$(grep "^icon:" "$group_file" | sed 's/icon:[[:space:]]*//')
-            fi
-            
-            options+=("$name")
-            descriptions+=("$icon $name - $desc")
+    local group_files=()
+    local labels=()
+    local all_groups_label="✨ all-groups - install every group"
+    local line
+
+    # Read available groups in a stable order
+    shopt -s nullglob
+    group_files=("$groups_dir"/*.yaml)
+    shopt -u nullglob
+
+    if [ ${#group_files[@]} -eq 0 ]; then
+        print_warning "No group definitions found."
+        SELECTED_GROUP_NAMES=()
+        return 0
+    fi
+
+    IFS=$'\n' group_files=($(printf '%s\n' "${group_files[@]}" | sort))
+    unset IFS
+
+    # Build display labels and an exact label->group map
+    local -A label_to_group=()
+    labels+=("$all_groups_label")
+    for group_file in "${group_files[@]}"; do
+        local name=$(basename "$group_file" .yaml)
+        local desc=""
+        local icon=""
+
+        if command_exists yq; then
+            desc=$(yq -r '.description // ""' "$group_file")
+            icon=$(yq -r '.icon // ""' "$group_file")
+        else
+            desc=$(grep "^description:" "$group_file" | sed 's/description:[[:space:]]*//')
+            icon=$(grep "^icon:" "$group_file" | sed 's/icon:[[:space:]]*//')
         fi
+
+        local label="$icon $name - $desc"
+        labels+=("$label")
+        label_to_group["$label"]="$name"
     done
-    
+
     # Show multi-select with gum
-    SELECTED_GROUPS=$(printf '%s\n' "${descriptions[@]}" | gum choose --no-limit --header "Space to select, Enter to confirm")
-    
-    # Extract just the group names from selections
+    local selected_labels
+    selected_labels=$(printf '%s\n' "${labels[@]}" | gum choose --no-limit --header "Space to select, Enter to confirm")
+
     SELECTED_GROUP_NAMES=()
     while IFS= read -r line; do
-        if [ -n "$line" ]; then
-            # Extract group name (second word after icon)
-            local group_name=$(echo "$line" | awk '{print $2}')
-            SELECTED_GROUP_NAMES+=("$group_name")
+        [ -z "$line" ] && continue
+        if [ "$line" = "$all_groups_label" ]; then
+            SELECTED_GROUP_NAMES=()
+            for group_file in "${group_files[@]}"; do
+                SELECTED_GROUP_NAMES+=("$(basename "$group_file" .yaml)")
+            done
+            break
         fi
-    done <<< "$SELECTED_GROUPS"
-    
+
+        local mapped_group="${label_to_group[$line]}"
+        [ -n "$mapped_group" ] && SELECTED_GROUP_NAMES+=("$mapped_group")
+    done <<< "$selected_labels"
+
+    # Remove duplicates while preserving order
+    local deduped_groups=()
+    local -A seen_groups=()
+    for line in "${SELECTED_GROUP_NAMES[@]}"; do
+        if [ -z "${seen_groups[$line]}" ]; then
+            deduped_groups+=("$line")
+            seen_groups["$line"]=1
+        fi
+    done
+    SELECTED_GROUP_NAMES=("${deduped_groups[@]}")
+
     if [ ${#SELECTED_GROUP_NAMES[@]} -eq 0 ]; then
         print_warning "No groups selected. Only base packages will be installed."
     else
         print_info "Selected groups: ${SELECTED_GROUP_NAMES[*]}"
     fi
+}
+
+# Select package install mode per group
+select_group_packages() {
+    # Reinitialize as associative arrays to preserve string-key indexing.
+    unset GROUP_PACKAGE_MODE GROUP_CUSTOM_PACKAGE_LIST
+    declare -gA GROUP_PACKAGE_MODE=()
+    declare -gA GROUP_CUSTOM_PACKAGE_LIST=()
+
+    if [ ${#SELECTED_GROUP_NAMES[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    echo ""
+    gum style --foreground 212 --bold "Select packages per group:"
+    echo ""
+
+    for group in "${SELECTED_GROUP_NAMES[@]}"; do
+        local group_file="$DOTFILES_DIR/packages/groups/$group.yaml"
+        local all_packages=()
+
+        if [ ! -f "$group_file" ]; then
+            print_warning "Group file not found while selecting packages: $group_file"
+            GROUP_PACKAGE_MODE["$group"]="skip"
+            continue
+        fi
+
+        while IFS= read -r pkg; do
+            [ -n "$pkg" ] && all_packages+=("$pkg")
+        done < <(parse_packages "$group_file" "$DISTRO")
+
+        if [ ${#all_packages[@]} -eq 0 ]; then
+            print_warning "No $DISTRO packages found for group '$group'; skipping package install for this group."
+            GROUP_PACKAGE_MODE["$group"]="skip"
+            continue
+        fi
+
+        local package_mode
+        package_mode=$(printf '%s\n' \
+            "All packages" \
+            "Pick packages individually" \
+            "Skip group packages (dotfiles/services only)" \
+            | gum choose --header "Group: $group")
+
+        case "$package_mode" in
+            "All packages")
+                GROUP_PACKAGE_MODE["$group"]="all"
+                ;;
+            "Pick packages individually")
+                local selected_packages
+                selected_packages=$(printf '%s\n' "${all_packages[@]}" | gum choose --no-limit --header "Select packages for group '$group'")
+                if [ -z "$selected_packages" ]; then
+                    GROUP_PACKAGE_MODE["$group"]="skip"
+                    print_warning "No packages selected for '$group'; package install skipped for this group."
+                else
+                    GROUP_PACKAGE_MODE["$group"]="custom"
+                    GROUP_CUSTOM_PACKAGE_LIST["$group"]="$selected_packages"
+                fi
+                ;;
+            *)
+                GROUP_PACKAGE_MODE["$group"]="skip"
+                ;;
+        esac
+    done
 }
 
 # Confirm installation
@@ -223,14 +326,33 @@ install_group_packages() {
             esac
         fi
         
-        # Parse and install packages
-        local packages=()
+        # Parse package candidates
+        local all_packages=()
         while IFS= read -r pkg; do
-            [ -n "$pkg" ] && packages+=("$pkg")
+            [ -n "$pkg" ] && all_packages+=("$pkg")
         done < <(parse_packages "$group_file" "$DISTRO")
+
+        # Resolve install package list from selected mode
+        local packages=()
+        local package_mode="${GROUP_PACKAGE_MODE[$group]:-all}"
+        case "$package_mode" in
+            skip)
+                print_info "Skipping package install for $group (selected mode: skip)"
+                ;;
+            custom)
+                while IFS= read -r pkg; do
+                    [ -n "$pkg" ] && packages+=("$pkg")
+                done <<< "${GROUP_CUSTOM_PACKAGE_LIST[$group]}"
+                ;;
+            *)
+                packages=("${all_packages[@]}")
+                ;;
+        esac
         
         if [ ${#packages[@]} -gt 0 ]; then
             install_packages "${packages[@]}" || print_warning "Some packages from $group failed to install"
+        elif [ "$package_mode" != "skip" ]; then
+            print_warning "No packages resolved for group $group"
         fi
         
         # Collect services to enable
@@ -285,8 +407,8 @@ install_common_tools() {
         print_info "TPM is already installed"
     fi
     
-    # Install rofi themes (only if Hyprland is selected)
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+    # Install rofi themes when a Wayland compositor group is selected
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
         print_info "Installing Rofi themes collection..."
         local temp_dir="/tmp/rofi-themes-collection"
         local themes_dir="$HOME/.local/share/rofi/themes"
@@ -322,6 +444,7 @@ cleanup_stow_symlinks() {
         "$HOME/Wallpapers"
         "$HOME/completion-for-pnpm.bash"
         "$HOME/.config/hypr"
+        "$HOME/.config/niri"
         "$HOME/.config/waybar"
         "$HOME/.config/rofi"
         "$HOME/.config/kitty"
@@ -416,6 +539,7 @@ setup_dotfiles() {
     
     # Determine boolean flags for groups
     local install_hyprland="false"
+    local install_niri="false"
     local install_development="false"
     local install_gaming="false"
     local install_multimedia="false"
@@ -424,6 +548,7 @@ setup_dotfiles() {
     for group in "${SELECTED_GROUP_NAMES[@]}"; do
         case "$group" in
             hyprland) install_hyprland="true" ;;
+            niri) install_niri="true" ;;
             development) install_development="true" ;;
             gaming) install_gaming="true" ;;
             multimedia) install_multimedia="true" ;;
@@ -438,6 +563,7 @@ sourceDir = "$source_dir"
 [data]
     distro = "$DISTRO"
     install_hyprland = $install_hyprland
+    install_niri = $install_niri
     install_development = $install_development
     install_gaming = $install_gaming
     install_multimedia = $install_multimedia
@@ -551,10 +677,17 @@ show_completion() {
         "  2. Run 'tmux' and press Ctrl+b I (install plugins)"
         "  3. Add your SSH key to GitHub/GitLab"
     )
+    local next_step=4
     
     # Add Hyprland step if running in Hyprland or if Hyprland was selected
     if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
-        steps+=("  4. Run 'hyprctl reload' to reload Hyprland config")
+        steps+=("  $next_step. Run 'hyprctl reload' to reload Hyprland config")
+        next_step=$((next_step + 1))
+    fi
+
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+        steps+=("  $next_step. Log out, choose Niri in your display manager, and log back in")
+        next_step=$((next_step + 1))
     fi
     
     gum style \
@@ -571,9 +704,12 @@ show_completion() {
 
 # Main installation flow
 main() {
-    # Initialize arrays
+    # Initialize installer state
     SELECTED_GROUP_NAMES=()
     SERVICES_TO_ENABLE=()
+    unset GROUP_PACKAGE_MODE GROUP_CUSTOM_PACKAGE_LIST
+    declare -gA GROUP_PACKAGE_MODE=()
+    declare -gA GROUP_CUSTOM_PACKAGE_LIST=()
     
     # Check for gum
     check_gum
@@ -584,6 +720,7 @@ main() {
     
     # Select groups
     select_groups
+    select_group_packages
     
     # Confirm and install
     confirm_installation

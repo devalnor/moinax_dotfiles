@@ -15,6 +15,13 @@
 {{-   $install_hyprland = promptBool "Install Hyprland (Wayland compositor)" -}}
 {{- end -}}
 
+{{- $install_niri := false -}}
+{{- if hasKey . "install_niri" -}}
+{{-   $install_niri = .install_niri -}}
+{{- else -}}
+{{-   $install_niri = promptBool "Install Niri (Wayland compositor)" -}}
+{{- end -}}
+
 {{- $install_development := false -}}
 {{- if hasKey . "install_development" -}}
 {{-   $install_development = .install_development -}}
@@ -55,6 +62,7 @@ sourceDir = {{ $source_dir | quote }}
 [data]
     distro = {{ $distro | quote }}
     install_hyprland = {{ $install_hyprland }}
+    install_niri = {{ $install_niri }}
     install_development = {{ $install_development }}
     install_gaming = {{ $install_gaming }}
     install_multimedia = {{ $install_multimedia }}

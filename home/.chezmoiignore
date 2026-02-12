@@ -9,6 +9,16 @@ LICENSE
 {{- if not .install_hyprland }}
 dot_config/hypr
 dot_config/hypr/**
+{{- end }}
+
+# Ignore Niri configs if not selected
+{{- if not .install_niri }}
+dot_config/niri
+dot_config/niri/**
+{{- end }}
+
+# Ignore shared Wayland desktop components if neither compositor is selected
+{{- if and (not .install_hyprland) (not .install_niri) }}
 dot_config/waybar
 dot_config/waybar/**
 dot_config/rofi

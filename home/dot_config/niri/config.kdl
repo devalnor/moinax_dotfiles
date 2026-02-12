@@ -1,0 +1,55 @@
+// Niri config tuned to mirror Hyprland-like binds where possible.
+// Keep this file conservative: invalid actions/keys can cause Niri to reject binds.
+// Non-1:1 mappings:
+// - Hyprland scratchpad/group/split/opacity rules do not map directly.
+// - "move to workspace silently" is approximated with regular move-to-workspace.
+
+input {
+    keyboard {
+        xkb {}
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+    }
+}
+
+layout {
+    gaps 8
+    center-focused-column "never"
+}
+
+spawn-at-startup "waybar"
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+binds {
+    // Keep binds focused on app launchers and window management.
+    Mod+Q repeat=false { close-window; }
+    Mod+Shift+E { quit; }
+
+    // App shortcuts
+    Mod+Return { spawn "kitty"; }
+    Mod+B { spawn "google-chrome-stable"; }
+    Mod+E { spawn "dolphin"; }
+    Mod+Space { spawn-sh "rofi -show drun"; }
+    Mod+Tab { spawn-sh "rofi -show window -window-thumbnail"; }
+
+    // Window management
+    Mod+F { fullscreen-window; }
+    Mod+Ctrl+F { maximize-window-to-edges; }
+    Mod+T { toggle-window-floating; }
+    Mod+Left { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up { focus-window-up; }
+    Mod+Down { focus-window-down; }
+    Mod+Shift+Right { set-column-width "+10%"; }
+    Mod+Shift+Left { set-column-width "-10%"; }
+    Mod+Shift+Up { set-window-height "-10%"; }
+    Mod+Shift+Down { set-window-height "+10%"; }
+    Mod+Alt+Left { move-column-left; }
+    Mod+Alt+Right { move-column-right; }
+    Mod+Alt+Up { move-window-up; }
+    Mod+Alt+Down { move-window-down; }
+}
