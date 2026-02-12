@@ -34,12 +34,20 @@ compinit
 # End of lines added by compinstall
 
 
-# Add zsh auto suggestions
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+# Add zsh auto suggestions (Arch and Fedora package layouts)
+if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+	source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+elif [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+	source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#696969"
 
-# Add zsh syntax highlighting
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# Add zsh syntax highlighting (Arch and Fedora package layouts)
+if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+	source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+elif [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+	source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
 
 # Show fastfetch at startup
 if [ "$TERM_PROGRAM" != "vscode" ]; then 
