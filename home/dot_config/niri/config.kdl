@@ -106,14 +106,14 @@ binds {
     // Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
     // Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
 
-    Mod+Page_Down      { focus-workspace-down; }
-    Mod+Page_Up        { focus-workspace-up; }
-    Mod+U              { focus-workspace-down; }
+    // Mod+Page_Down      { focus-workspace-down; }
+    // Mod+Page_Up        { focus-workspace-up; }
+    // Mod+U              { focus-workspace-down; }
     // Mod+I              { focus-workspace-up; }
-    Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
-    Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
-    Mod+Ctrl+U         { move-column-to-workspace-down; }
-    Mod+Ctrl+I         { move-column-to-workspace-up; }
+    // Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
+    // Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
+    // Mod+Ctrl+U         { move-column-to-workspace-down; }
+    // Mod+Ctrl+I         { move-column-to-workspace-up; }
 
     Mod+Shift+Page_Down { move-workspace-down; }
     Mod+Shift+Page_Up   { move-workspace-up; }
@@ -154,10 +154,16 @@ binds {
     Mod+Ctrl+8 { move-column-to-workspace 8; }
     Mod+Ctrl+9 { move-column-to-workspace 9; }
 
-    Mod+BracketLeft  { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
-    Mod+Comma  { consume-window-into-column; }
-    Mod+Period { expel-window-from-column; }
+    // Merge/split helpers between adjacent columns.
+    // If there is a neighboring column on the left, merge this window into it.
+    // If already merged, this can expel the focused window back out to the left.
+    Mod+Alt+Left  { consume-or-expel-window-left; }
+    // Same as above, but toward the right neighboring column.
+    Mod+Alt+Right { consume-or-expel-window-right; }
+    // Always merge the focused window into an adjacent column (stack in one column).
+    Mod+Colon  { consume-window-into-column; }
+    // Undo merge: pull the focused window out into its own column.
+    Mod+Shift+Colon { expel-window-from-column; }
 
     // Custom: keep your preferred actions.
     Mod+R { switch-preset-column-width; }
@@ -169,6 +175,7 @@ binds {
 
     // Keep standard alternatives too.
     Mod+M { maximize-window-to-edges; }
+    Mod+Shift+M { maximize-column; }
     Mod+C { center-column; }
     Mod+Ctrl+C { center-visible-columns; }
     Mod+Minus { set-column-width "-10%"; }
@@ -180,11 +187,6 @@ binds {
     Mod+Shift+Up { set-window-height "-10%"; }
     Mod+Shift+Down { set-window-height "+10%"; }
 
-    // Custom workspace move on Alt+Up/Down.
-    Mod+Alt+Up { move-column-to-workspace-up; }
-    Mod+Alt+Down { move-column-to-workspace-down; }
-    Mod+Alt+Left { move-column-left; }
-    Mod+Alt+Right { move-column-right; }
 
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
