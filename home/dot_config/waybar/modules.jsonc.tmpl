@@ -20,7 +20,16 @@
     "active-only": false,
     "hide-active": false,
     "all-outputs": false,
+{{- if eq .chezmoi.hostname "moinax-desktop" }}
+    "persistent-workspaces": {
+      "DP-2": [6],
+      "DP-1": [7],
+      "eDP-1": [1, 2, 3, 4, 5, 6, 7]
+    },
+    "persistent-only": true,
+{{- else }}
     "persistent-only": false,
+{{- end }}
     "move-to-monitor": false,
     "format": "{name} {icon}",
     "format-icons": {
