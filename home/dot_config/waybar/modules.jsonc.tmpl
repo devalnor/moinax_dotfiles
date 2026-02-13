@@ -10,18 +10,17 @@
 //
 {
   // Workspaces
+{{ if .install_niri }}
+  "niri/workspaces": {
+    "on-click": "activate",
+  },
+{{ else }}
   "hyprland/workspaces": {
     "on-click": "activate",
     "active-only": false,
     "hide-active": false,
     "all-outputs": false,
-    "persistent-workspaces": {
-      "DP-3": [1, 2, 3, 4, 5],
-      "DP-2": [6],
-      "DP-1": [7],
-      "eDP-1": [1, 2, 3, 4, 5, 6, 7],
-    },
-    "persistent-only": true,
+    "persistent-only": false,
     "move-to-monitor": false,
     "format": "{name} {icon}",
     "format-icons": {
@@ -36,7 +35,12 @@
       "default": "",
     },
   },
-  // Hyprland Window
+{{ end }}
+  // Focused window
+{{ if .install_niri }}
+  "niri/window-title": {
+  },
+{{ else }}
   "hyprland/window": {
     "rewrite": {
       "(.*) - Brave": "$1",
@@ -49,6 +53,7 @@
     "icon": true,
     "icon-size": 16,
   },
+{{ end }}
   "custom/exit": {
     "format": "",
     "tooltip-format": "Powermenu",
@@ -120,7 +125,7 @@
     "tooltip-format-ethernet": "  {ifname} ({ipaddr}/{cidr})",
     "tooltip-format-disconnected": "Disconnected",
     "max-length": 50,
-    "on-click": "kitty nmtui",
+    "on-click": "~/.config/waybar/scripts/open-network-manager.sh",
   },
   // Battery
   "battery": {

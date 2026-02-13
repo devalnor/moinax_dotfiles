@@ -1,5 +1,10 @@
+{{- $windowModule := "hyprland/window" -}}
+{{- $workspaceModule := "hyprland/workspaces" -}}
+{{- if .install_niri -}}
+{{- $windowModule = "niri/window-title" -}}
+{{- $workspaceModule = "niri/workspaces" -}}
+{{- end -}}
 [{
-    "output": "DP-3",
     // "layer": "top", // Waybar at top layer
     
     // "position": "bottom", // Waybar position (top|bottom|left|right)
@@ -13,38 +18,20 @@
     // Load Modules
     "include": [
         "~/.config/waybar/modules.jsonc"
-    ],    
+    ],
     "modules-left": [
-        "hyprland/window"
+        "{{ $windowModule }}"
     ],
    "modules-center": [
-       "hyprland/workspaces",
+       "{{ $workspaceModule }}",
     ],
     "modules-right": [
         "network",
         "group/stats",
-        "mpd", 
-        "pulseaudio", 
-        "battery", 
-        "bluethooth",
-        "tray",
-        "clock", 
-        "custom/exit"
-    ]
-  },
-  {
-    "output": "!DP-3",
-    // "height": 20, // Waybar height (to be removed for auto height)
-    "include": ["~/.config/waybar/modules.jsonc"],
-    "modules-left": [
-        "hyprland/window",
-    ],
-    "modules-center": [
-        "hyprland/workspaces",
-    ],
-    "modules-right": [
-        "group/stats",
-        "pulseaudio", 
+        "mpd",
+        "pulseaudio",
+        "battery",
+        "bluetooth",
         "tray",
         "clock",
         "custom/exit"

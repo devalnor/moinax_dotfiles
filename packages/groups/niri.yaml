@@ -15,6 +15,7 @@ dotfiles:
 # Services to enable
 services:
   - bluetooth
+  - NetworkManager
 
 packages:
   arch:
@@ -46,6 +47,12 @@ packages:
 
     # Other Wayland tools
     - inotify-tools
+    
+    # Network management
+    - networkmanager
+    - network-manager-applet
+    - nm-connection-editor
+    - plasma-nm
 
   fedora:
     # Niri core
@@ -75,3 +82,9 @@ packages:
 
     # Other Wayland tools
     - inotify-tools
+    
+    # Network management
+    - NetworkManager
+    - network-manager-applet
+    - nm-connection-editor
+    - plasma-nm
