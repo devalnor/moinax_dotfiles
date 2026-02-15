@@ -14,7 +14,8 @@
   "niri/workspaces": {
     "on-click": "activate",
   },
-{{ else }}
+{{ end }}
+{{ if .install_hyprland }}
   "hyprland/workspaces": {
     "on-click": "activate",
     "active-only": false,
@@ -24,7 +25,7 @@
     "persistent-workspaces": {
       "DP-2": [6],
       "DP-1": [7],
-      "eDP-1": [1, 2, 3, 4, 5, 6, 7]
+      "DP-3": [1, 2, 3, 4, 5]
     },
     "persistent-only": true,
 {{- else }}
@@ -49,7 +50,8 @@
 {{ if .install_niri }}
   "niri/window": {
   },
-{{ else }}
+{{ end }}
+{{ if .install_hyprland }}
   "hyprland/window": {
     "rewrite": {
       "(.*) - Brave": "$1",

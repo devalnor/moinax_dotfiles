@@ -20,7 +20,7 @@ layout {
     center-focused-column "never"
 }
 
-spawn-at-startup "waybar"
+spawn-at-startup "sh" "-c" "/home/moinax/.config/waybar/launch-waybar.sh"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 

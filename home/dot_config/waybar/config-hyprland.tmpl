@@ -1,12 +1,12 @@
-{{- /* Build module lists based on installed compositors */ -}}
+{{- /* Waybar config for Hyprland compositor */ -}}
 [{
     // "layer": "top", // Waybar at top layer
-    
+
     // "position": "bottom", // Waybar position (top|bottom|left|right)
-    
+
     //"height": 20, // Waybar height (to be removed for auto height)
     // "width": 1280, // Waybar width
-    
+
     "spacing": 4, // Gaps between modules (4px)
     // Choose the order of the modules
 
@@ -15,20 +15,10 @@
         "~/.config/waybar/modules.jsonc"
     ],
     "modules-left": [
-{{- if .install_niri }}
-        "niri/window"{{- if .install_hyprland }},{{- end }}
-{{- end }}
-{{- if .install_hyprland }}
         "hyprland/window"
-{{- end }}
     ],
    "modules-center": [
-{{- if .install_niri }}
-        "niri/workspaces"{{- if .install_hyprland }},{{- end }}
-{{- end }}
-{{- if .install_hyprland }}
         "hyprland/workspaces"
-{{- end }}
     ],
     "modules-right": [
         "network",
