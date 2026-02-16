@@ -74,23 +74,11 @@ alias ld="lazydocker"
 # Add shortucts to find the biggest files in the current directory (even hidden files)
 alias big="sudo du -sh *(D) | sort -rh | head -n 10"
 
-# Volta
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
+# PATH configurations are now in ~/.zshenv (sourced for all shells)
+# This ensures VS Code and other tools can find pnpm, volta, etc.
+
+# Pnpm completion (keep in .zshrc as it's interactive-only)
 source ~/completion-for-pnpm.bash
-
-# Turso
-export PATH="$HOME/.turso:$PATH"
-
-# Pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
-   case ":$PATH:" in
-     *":$PNPM_HOME:"*) ;;
-     *) export PATH="$PNPM_HOME:$PATH" ;;
-   esac
-
-# Lazy docker
-export PATH="$HOME/.local/bin:$PATH"
 
 
 # Set up fzf key bindings and fuzzy completion
@@ -107,12 +95,8 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-# Add different rofi scripts in the path @see https://github.com/adi1090x/rofi
-export PATH=$HOME/.config/rofi/scripts:$PATH
-
 # Initialiaze starhsip
 eval "$(starship init zsh)"
 
 # Initialize zoxide
 eval "$(zoxide init zsh)"
-export PATH="$HOME/.local/bin:$PATH"

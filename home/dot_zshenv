@@ -1,0 +1,21 @@
+# This file is sourced for all zsh shells (interactive and non-interactive)
+# Perfect for PATH configuration needed by VS Code and other tools
+
+# Pnpm
+export PNPM_HOME="$HOME/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# Volta (Node.js version manager)
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
+# Turso
+export PATH="$HOME/.turso:$PATH"
+
+# Lazy docker, zozide, ...
+export PATH="$HOME/.local/bin:$PATH"
+# Rofi scripts
+export PATH="$HOME/.config/rofi/scripts:$PATH"
