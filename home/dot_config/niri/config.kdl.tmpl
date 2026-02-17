@@ -109,6 +109,9 @@ binds {
     Mod+Ctrl+Down  { move-window-down; }
     Mod+Ctrl+Up    { move-window-up; }
     Mod+Ctrl+Right { move-column-right; }
+    Mod+Alt+Down { move-column-to-workspace-down; }
+    Mod+Alt+Up   { move-column-to-workspace-up; }
+
     // Mod+Ctrl+H     { move-column-left; }
     // Mod+Ctrl+J     { move-window-down; }
     // Mod+Ctrl+K     { move-window-up; }
@@ -144,8 +147,8 @@ binds {
 
     Mod+Shift+Page_Down { move-workspace-down; }
     Mod+Shift+Page_Up   { move-workspace-up; }
-    Mod+Shift+U         { move-workspace-down; }
-    Mod+Shift+I         { move-workspace-up; }
+    // Mod+Shift+U         { move-workspace-down; }
+    // Mod+Shift+I         { move-workspace-up; }
 
     Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
     Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
@@ -162,6 +165,7 @@ binds {
     Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
     Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
 
+    // Switch workspaces - QWERTY
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
@@ -171,6 +175,19 @@ binds {
     Mod+7 { focus-workspace 7; }
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
+
+    // Switch workspaces - AZERTY
+    Mod+ampersand { focus-workspace 1; }
+    Mod+eacute { focus-workspace 2; }
+    Mod+quotedbl { focus-workspace 3; }
+    Mod+apostrophe { focus-workspace 4; }
+    Mod+parenleft { focus-workspace 5; }
+    Mod+minus { focus-workspace 6; }
+    Mod+egrave { focus-workspace 7; }
+    Mod+underscore { focus-workspace 8; }
+    Mod+ccedilla { focus-workspace 9; }
+
+    // Move window to workspace - QWERTY
     Mod+Ctrl+1 { move-column-to-workspace 1; }
     Mod+Ctrl+2 { move-column-to-workspace 2; }
     Mod+Ctrl+3 { move-column-to-workspace 3; }
@@ -180,6 +197,17 @@ binds {
     Mod+Ctrl+7 { move-column-to-workspace 7; }
     Mod+Ctrl+8 { move-column-to-workspace 8; }
     Mod+Ctrl+9 { move-column-to-workspace 9; }
+
+    // Move window to workspace - AZERTY
+    Mod+Ctrl+ampersand { move-column-to-workspace 1; }
+    Mod+Ctrl+eacute { move-column-to-workspace 2; }
+    Mod+Ctrl+quotedbl { move-column-to-workspace 3; }
+    Mod+Ctrl+apostrophe { move-column-to-workspace 4; }
+    Mod+Ctrl+parenleft { move-column-to-workspace 5; }
+    Mod+Ctrl+minus { move-column-to-workspace 6; }
+    Mod+Ctrl+egrave { move-column-to-workspace 7; }
+    Mod+Ctrl+underscore { move-column-to-workspace 8; }
+    Mod+Ctrl+ccedilla { move-column-to-workspace 9; }
 
     // Merge/split helpers between adjacent columns.
     // If there is a neighboring column on the left, merge this window into it.
@@ -205,18 +233,12 @@ binds {
     Mod+Shift+M { maximize-column; }
     Mod+C { center-column; }
     Mod+Ctrl+C { center-visible-columns; }
-    Mod+Minus { set-column-width "-10%"; }
-    Mod+Equal { set-column-width "+10%"; }
 
-    // Custom resize arrows.
+    // Resize with arrow keys (Minus/Equal removed to avoid AZERTY workspace conflicts)
     Mod+Shift+Right { set-column-width "+10%"; }
     Mod+Shift+Left { set-column-width "-10%"; }
     Mod+Shift+Up { set-window-height "-10%"; }
     Mod+Shift+Down { set-window-height "+10%"; }
-
-
-    Mod+Shift+Minus { set-window-height "-10%"; }
-    Mod+Shift+Equal { set-window-height "+10%"; }
     Mod+V       { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
     Mod+W { toggle-column-tabbed-display; }
