@@ -6,7 +6,10 @@
 
 input {
     keyboard {
-        xkb {}
+        xkb {
+            layout "be,fr,us"
+            options "grp:alt_shift_toggle"
+        }
     }
 
     touchpad {
@@ -20,7 +23,31 @@ layout {
     center-focused-column "never"
 }
 
+environment {
+    QT_QPA_PLATFORM "wayland;xcb"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+    QT_AUTO_SCREEN_SCALE_FACTOR "1"
+    MOZ_ENABLE_WAYLAND "1"
+    OZONE_PLATFORM "wayland"
+    XCURSOR_SIZE "24"
+
+    // For Wayland input methods, these should be unset (use native Wayland protocol)
+    // GTK_IM_MODULE and QT_IM_MODULE intentionally not set
+    // XMODIFIERS intentionally not set
+}
+
 spawn-at-startup "sh" "-c" "/home/moinax/.config/waybar/launch-waybar.sh"
+spawn-at-startup "swayidle" "-w"
+spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/moinax/Wallpapers/colorful.jpg"
+spawn-at-startup "mako"
+{{ if eq .chezmoi.osRelease.id "fedora" -}}
+spawn-at-startup "/usr/libexec/polkit-kde-authentication-agent-1"
+{{ else -}}
+spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
+{{ end -}}
+spawn-at-startup "blueman-applet"
+spawn-at-startup "sh" "-c" "wl-paste --type text --watch cliphist store"
+spawn-at-startup "sh" "-c" "wl-paste --type image --watch cliphist store"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
@@ -36,8 +63,8 @@ binds {
     Mod+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable"; }
     Mod+E hotkey-overlay-title="Open File Manager: dolphin" { spawn "dolphin"; }
     Mod+I hotkey-overlay-title="Emoji Selector: rofi" { spawn-sh "rofi -show emoji -modi emoji"; }
-    Mod+A hotkey-overlay-title="Switch Audio Output" { spawn-sh "~/.config/hypr/scripts/toggle-audio-switch.sh"; }
-    Mod+K hotkey-overlay-title="Switch Keyboard Layout" { spawn-sh "~/.config/hypr/scripts/toggle-keyboard-layout.sh"; }
+    Mod+A hotkey-overlay-title="Switch Audio Output" { spawn-sh "~/.local/bin/toggle-audio-switch.sh"; }
+    Mod+K hotkey-overlay-title="Switch Keyboard Layout" { switch-layout "next"; }
     Mod+Tab hotkey-overlay-title="Switch Window: rofi" { spawn-sh "rofi -show window -window-thumbnail"; }
 
     // Keep default launcher too.

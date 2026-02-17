@@ -15,6 +15,8 @@ dot_config/hypr/**
 {{- if not .install_niri }}
 dot_config/niri
 dot_config/niri/**
+dot_config/swayidle
+dot_config/swayidle/**
 {{- end }}
 
 # Ignore shared Wayland desktop components if neither compositor is selected
