@@ -15,7 +15,6 @@ packages:
     - git
     - stow
     - bat
-    - eza
     - fzf
     - fastfetch
     - tealdeer  # tldr implementation for Fedora

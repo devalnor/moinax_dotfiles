@@ -60,8 +60,11 @@ export VISUAL="cursor"
 
 # Replace cd by zoxide
 alias cd="z"
+{{- if ne .chezmoi.osRelease.id "fedora" }}
 # Replace ls by eza
 alias ls="eza"
+{{- end }}
+# Add shortcuts to ls -la
 alias lsa="ls -la"
 # Add shortcuts to nvim
 alias vim="nvim"
