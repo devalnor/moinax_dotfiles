@@ -17,6 +17,8 @@ dot_config/niri
 dot_config/niri/**
 dot_config/swayidle
 dot_config/swayidle/**
+dot_config/swaylock
+dot_config/swaylock/**
 dot_config/xdg-desktop-portal
 dot_config/xdg-desktop-portal/**
 {{- end }}
