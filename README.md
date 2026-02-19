@@ -33,7 +33,7 @@ The interactive installer will:
 
 | Group | Description |
 |-------|-------------|
-| **Hyprland** | Hyprland stack with `hypridle`, `hyprlock`, `hyprpaper`, `waybar`, `rofi`, `mako`, `wlogout`, clipboard tooling (`cliphist`, `wl-clipboard`) and Wayland helpers |
+| **Hyprland** | Hyprland stack with `hypridle`, `hyprlock`, `hyprpaper`, `waybar`, `rofi`, `mako`, clipboard tooling (`cliphist`, `wl-clipboard`) and Wayland helpers |
 | **Development** | `neovim`, Cursor, Git tooling (`gh`, `lazygit`, `delta`), containers (`docker`, `docker-compose`, `lazydocker`), and build/task tools (`cmake`, `gcc`/`base-devel`, `just`) |
 | **Gaming** | Steam + Discord with performance helpers (`mangohud`, `gamemode`) |
 | **Multimedia** | Media and creation tools (`mpv`, `obs-studio`, `ffmpeg`, ImageMagick, GIMP, Inkscape) |

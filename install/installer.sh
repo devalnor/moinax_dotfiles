@@ -450,7 +450,6 @@ cleanup_stow_symlinks() {
         "$HOME/.config/kitty"
         "$HOME/.config/nvim"
         "$HOME/.config/mako"
-        "$HOME/.config/wlogout"
         "$HOME/.local/share/rofi/themes"
         "$HOME/.cursor/argv.json"
     )

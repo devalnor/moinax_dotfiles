@@ -1,6 +1,6 @@
 # Hyprland - Wayland compositor and related tools
 name: Hyprland
-description: Hyprland compositor with Wayland tools (waybar, rofi, mako, wlogout)
+description: Hyprland compositor with Wayland tools (waybar, rofi, mako)
 icon: 🪟
 
 # Dotfiles to install when this group is selected
@@ -9,7 +9,6 @@ dotfiles:
   - dot_config/waybar
   - dot_config/rofi
   - dot_config/mako
-  - dot_config/wlogout
   - dot_local/share/rofi
 
 # Services to enable
@@ -31,11 +30,9 @@ packages:
     - waybar
     - rofi-wayland
     - rofimoji
-    - wlogout
-    
     # Notifications
     - mako
-    
+
     # Clipboard
     - extra/cliphist
     - extra/wl-clipboard
@@ -66,11 +63,9 @@ packages:
     # Status bar and menus
     - waybar
     - rofi-wayland
-    - wlogout
-    
     # Notifications
     - mako
-    
+
     # Clipboard
     - cliphist
     - wl-clipboard

@@ -58,4 +58,4 @@ Hypr, Niri, Waybar, Rofi, Mako, Wlogout (Wayland compositors/desktop), Kitty (te
 
 - Shell scripts use `set -e` and consistent color-coded output helpers (`print_info`, `print_success`, `print_error`, `print_warning`)
 - Package lists are YAML with per-distro keys (`arch:`, `fedora:`)
-- Wayland desktop components (waybar, rofi, mako, wlogout) are shared between Hyprland and Niri
+- Wayland desktop components (waybar, rofi, mako) are shared between Hyprland and Niri

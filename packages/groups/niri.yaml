@@ -1,6 +1,6 @@
 # Niri - Scrollable tiling Wayland compositor
 name: Niri
-description: Niri compositor with Wayland desktop tools (waybar, rofi, mako, wlogout)
+description: Niri compositor with Wayland desktop tools (waybar, rofi, mako)
 icon: 📜
 
 # Dotfiles to install when this group is selected
@@ -9,7 +9,6 @@ dotfiles:
   - dot_config/waybar
   - dot_config/rofi
   - dot_config/mako
-  - dot_config/wlogout
   - dot_local/share/rofi
 
 # Services to enable
@@ -27,8 +26,6 @@ packages:
     - waybar
     - rofi-wayland
     - rofimoji
-    - wlogout
-
     # Notifications
     - mako
 
@@ -74,8 +71,6 @@ packages:
     # Status bar and menus
     - waybar
     - rofi-wayland
-    - wlogout
-
     # Notifications
     - mako
 
