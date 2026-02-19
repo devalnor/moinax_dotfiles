@@ -7,8 +7,16 @@ LICENSE
 
 # Ignore Hyprland configs if not selected
 {{- if not .install_hyprland }}
-dot_config/hypr
-dot_config/hypr/**
+dot_config/hypr/hyprland.conf
+dot_config/hypr/hypridle.conf
+dot_config/hypr/hyprpaper.conf
+dot_config/hypr/conf
+dot_config/hypr/conf/**
+dot_config/hypr/scripts
+dot_config/hypr/scripts/**
+{{- end }}
+{{- if and (not .install_hyprland) (not .install_niri) }}
+dot_config/hypr/hyprlock.conf
 {{- end }}
 
 # Ignore Niri configs if not selected
@@ -17,8 +25,6 @@ dot_config/niri
 dot_config/niri/**
 dot_config/swayidle
 dot_config/swayidle/**
-dot_config/swaylock
-dot_config/swaylock/**
 dot_config/xdg-desktop-portal
 dot_config/xdg-desktop-portal/**
 {{- end }}
