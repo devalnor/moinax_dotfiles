@@ -5,7 +5,7 @@ default-timeout=5000
 width=600
 height=600
 
-font=FiraCode 10
+font=FiraCode Nerd Font 10
 
 background-color=#1e1e1edd
 text-color=#cdd6f4
