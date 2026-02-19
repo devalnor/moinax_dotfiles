@@ -1,0 +1,4 @@
+os:
+  editCommand: nvim
+  editCommandTemplate: '{{editor}} {{filename}}'
+  openCommand: cursor
