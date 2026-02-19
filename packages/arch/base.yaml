@@ -28,7 +28,7 @@ packages:
     - yazi
 
     # Fonts
-    - ttf-fira-code
+    - ttf-firacode-nerd
     - ttf-fira-sans
     - ttf-font-awesome
 

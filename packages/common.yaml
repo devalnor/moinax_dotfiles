@@ -18,6 +18,15 @@ tools:
     url: https://github.com/tmux-plugins/tpm
     dest: ~/.tmux/plugins/tpm
 
+  - name: firacode-nerd-font
+    description: FiraCode Nerd Font (patched with icons for Starship/prompt)
+    install: |
+      mkdir -p ~/.local/share/fonts/FiraCodeNF
+      curl -sL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip -o /tmp/FiraCode.zip
+      unzip -o /tmp/FiraCode.zip -d ~/.local/share/fonts/FiraCodeNF
+      rm /tmp/FiraCode.zip
+      fc-cache -fv
+
   - name: rofi-themes-collection
     description: Collection of Rofi themes
     type: git
