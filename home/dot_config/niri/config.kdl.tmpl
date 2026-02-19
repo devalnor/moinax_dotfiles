@@ -21,6 +21,34 @@ input {
 layout {
     gaps 8
     center-focused-column "never"
+
+    border {
+        width 2
+        active-gradient from="#ff64ff80" to="#9696ffff" angle=45
+        inactive-color "#6464ff4d"
+    }
+
+    focus-ring {
+        off
+    }
+
+    shadow {
+        on
+        softness 30
+        spread 5
+        offset x=0 y=5
+        color "#00000040"
+    }
+}
+
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+window-rule {
+    match is-focused=false
+    opacity 0.85
 }
 
 environment {
@@ -60,7 +88,7 @@ binds {
     // Custom app binds.
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+Space hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show drun"; }
-    Mod+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable"; }
+    Mod+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable" "--password-store=basic"; }
     Mod+E hotkey-overlay-title="Open File Manager: dolphin" { spawn "dolphin"; }
     Mod+I hotkey-overlay-title="Emoji Selector: rofi" { spawn-sh "rofi -show emoji -modi emoji"; }
     Mod+A hotkey-overlay-title="Switch Audio Output" { spawn-sh "~/.local/bin/toggle-audio-switch.sh"; }
