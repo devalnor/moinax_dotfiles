@@ -17,6 +17,8 @@ dot_config/niri
 dot_config/niri/**
 dot_config/swayidle
 dot_config/swayidle/**
+dot_config/xdg-desktop-portal
+dot_config/xdg-desktop-portal/**
 {{- end }}
 
 # Ignore shared Wayland desktop components if neither compositor is selected
@@ -49,4 +51,5 @@ dot_icons
 dot_icons/**
 dot_themes
 dot_themes/**
+dot_local/share/applications/google-chrome.desktop
 {{- end }}
