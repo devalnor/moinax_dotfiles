@@ -95,7 +95,7 @@
   },
   // System
   "custom/system": {
-    "format": " ",
+    "format": " ",
     "tooltip": false,
   },
   // CPU
@@ -129,9 +129,9 @@
     "family": "ipv4",
     "format": "{ipaddr}",
     "format-wifi": "  {essid} {signalStrength}%",
-    "format-ethernet": " {bandwidthDownBytes} {bandwidthUpBytes}",
+    "format-ethernet": " {bandwidthDownBytes} {bandwidthUpBytes}",
     "format-disconnected": "Not connected", //An empty format will hide the module.
-    "tooltip-format": " {ifname} via {gwaddri}",
+    "tooltip-format": " {ifname} via {gwaddri}",
     "tooltip-format-wifi": "   {essid} ({signalStrength}%)",
     "tooltip-format-ethernet": "  {ifname} ({ipaddr}/{cidr})",
     "tooltip-format-disconnected": "Disconnected",
@@ -146,7 +146,7 @@
       "critical": 15,
     },
     "format": "{icon}   {capacity}%",
-    "format-charging": "  {capacity}%",
+    "format-charging": "  {capacity}%",
     "format-plugged": "  {capacity}%",
     "format-alt": "{icon}  {time}",
     // "format-good": "", // An empty format will hide the module
@@ -158,14 +158,14 @@
     // "scroll-step": 1, // %, can be a float
     "format": "{icon} {volume}% {format_source}",
     "format-bluetooth": "{icon} {volume}% {format_source} ",
-    "format-bluetooth-muted": " {icon} ",
-    "format-muted": " {format_source}",
+    "format-bluetooth-muted": " {icon} ",
+    "format-muted": " {format_source}",
     "format-source": " {volume}%",
     "format-source-muted": "",
     "format-icons": {
       "headphone": "",
-      "hands-free": "",
-      "headset": "",
+      "hands-free": "",
+      "headset": "",
       "phone": "",
       "portable": "",
       "car": "",
@@ -175,6 +175,7 @@
   },
   // Bluetooth
   "bluetooth": {
+    "format": " {status}",
     "format-disabled": "",
     "format-off": "",
     "interval": 30,
@@ -192,7 +193,7 @@
     "format": "{icon}",
     "tooltip": true,
     "format-icons": {
-      "activated": "",
+      "activated": "",
       "deactivated": "",
     },
     "on-click-right": "loginctl lock-session",

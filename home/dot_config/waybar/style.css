@@ -3,8 +3,8 @@
   border: none;
   border-radius: 0;
   font-family:
-    "Fira Sans Semibold", FontAwesome, Roboto, Helvetica, Arial, sans-serif;
-  font-size: 16px;
+    "Fira Code", FontAwesome, sans-serif;
+  font-size: 14px;
   min-height: 0;
   font-weight: normal;
 }
@@ -59,6 +59,12 @@ tooltip label {
 #workspaces button.active {
   color: white;
   background: rgba(255, 100, 255, 0.5);
+}
+#custom-exit,
+#custom-system,
+#idle-inhibitor,
+#workspaces button {
+  font-size: 17px;
 }
 #custom-exit {
   margin-right: 20px;
