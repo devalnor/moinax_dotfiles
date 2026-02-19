@@ -643,6 +643,48 @@ setup_ssh() {
     fi
 }
 
+# Setup SDDM wallpaper
+setup_sddm() {
+    # Only run if a compositor group was selected
+    if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]] && ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+        return
+    fi
+
+    if ! command_exists sddm; then
+        return
+    fi
+
+    print_header "SDDM Wallpaper Setup"
+
+    local wallpaper="$HOME/Wallpapers/colorful.jpg"
+    if [ ! -f "$wallpaper" ]; then
+        print_warning "Wallpaper not found at $wallpaper, skipping SDDM setup"
+        return
+    fi
+
+    # Detect active SDDM theme
+    local theme
+    theme=$(grep -rh "^Current=" /etc/sddm.conf /etc/sddm.conf.d/ 2>/dev/null | head -1 | cut -d= -f2 | tr -d '[:space:]')
+    if [ -z "$theme" ]; then
+        theme=$(ls /usr/share/sddm/themes/ 2>/dev/null | head -1)
+    fi
+
+    if [ -z "$theme" ] || [ ! -d "/usr/share/sddm/themes/$theme" ]; then
+        print_warning "Could not detect SDDM theme, skipping wallpaper configuration"
+        return
+    fi
+
+    print_info "Configuring SDDM theme '$theme' with wallpaper..."
+
+    sudo cp "$wallpaper" /usr/share/backgrounds/moinax-colorful.jpg
+    sudo tee "/usr/share/sddm/themes/$theme/theme.conf.user" > /dev/null <<EOF
+[General]
+background=/usr/share/backgrounds/moinax-colorful.jpg
+EOF
+
+    print_success "SDDM wallpaper configured"
+}
+
 # Setup shell
 setup_shell() {
     print_header "Shell Setup"
@@ -731,6 +773,7 @@ main() {
     install_common_tools
     setup_dotfiles
     enable_selected_services
+    setup_sddm
     setup_ssh
     setup_shell
     

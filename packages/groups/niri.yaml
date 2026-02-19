@@ -18,6 +18,9 @@ services:
 
 packages:
   arch:
+    # Display manager
+    - sddm
+
     # Niri core
     - niri
     - xwayland-satellite

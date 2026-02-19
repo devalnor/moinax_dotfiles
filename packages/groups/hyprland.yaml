@@ -17,6 +17,9 @@ services:
 
 packages:
   arch:
+    # Display manager
+    - sddm
+
     # Hyprland core
     - hyprland
     - hypridle
