@@ -24,6 +24,7 @@ CONFIG_FILE="$HOME/.config/waybar/config-${COMPOSITOR}"
 if [ -f "$CONFIG_FILE" ]; then
     exec waybar -c "$CONFIG_FILE"
 else
-    # Fallback to default config if specific one doesn't exist
-    exec waybar
+    echo "Error: Waybar config not found: $CONFIG_FILE" >&2
+    echo "Run 'chezmoi apply' to generate compositor-specific configs." >&2
+    exit 1
 fi
