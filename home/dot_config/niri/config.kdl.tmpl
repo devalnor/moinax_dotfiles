@@ -1,14 +1,31 @@
 // Niri config tuned to mirror Hyprland-like binds where possible.
 // Keep this file conservative: invalid actions/keys can cause Niri to reject binds.
-// Non-1:1 mappings:
-// - Hyprland scratchpad/group/split/opacity rules do not map directly.
+//
+// Arrow-key modifier pattern:
+//   Mod+Arrow              = Focus (column L/R, window U/D)
+//   Mod+Page_Up/Down       = Focus workspace up/down
+//   Mod+Alt+Arrow          = Cross-boundary (monitor L/R, workspace-move U/D)
+//   Mod+Ctrl+Arrow         = Move window/column in direction
+//   Mod+Shift+Arrow        = Resize (column width L/R, window height U/D)
+//   Mod+Alt+Ctrl+Arrow     = Move column to monitor
+//
+// T-key modifier pattern (column/window management):
+//   Mod+T                  = Toggle floating
+//   Mod+Alt+T              = Consume window into column (stack)
+//   Mod+Alt+Shift+T        = Expel window from column (undo stack)
+//   Mod+Ctrl+T             = Set column to tabbed display
+//   Mod+Ctrl+Shift+T       = Set column to normal display
+//
+// Non-1:1 mappings with Hyprland:
+// - Scratchpad, group, split, opacity toggle have no Niri equivalent.
 // - "move to workspace silently" is approximated with regular move-to-workspace.
 
 input {
     keyboard {
         xkb {
             layout "be,fr,us"
-            options "grp:alt_shift_toggle"
+            // Layout switching handled by Mod+K (niri-switch-layout.sh)
+            // grp:alt_shift_toggle removed to avoid conflicts with Mod+Alt+Shift combos
         }
     }
 
@@ -25,6 +42,10 @@ output "DP-2" {
     mode "2560x1440@59.951"
     transform "90"
     position x=-1440 y=-500
+
+    layout {
+        default-column-width { proportion 1.0; }
+    }
 }
 
 // Center Monitor (DP-3) - Ultrawide, primary
@@ -39,11 +60,24 @@ output "DP-1" {
     mode "2560x1440@59.951"
     transform "90"
     position x=3440 y=-500
+
+    layout {
+        default-column-width { proportion 1.0; }
+    }
 }
 
 layout {
     gaps 8
     center-focused-column "never"
+
+    default-column-width { proportion 0.5; }
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+        proportion 1.0
+    }
 
     border {
         width 2
@@ -153,15 +187,13 @@ binds {
     Mod+Left  { focus-column-left; }
     Mod+Right { focus-column-right; }
 
-    // Custom: workspace navigation on Up/Down.
-    Mod+Down  { focus-workspace-down; }
-    Mod+Up    { focus-workspace-up; }
+    // Window focus within column (tabs/stack).
+    Mod+Down  { focus-window-down; }
+    Mod+Up    { focus-window-up; }
 
-    // Keep default HJKL window movement.
-    // Mod+H     { focus-column-left; }
-    // Mod+J     { focus-window-down; }
-    // Mod+K     { focus-window-up; }
-    // Mod+L     { focus-column-right; }
+    // Workspace navigation on Page keys.
+    Mod+Page_Down { focus-workspace-down; }
+    Mod+Page_Up   { focus-workspace-up; }
 
     Mod+Ctrl+Left  { move-column-left; }
     Mod+Ctrl+Down  { move-window-down; }
@@ -170,43 +202,18 @@ binds {
     Mod+Alt+Down { move-column-to-workspace-down; }
     Mod+Alt+Up   { move-column-to-workspace-up; }
 
-    // Mod+Ctrl+H     { move-column-left; }
-    // Mod+Ctrl+J     { move-window-down; }
-    // Mod+Ctrl+K     { move-window-up; }
-    // Mod+Ctrl+L     { move-column-right; }
-
     Mod+Home { focus-column-first; }
     Mod+End  { focus-column-last; }
     Mod+Ctrl+Home { move-column-to-first; }
     Mod+Ctrl+End  { move-column-to-last; }
 
-    // Mod+Shift+H     { focus-monitor-left; }
-    // Mod+Shift+J     { focus-monitor-down; }
-    // Mod+Shift+K     { focus-monitor-up; }
-    // Mod+Shift+L     { focus-monitor-right; }
-
-    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
-    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
-    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
-    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
-    // Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
-    // Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
-    // Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
-    // Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
-
-    // Mod+Page_Down      { focus-workspace-down; }
-    // Mod+Page_Up        { focus-workspace-up; }
-    // Mod+U              { focus-workspace-down; }
-    // Mod+I              { focus-workspace-up; }
-    // Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
-    // Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
-    // Mod+Ctrl+U         { move-column-to-workspace-down; }
-    // Mod+Ctrl+I         { move-column-to-workspace-up; }
+    Mod+Alt+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Alt+Ctrl+Down  { move-column-to-monitor-down; }
+    Mod+Alt+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Alt+Ctrl+Right { move-column-to-monitor-right; }
 
     Mod+Shift+Page_Down { move-workspace-down; }
     Mod+Shift+Page_Up   { move-workspace-up; }
-    // Mod+Shift+U         { move-workspace-down; }
-    // Mod+Shift+I         { move-workspace-up; }
 
     Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
     Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
@@ -267,16 +274,14 @@ binds {
     Mod+Ctrl+underscore { move-column-to-workspace 8; }
     Mod+Ctrl+ccedilla { move-column-to-workspace 9; }
 
-    // Merge/split helpers between adjacent columns.
-    // If there is a neighboring column on the left, merge this window into it.
-    // If already merged, this can expel the focused window back out to the left.
-    Mod+Alt+Left  { consume-or-expel-window-left; }
-    // Same as above, but toward the right neighboring column.
-    Mod+Alt+Right { consume-or-expel-window-right; }
-    // Always merge the focused window into an adjacent column (stack in one column).
-    Mod+Colon  { consume-window-into-column; }
-    // Undo merge: pull the focused window out into its own column.
-    Mod+Shift+Colon { expel-window-from-column; }
+    // Cross-boundary: focus monitor left/right (matches Mod+Alt = cross-boundary pattern).
+    Mod+Alt+Left  { focus-monitor-left; }
+    Mod+Alt+Right { focus-monitor-right; }
+    // Column operations (T-group: Alt = column ops, Ctrl = display mode, Shift = undo).
+    Mod+Alt+T { consume-window-into-column; }
+    Mod+Alt+Shift+T { expel-window-from-column; }
+    Mod+Ctrl+T { set-column-display "tabbed"; }
+    Mod+Ctrl+Shift+T { set-column-display "normal"; }
 
     // Custom: keep your preferred actions.
     Mod+R { switch-preset-column-width; }
@@ -297,9 +302,8 @@ binds {
     Mod+Shift+Left { set-column-width "-10%"; }
     Mod+Shift+Up { set-window-height "-10%"; }
     Mod+Shift+Down { set-window-height "+10%"; }
-    Mod+V       { toggle-window-floating; }
+    Mod+V hotkey-overlay-title="Clipboard: cliphist" { spawn-sh "cliphist list | rofi -dmenu | cliphist decode | wtype -"; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
-    Mod+W { toggle-column-tabbed-display; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
