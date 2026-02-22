@@ -9,12 +9,9 @@
 //   Mod+Shift+Arrow        = Resize (column width L/R, window height U/D)
 //   Mod+Alt+Ctrl+Arrow     = Move column to monitor
 //
-// T-key modifier pattern (column/window management):
-//   Mod+T                  = Toggle floating
-//   Mod+Alt+T              = Consume window into column (stack)
-//   Mod+Alt+Shift+T        = Expel window from column (undo stack)
-//   Mod+Ctrl+T             = Set column to tabbed display
-//   Mod+Ctrl+Shift+T       = Set column to normal display
+// Column/tab keys (matching Hyprland muscle memory):
+//   Mod+J / Mod+Shift+J    = Consume into / expel from column
+//   Mod+G / Mod+Shift+G    = Tabbed display on / off
 //
 // Non-1:1 mappings with Hyprland:
 // - Scratchpad, group, split, opacity toggle have no Niri equivalent.
@@ -279,11 +276,11 @@ binds {
     // Cross-boundary: focus monitor left/right (matches Mod+Alt = cross-boundary pattern).
     Mod+Alt+Left  { focus-monitor-left; }
     Mod+Alt+Right { focus-monitor-right; }
-    // Column operations (T-group: Alt = column ops, Ctrl = display mode, Shift = undo).
-    Mod+Alt+T { consume-window-into-column; }
-    Mod+Alt+Shift+T { expel-window-from-column; }
-    Mod+Ctrl+T { set-column-display "tabbed"; }
-    Mod+Ctrl+Shift+T { set-column-display "normal"; }
+    // Column operations (matching Hyprland: J = togglesplit, G = togglegroup).
+    Mod+J { consume-window-into-column; }
+    Mod+Shift+J { expel-window-from-column; }
+    Mod+G { set-column-display "tabbed"; }
+    Mod+Shift+G { set-column-display "normal"; }
 
     // Custom: keep your preferred actions.
     Mod+R { switch-preset-column-width; }
