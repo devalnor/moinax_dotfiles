@@ -18,6 +18,29 @@ input {
     }
 }
 
+// Monitor layout: three monitors (matching Hyprland three_monitors layout).
+
+// Left Monitor (DP-2) - Vertical
+output "DP-2" {
+    mode "2560x1440@59.951"
+    transform "90"
+    position x=-1440 y=-500
+}
+
+// Center Monitor (DP-3) - Ultrawide, primary
+output "DP-3" {
+    mode "3440x1440@174.962"
+    transform "normal"
+    position x=0 y=0
+}
+
+// Right Monitor (DP-1) - Vertical
+output "DP-1" {
+    mode "2560x1440@59.951"
+    transform "90"
+    position x=3440 y=-500
+}
+
 layout {
     gaps 8
     center-focused-column "never"
