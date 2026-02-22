@@ -1,9 +1,6 @@
 #!/bin/bash
 # Waybar launcher script that detects the compositor and uses the appropriate config
 
-# Wait for the compositor socket to be ready before launching
-sleep 2
-
 # Detect which compositor is running
 if [ "$XDG_CURRENT_DESKTOP" = "Hyprland" ]; then
     COMPOSITOR="hyprland"
