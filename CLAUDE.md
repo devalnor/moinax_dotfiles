@@ -59,3 +59,4 @@ Hypr, Niri, Waybar, Rofi, Mako, Wlogout (Wayland compositors/desktop), Kitty (te
 - Shell scripts use `set -e` and consistent color-coded output helpers (`print_info`, `print_success`, `print_error`, `print_warning`)
 - Package lists are YAML with per-distro keys (`arch:`, `fedora:`)
 - Wayland desktop components (waybar, rofi, mako) are shared between Hyprland and Niri
+- **Keybinding changes**: When modifying keybindings in Hyprland (`home/dot_config/hypr/conf/binds.conf`) or Niri (`home/dot_config/niri/config.kdl.tmpl`), always update `KEYBINDINGS.md` at the repo root to keep the side-by-side reference in sync

@@ -136,12 +136,7 @@ spawn-at-startup "sh" "-c" "wl-paste --type image --watch cliphist store"
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 binds {
-    // Mod-Shift-/, which is usually the same as Mod-?,
-    // shows a list of important hotkeys.
-    // Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+H { show-hotkey-overlay; }
-
-    // Custom app binds.
+    // ── 1. Application Shortcuts ──────────────────────────────────────
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+Space hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show drun"; }
     Mod+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable" "--password-store=basic"; }
@@ -150,86 +145,56 @@ binds {
     Mod+A hotkey-overlay-title="Switch Audio Output" { spawn-sh "~/.local/bin/toggle-audio-switch.sh"; }
     Mod+K hotkey-overlay-title="Switch Keyboard Layout" { spawn-sh "~/.local/bin/niri-switch-layout.sh"; }
     Mod+Tab hotkey-overlay-title="Switch Window: rofi" { spawn-sh "rofi -show window -window-thumbnail"; }
+    Mod+V hotkey-overlay-title="Clipboard: cliphist" { spawn-sh "cliphist list | rofi -dmenu | cliphist decode | wtype -"; }
+    Mod+C hotkey-overlay-title="Calculator: gnome-calculator" { spawn "gnome-calculator"; }
+    Mod+Shift+P hotkey-overlay-title="Color Picker: hyprpicker" { spawn "hyprpicker"; }
+    Mod+R hotkey-overlay-title="Theme Selector: rofi" { spawn "rofi-theme-selector"; }
+    Mod+M hotkey-overlay-title="Toggle Monitor Layout" { spawn-sh "~/.config/hypr/scripts/toggle-monitor-layout.sh"; }
 
-    // Keep default launcher too.
-    Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
-    Mod+L hotkey-overlay-title="Open Power Menu: rofi" { spawn-sh "rofi -show powermenu -modi 'powermenu:rofi-power-menu'"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
-
-    // Reload configs (matching Hyprland Mod+Shift+B/W/M/R)
-    Mod+Shift+B hotkey-overlay-title="Reload Waybar" { spawn-sh "killall -9 waybar; ~/.config/waybar/launch-waybar.sh &"; }
-    Mod+Shift+W hotkey-overlay-title="Reload Wallpaper" { spawn-sh "killall swaybg; swaybg -m fill -i ~/Wallpapers/colorful.jpg &"; }
-    Mod+Shift+M hotkey-overlay-title="Reload Mako" { spawn-sh "killall mako; mako &"; }
-    Mod+Shift+R hotkey-overlay-title="Reload Niri Config" { spawn-sh "niri msg action load-config-file && notify-send -u low 'Niri' 'Config reloaded'"; }
-
-    // Example volume keys mappings for PipeWire & WirePlumber.
-    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
-    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
-    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
-
-    // Media keys
-    XF86AudioPlay        allow-when-locked=true { spawn-sh "playerctl play-pause"; }
-    XF86AudioStop        allow-when-locked=true { spawn-sh "playerctl stop"; }
-    XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
-    XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
-
-    // Brightness keys
-    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
-
-    // Overview
-    Mod+O repeat=false { toggle-overview; }
-
+    // ── 2. Window Management ──────────────────────────────────────────
     Mod+Q repeat=false { close-window; }
+    Mod+T { toggle-window-floating; }
+    Mod+F { fullscreen-window; }
+    Mod+Alt+F { maximize-window-to-edges; }
+    Mod+Alt+M { maximize-column; }
+    Mod+Alt+C { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+    Mod+O repeat=false { toggle-overview; }
+    Mod+W { switch-preset-column-width; }
+    Mod+Alt+W { switch-preset-window-height; }
+    Mod+Ctrl+W { reset-window-height; }
+    Mod+P { switch-focus-between-floating-and-tiling; }
 
+    // ── 3. Focus Navigation ──────────────────────────────────────────
     Mod+Left  { focus-column-left; }
     Mod+Right { focus-column-right; }
-
-    // Window focus within column (tabs/stack).
     Mod+Down  { focus-window-down; }
     Mod+Up    { focus-window-up; }
-
-    // Workspace navigation on Page keys.
-    Mod+Page_Down { focus-workspace-down; }
-    Mod+Page_Up   { focus-workspace-up; }
-
-    Mod+Ctrl+Left  { move-column-left; }
-    Mod+Ctrl+Down  { move-window-down; }
-    Mod+Ctrl+Up    { move-window-up; }
-    Mod+Ctrl+Right { move-column-right; }
-    Mod+Alt+Down { move-column-to-workspace-down; }
-    Mod+Alt+Up   { move-column-to-workspace-up; }
-
     Mod+Home { focus-column-first; }
     Mod+End  { focus-column-last; }
+
+    // ── 4. Move Window / Column ──────────────────────────────────────
+    Mod+Ctrl+Left  { move-column-left; }
+    Mod+Ctrl+Right { move-column-right; }
+    Mod+Ctrl+Up    { move-window-up; }
+    Mod+Ctrl+Down  { move-window-down; }
     Mod+Ctrl+Home { move-column-to-first; }
     Mod+Ctrl+End  { move-column-to-last; }
 
-    Mod+Alt+Ctrl+Left  { move-column-to-monitor-left; }
-    Mod+Alt+Ctrl+Down  { move-column-to-monitor-down; }
-    Mod+Alt+Ctrl+Up    { move-column-to-monitor-up; }
-    Mod+Alt+Ctrl+Right { move-column-to-monitor-right; }
+    // ── 5. Resize ────────────────────────────────────────────────────
+    Mod+Shift+Left  { set-column-width "-10%"; }
+    Mod+Shift+Right { set-column-width "+10%"; }
+    Mod+Shift+Up    { set-window-height "-10%"; }
+    Mod+Shift+Down  { set-window-height "+10%"; }
 
-    Mod+Shift+Page_Down { move-workspace-down; }
-    Mod+Shift+Page_Up   { move-workspace-up; }
+    // ── 6. Column / Group Operations ─────────────────────────────────
+    Mod+J { consume-window-into-column; }
+    Mod+Shift+J { expel-window-from-column; }
+    Mod+G { set-column-display "tabbed"; }
+    Mod+Shift+G { set-column-display "normal"; }
 
-    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
-    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
-    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
-    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
-
-    Mod+WheelScrollRight      { focus-column-right; }
-    Mod+WheelScrollLeft       { focus-column-left; }
-    Mod+Ctrl+WheelScrollRight { move-column-right; }
-    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
-
-    Mod+Shift+WheelScrollDown      { focus-column-right; }
-    Mod+Shift+WheelScrollUp        { focus-column-left; }
-    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
-    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
-
-    // Switch workspaces - QWERTY
+    // ── 7. Workspace Navigation ──────────────────────────────────────
+    // QWERTY
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
@@ -237,10 +202,7 @@ binds {
     Mod+5 { focus-workspace 5; }
     Mod+6 { focus-workspace 6; }
     Mod+7 { focus-workspace 7; }
-    Mod+8 { focus-workspace 8; }
-    Mod+9 { focus-workspace 9; }
-
-    // Switch workspaces - AZERTY
+    // AZERTY
     Mod+ampersand { focus-workspace 1; }
     Mod+eacute { focus-workspace 2; }
     Mod+quotedbl { focus-workspace 3; }
@@ -248,68 +210,83 @@ binds {
     Mod+parenleft { focus-workspace 5; }
     Mod+minus { focus-workspace 6; }
     Mod+egrave { focus-workspace 7; }
-    Mod+underscore { focus-workspace 8; }
-    Mod+ccedilla { focus-workspace 9; }
+    // Directional
+    Mod+Page_Up   { focus-workspace-up; }
+    Mod+Page_Down { focus-workspace-down; }
 
-    // Move window to workspace - QWERTY
-    Mod+Ctrl+1 { move-column-to-workspace 1; }
-    Mod+Ctrl+2 { move-column-to-workspace 2; }
-    Mod+Ctrl+3 { move-column-to-workspace 3; }
-    Mod+Ctrl+4 { move-column-to-workspace 4; }
-    Mod+Ctrl+5 { move-column-to-workspace 5; }
-    Mod+Ctrl+6 { move-column-to-workspace 6; }
-    Mod+Ctrl+7 { move-column-to-workspace 7; }
-    Mod+Ctrl+8 { move-column-to-workspace 8; }
-    Mod+Ctrl+9 { move-column-to-workspace 9; }
+    // ── 8. Move to Workspace ─────────────────────────────────────────
+    // QWERTY
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    // AZERTY
+    Mod+Shift+ampersand { move-column-to-workspace 1; }
+    Mod+Shift+eacute { move-column-to-workspace 2; }
+    Mod+Shift+quotedbl { move-column-to-workspace 3; }
+    Mod+Shift+apostrophe { move-column-to-workspace 4; }
+    Mod+Shift+parenleft { move-column-to-workspace 5; }
+    Mod+Shift+minus { move-column-to-workspace 6; }
+    Mod+Shift+egrave { move-column-to-workspace 7; }
+    // Directional
+    Mod+Shift+Page_Up   { move-column-to-workspace-up; }
+    Mod+Shift+Page_Down { move-column-to-workspace-down; }
+    Mod+Alt+Page_Up     { move-workspace-up; }
+    Mod+Alt+Page_Down   { move-workspace-down; }
 
-    // Move window to workspace - AZERTY
-    Mod+Ctrl+ampersand { move-column-to-workspace 1; }
-    Mod+Ctrl+eacute { move-column-to-workspace 2; }
-    Mod+Ctrl+quotedbl { move-column-to-workspace 3; }
-    Mod+Ctrl+apostrophe { move-column-to-workspace 4; }
-    Mod+Ctrl+parenleft { move-column-to-workspace 5; }
-    Mod+Ctrl+minus { move-column-to-workspace 6; }
-    Mod+Ctrl+egrave { move-column-to-workspace 7; }
-    Mod+Ctrl+underscore { move-column-to-workspace 8; }
-    Mod+Ctrl+ccedilla { move-column-to-workspace 9; }
-
-    // Cross-boundary: focus monitor left/right (matches Mod+Alt = cross-boundary pattern).
+    // ── 9. Monitor Navigation ────────────────────────────────────────
     Mod+Alt+Left  { focus-monitor-left; }
     Mod+Alt+Right { focus-monitor-right; }
-    // Column operations (matching Hyprland: J = togglesplit, G = togglegroup).
-    Mod+J { consume-window-into-column; }
-    Mod+Shift+J { expel-window-from-column; }
-    Mod+G { set-column-display "tabbed"; }
-    Mod+Shift+G { set-column-display "normal"; }
+    Mod+Alt+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Alt+Ctrl+Right { move-column-to-monitor-right; }
+    Mod+Alt+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Alt+Ctrl+Down  { move-column-to-monitor-down; }
 
-    // Custom: keep your preferred actions.
-    Mod+R { switch-preset-column-width; }
-    Mod+Alt+R { switch-preset-window-height; }
-    Mod+Ctrl+R { reset-window-height; }
-    Mod+Alt+F { fullscreen-window; }
-    Mod+F { maximize-window-to-edges; }
-    Mod+T { toggle-window-floating; }
+    // ── 11. Reload Configs ───────────────────────────────────────────
+    Mod+Shift+B hotkey-overlay-title="Reload Waybar" { spawn-sh "killall -9 waybar; ~/.config/waybar/launch-waybar.sh &"; }
+    Mod+Shift+W hotkey-overlay-title="Reload Wallpaper" { spawn-sh "killall swaybg; swaybg -m fill -i ~/Wallpapers/colorful.jpg &"; }
+    Mod+Shift+M hotkey-overlay-title="Reload Mako" { spawn-sh "killall mako; mako &"; }
+    Mod+Shift+R hotkey-overlay-title="Reload Niri Config" { spawn-sh "niri msg action load-config-file && notify-send -u low 'Niri' 'Config reloaded'"; }
 
-    // Keep standard alternatives too.
-    Mod+M { maximize-window-to-edges; }
-    Mod+Alt+M { maximize-column; }
-    Mod+C { center-column; }
-    Mod+Ctrl+C { center-visible-columns; }
+    // ── 12. Screenshots ──────────────────────────────────────────────
+    Print { screenshot-screen; }
+    Mod+Shift+Print { screenshot; }
 
-    // Resize with arrow keys (Minus/Equal removed to avoid AZERTY workspace conflicts)
-    Mod+Shift+Right { set-column-width "+10%"; }
-    Mod+Shift+Left { set-column-width "-10%"; }
-    Mod+Shift+Up { set-window-height "-10%"; }
-    Mod+Shift+Down { set-window-height "+10%"; }
-    Mod+V hotkey-overlay-title="Clipboard: cliphist" { spawn-sh "cliphist list | rofi -dmenu | cliphist decode | wtype -"; }
-    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    // ── 13. Media & Volume ───────────────────────────────────────────
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86AudioPlay        allow-when-locked=true { spawn-sh "playerctl play-pause"; }
+    XF86AudioStop        allow-when-locked=true { spawn-sh "playerctl stop"; }
+    XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
+    XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
 
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
-
-    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    // ── 14. Session & System ─────────────────────────────────────────
     Mod+Shift+E { quit; }
     Ctrl+Alt+Delete { quit; }
-    Mod+Shift+P { power-off-monitors; }
+    Mod+L hotkey-overlay-title="Open Power Menu: rofi" { spawn-sh "rofi -show powermenu -modi 'powermenu:rofi-power-menu'"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
+    Mod+Alt+P { power-off-monitors; }
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+H { show-hotkey-overlay; }
+
+    // ── 15. Mouse & Scroll ───────────────────────────────────────────
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
+    Mod+WheelScrollRight      { focus-column-right; }
+    Mod+WheelScrollLeft       { focus-column-left; }
+    Mod+Ctrl+WheelScrollRight { move-column-right; }
+    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
+    Mod+Shift+WheelScrollDown      { focus-column-right; }
+    Mod+Shift+WheelScrollUp        { focus-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
 }
