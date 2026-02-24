@@ -643,7 +643,7 @@ setup_ssh() {
     fi
 }
 
-# Setup SDDM wallpaper
+# Setup SDDM theme
 setup_sddm() {
     # Only run if a compositor group was selected
     if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]] && ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
@@ -654,35 +654,25 @@ setup_sddm() {
         return
     fi
 
-    print_header "SDDM Wallpaper Setup"
+    print_header "SDDM Theme Setup"
 
-    local wallpaper="$HOME/Wallpapers/colorful.jpg"
-    if [ ! -f "$wallpaper" ]; then
-        print_warning "Wallpaper not found at $wallpaper, skipping SDDM setup"
+    local theme_src="$DOTFILES_DIR/home/dot_themes/Dracula/kde/sddm/Dracula"
+    if [ ! -d "$theme_src" ]; then
+        print_warning "Dracula SDDM theme not found in dotfiles, skipping"
         return
     fi
 
-    # Detect active SDDM theme
-    local theme
-    theme=$(grep -rh "^Current=" /etc/sddm.conf /etc/sddm.conf.d/ 2>/dev/null | head -1 | cut -d= -f2 | tr -d '[:space:]')
-    if [ -z "$theme" ]; then
-        theme=$(ls /usr/share/sddm/themes/ 2>/dev/null | head -1)
-    fi
+    print_info "Installing Dracula SDDM theme..."
+    sudo cp -r "$theme_src" /usr/share/sddm/themes/Dracula/
 
-    if [ -z "$theme" ] || [ ! -d "/usr/share/sddm/themes/$theme" ]; then
-        print_warning "Could not detect SDDM theme, skipping wallpaper configuration"
-        return
-    fi
-
-    print_info "Configuring SDDM theme '$theme' with wallpaper..."
-
-    sudo cp "$wallpaper" /usr/share/backgrounds/moinax-colorful.jpg
-    sudo tee "/usr/share/sddm/themes/$theme/theme.conf.user" > /dev/null <<EOF
-[General]
-background=/usr/share/backgrounds/moinax-colorful.jpg
+    print_info "Setting Dracula as active SDDM theme..."
+    sudo mkdir -p /etc/sddm.conf.d
+    sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
+[Theme]
+Current=Dracula
 EOF
 
-    print_success "SDDM wallpaper configured"
+    print_success "SDDM theme configured"
 }
 
 # Setup shell
