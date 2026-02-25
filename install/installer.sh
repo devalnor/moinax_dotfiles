@@ -147,9 +147,8 @@ select_groups() {
     fi
 }
 
-# Select package install mode per group
+# Select package install mode per group (two-pass: default all, optionally customize)
 select_group_packages() {
-    # Reinitialize as associative arrays to preserve string-key indexing.
     unset GROUP_PACKAGE_MODE GROUP_CUSTOM_PACKAGE_LIST
     declare -gA GROUP_PACKAGE_MODE=()
     declare -gA GROUP_CUSTOM_PACKAGE_LIST=()
@@ -158,57 +157,74 @@ select_group_packages() {
         return 0
     fi
 
+    # Default all groups to "all packages"
+    for group in "${SELECTED_GROUP_NAMES[@]}"; do
+        GROUP_PACKAGE_MODE["$group"]="all"
+    done
+
+    # Skip customize prompt if only 1 group selected
+    if [ ${#SELECTED_GROUP_NAMES[@]} -le 1 ]; then
+        return 0
+    fi
+
+    # Ask which groups to customize (single multi-select screen)
     echo ""
-    gum style --foreground 212 --bold "Select packages per group:"
+    gum style --foreground 212 --bold "Customize packages?"
+    echo ""
+    print_info "By default, all packages in each group are installed."
+    print_info "Select groups below to pick individual packages instead."
     echo ""
 
+    local customize_labels=()
+    local -A clabel_to_group=()
     for group in "${SELECTED_GROUP_NAMES[@]}"; do
         local group_file="$DOTFILES_DIR/packages/groups/$group.yaml"
-        local all_packages=()
-
-        if [ ! -f "$group_file" ]; then
-            print_warning "Group file not found while selecting packages: $group_file"
-            GROUP_PACKAGE_MODE["$group"]="skip"
-            continue
+        local icon=""
+        if command_exists yq; then
+            icon=$(yq -r '.icon // ""' "$group_file")
+        else
+            icon=$(grep "^icon:" "$group_file" | sed 's/icon:[[:space:]]*//')
         fi
+        local label="$icon $group"
+        customize_labels+=("$label")
+        clabel_to_group["$label"]="$group"
+    done
 
+    local selected_custom
+    selected_custom=$(printf '%s\n' "${customize_labels[@]}" \
+        | gum choose --no-limit --header "Space to select, Enter to confirm (or Enter with none to install all)") || true
+
+    # Process customized groups
+    local line
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        local group="${clabel_to_group[$line]}"
+        [ -z "$group" ] && continue
+
+        local group_file="$DOTFILES_DIR/packages/groups/$group.yaml"
+        local all_packages=()
         while IFS= read -r pkg; do
             [ -n "$pkg" ] && all_packages+=("$pkg")
         done < <(parse_packages "$group_file" "$DISTRO")
 
         if [ ${#all_packages[@]} -eq 0 ]; then
-            print_warning "No $DISTRO packages found for group '$group'; skipping package install for this group."
+            print_warning "No $DISTRO packages for '$group'; skipping."
             GROUP_PACKAGE_MODE["$group"]="skip"
             continue
         fi
 
-        local package_mode
-        package_mode=$(printf '%s\n' \
-            "All packages" \
-            "Pick packages individually" \
-            "Skip group packages (dotfiles/services only)" \
-            | gum choose --header "Group: $group")
+        local selected_packages
+        selected_packages=$(printf '%s\n' "${all_packages[@]}" \
+            | gum choose --no-limit --header "Select packages for '$group'")
 
-        case "$package_mode" in
-            "All packages")
-                GROUP_PACKAGE_MODE["$group"]="all"
-                ;;
-            "Pick packages individually")
-                local selected_packages
-                selected_packages=$(printf '%s\n' "${all_packages[@]}" | gum choose --no-limit --header "Select packages for group '$group'")
-                if [ -z "$selected_packages" ]; then
-                    GROUP_PACKAGE_MODE["$group"]="skip"
-                    print_warning "No packages selected for '$group'; package install skipped for this group."
-                else
-                    GROUP_PACKAGE_MODE["$group"]="custom"
-                    GROUP_CUSTOM_PACKAGE_LIST["$group"]="$selected_packages"
-                fi
-                ;;
-            *)
-                GROUP_PACKAGE_MODE["$group"]="skip"
-                ;;
-        esac
-    done
+        if [ -z "$selected_packages" ]; then
+            GROUP_PACKAGE_MODE["$group"]="skip"
+            print_warning "No packages selected for '$group'; only dotfiles/services will apply."
+        else
+            GROUP_PACKAGE_MODE["$group"]="custom"
+            GROUP_CUSTOM_PACKAGE_LIST["$group"]="$selected_packages"
+        fi
+    done <<< "$selected_custom"
 }
 
 # Confirm installation
