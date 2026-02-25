@@ -595,8 +595,8 @@ EOF
     local file_count=$(find "$source_dir" -type f | wc -l)
     print_info "Processing ~$file_count files..."
     
-    # Run chezmoi (without --verbose to avoid noisy diffs)
-    if chezmoi init --source="$source_dir" --apply; then
+    # Run chezmoi (--force to skip overwrite prompts, e.g. rofi themes already on disk)
+    if chezmoi init --source="$source_dir" --apply --force; then
         print_success "Dotfiles applied successfully"
     else
         print_warning "Chezmoi completed with some warnings"
