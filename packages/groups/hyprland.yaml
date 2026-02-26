@@ -19,6 +19,7 @@ packages:
   arch:
     # Display manager
     - sddm
+    - weston
 
     # Hyprland core
     - hyprland

@@ -659,7 +659,7 @@ setup_ssh() {
     fi
 }
 
-# Setup SDDM wallpaper
+# Setup SDDM (wallpaper, Wayland compositor, display manager)
 setup_sddm() {
     # Only run if a compositor group was selected
     if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]] && ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
@@ -670,34 +670,111 @@ setup_sddm() {
         return
     fi
 
-    print_header "SDDM Wallpaper Setup"
+    print_header "SDDM Setup"
 
+    # --- Wallpaper ---
     local wallpaper="$DOTFILES_DIR/home/Wallpapers/colorful.jpg"
-    if [ ! -f "$wallpaper" ]; then
-        print_warning "Wallpaper not found, skipping SDDM setup"
-        return
-    fi
-
-    # Detect active SDDM theme
     local theme
     theme=$(grep -rh "^Current=" /etc/sddm.conf /etc/sddm.conf.d/ 2>/dev/null | tail -1 | cut -d= -f2 | tr -d '[:space:]')
     if [ -z "$theme" ]; then
         theme=$(ls /usr/share/sddm/themes/ 2>/dev/null | head -1)
     fi
 
-    if [ -z "$theme" ] || [ ! -d "/usr/share/sddm/themes/$theme" ]; then
-        print_warning "Could not detect SDDM theme, skipping wallpaper setup"
-        return
-    fi
-
-    print_info "Setting SDDM wallpaper on '$theme' theme..."
-    sudo cp "$wallpaper" "/usr/share/sddm/themes/$theme/wallpaper.jpg"
-    sudo tee "/usr/share/sddm/themes/$theme/theme.conf.user" > /dev/null <<EOF
+    if [ -n "$theme" ] && [ -d "/usr/share/sddm/themes/$theme" ] && [ -f "$wallpaper" ]; then
+        print_info "Setting wallpaper on '$theme' theme..."
+        sudo cp "$wallpaper" "/usr/share/sddm/themes/$theme/wallpaper.jpg"
+        sudo tee "/usr/share/sddm/themes/$theme/theme.conf.user" > /dev/null <<EOF
 [General]
 background=/usr/share/sddm/themes/$theme/wallpaper.jpg
 EOF
+    fi
 
-    print_success "SDDM wallpaper configured"
+    # --- SDDM configuration (theme + Wayland) ---
+    sudo mkdir -p /etc/sddm.conf.d
+    sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
+[Theme]
+Current=${theme:-breeze}
+
+[General]
+DisplayServer=wayland
+
+[Wayland]
+CompositorCommand=weston --shell=kiosk -c /etc/sddm/weston.ini
+EOF
+
+    # --- Weston config for Wayland greeter ---
+    sudo mkdir -p /etc/sddm
+
+    # Detect keyboard layout from localectl, fallback to "us"
+    local kb_layout
+    kb_layout=$(localectl status 2>/dev/null | grep "X11 Layout" | awk '{print $3}')
+    kb_layout=${kb_layout:-us}
+
+    # Build weston.ini with keyboard layout and monitor rotation
+    local weston_cfg
+    weston_cfg="[core]
+shell=kiosk-shell.so
+
+[keyboard]
+keymap_layout=${kb_layout}"
+
+    # Detect connected monitors and their rotation via xrandr
+    # Normal (non-rotated) monitors are listed first so weston places the greeter on the horizontal screen
+    if command -v xrandr &>/dev/null; then
+        local normal_outputs="" rotated_outputs=""
+        while IFS= read -r line; do
+            local output_name rotation mode transform
+            output_name=$(echo "$line" | awk '{print $1}')
+            # Extract resolution from the preferred/current mode line
+            mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
+            # Check if rotation keyword is present before the parenthesized list of supported rotations
+            rotation=$(echo "$line" | sed 's/(.*//' | grep -oE '\b(left|right|inverted)\b' || true)
+            case "$rotation" in
+                left)     transform="rotate-90" ;;
+                right)    transform="rotate-270" ;;
+                inverted) transform="rotate-180" ;;
+                *)        transform="normal" ;;
+            esac
+            if [ -n "$output_name" ] && [ -n "$mode" ]; then
+                local entry="
+
+[output]
+name=${output_name}
+mode=${mode}
+transform=${transform}"
+                if [ "$transform" = "normal" ]; then
+                    normal_outputs="${normal_outputs}${entry}"
+                else
+                    rotated_outputs="${rotated_outputs}${entry}"
+                fi
+            fi
+        done < <(xrandr --query 2>/dev/null | grep " connected ")
+        weston_cfg="${weston_cfg}${normal_outputs}${rotated_outputs}"
+    fi
+
+    echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
+
+    # --- Enable SDDM as display manager ---
+    local current_dm
+    current_dm=$(basename "$(readlink /etc/systemd/system/display-manager.service 2>/dev/null)" .service 2>/dev/null)
+    if [ "$current_dm" != "sddm" ]; then
+        echo ""
+        print_info "SDDM is not your current display manager (currently: ${current_dm:-none})"
+        print_info "The login screen wallpaper requires SDDM to be active"
+        if gum confirm "Switch to SDDM as your display manager?"; then
+            if [ -n "$current_dm" ]; then
+                print_info "Disabling $current_dm..."
+                sudo systemctl disable "$current_dm" 2>/dev/null
+            fi
+            print_info "Enabling SDDM..."
+            sudo systemctl enable sddm
+            print_success "SDDM enabled (active after reboot)"
+        else
+            print_warning "SDDM not enabled — login screen wallpaper will not be visible"
+        fi
+    fi
+
+    print_success "SDDM configured"
 }
 
 # Setup shell
