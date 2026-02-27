@@ -718,38 +718,36 @@ shell=kiosk-shell.so
 [keyboard]
 keymap_layout=${kb_layout}"
 
-    # Detect connected monitors and their rotation via xrandr
-    # Normal (non-rotated) monitors are listed first so weston places the greeter on the horizontal screen
+    # Detect connected monitors via xrandr
+    # Only the non-rotated (horizontal) monitor is enabled for the greeter;
+    # rotated monitors are disabled (mode=off) so the greeter lands on the right screen.
+    # They turn back on once the user session compositor (Hyprland/Niri) starts.
     if command -v xrandr &>/dev/null; then
-        local normal_outputs="" rotated_outputs=""
         while IFS= read -r line; do
             local output_name rotation mode transform
             output_name=$(echo "$line" | awk '{print $1}')
-            # Extract resolution from the preferred/current mode line
-            mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
             # Check if rotation keyword is present before the parenthesized list of supported rotations
             rotation=$(echo "$line" | sed 's/(.*//' | grep -oE '\b(left|right|inverted)\b' || true)
-            case "$rotation" in
-                left)     transform="rotate-90" ;;
-                right)    transform="rotate-270" ;;
-                inverted) transform="rotate-180" ;;
-                *)        transform="normal" ;;
-            esac
-            if [ -n "$output_name" ] && [ -n "$mode" ]; then
-                local entry="
+            if [ -n "$rotation" ]; then
+                # Rotated monitor — disable it during login screen
+                weston_cfg="${weston_cfg}
+
+[output]
+name=${output_name}
+mode=off"
+            else
+                # Non-rotated monitor — enable with native resolution
+                mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
+                if [ -n "$output_name" ] && [ -n "$mode" ]; then
+                    weston_cfg="${weston_cfg}
 
 [output]
 name=${output_name}
 mode=${mode}
-transform=${transform}"
-                if [ "$transform" = "normal" ]; then
-                    normal_outputs="${normal_outputs}${entry}"
-                else
-                    rotated_outputs="${rotated_outputs}${entry}"
+transform=normal"
                 fi
             fi
         done < <(xrandr --query 2>/dev/null | grep " connected ")
-        weston_cfg="${weston_cfg}${normal_outputs}${rotated_outputs}"
     fi
 
     echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
