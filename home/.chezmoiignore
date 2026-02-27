@@ -37,6 +37,8 @@ dot_config/rofi
 dot_config/rofi/**
 dot_config/mako
 dot_config/mako/**
+dot_config/wlogout
+dot_config/wlogout/**
 dot_local/share/rofi
 dot_local/share/rofi/**
 {{- end }}

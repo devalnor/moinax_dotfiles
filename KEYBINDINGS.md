@@ -203,8 +203,10 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Power menu (rofi) | `Mod+L` | `Mod+L` | |
-| Lock screen (hyprlock) | — | `Super+Alt+L` | Niri only (Hyprland lock is commented out) |
+| Power menu (wlogout) | `Mod+L` | `Mod+L` | Full-screen overlay with 6 buttons |
+| Power menu (rofi) | `Mod+Shift+L` | `Mod+Shift+L` | Text-based fallback |
+| Lock screen | `Mod+Alt+L` | `Mod+Alt+L` | `loginctl lock-session` |
+| Logout | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `compositor-logout.sh` |
 | Quit compositor | `Mod+Shift+Q` | `Mod+Shift+E` | **Different key** |
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |

@@ -270,8 +270,10 @@ binds {
     // ── 14. Session & System ─────────────────────────────────────────
     Mod+Shift+E { quit; }
     Ctrl+Alt+Delete { quit; }
-    Mod+L hotkey-overlay-title="Open Power Menu: rofi" { spawn-sh "rofi -show powermenu -modi 'powermenu:rofi-power-menu'"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
+    Mod+L hotkey-overlay-title="Power Menu: wlogout" { spawn "wlogout"; }
+    Mod+Shift+L hotkey-overlay-title="Power Menu: rofi" { spawn-sh "rofi -show powermenu -modi 'powermenu:rofi-power-menu'"; }
+    Mod+Alt+L hotkey-overlay-title="Lock Screen" { spawn-sh "loginctl lock-session"; }
+    Mod+Ctrl+L hotkey-overlay-title="Logout" { spawn-sh "~/.local/bin/compositor-logout.sh"; }
     Mod+Alt+P { power-off-monitors; }
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
     Mod+H { show-hotkey-overlay; }
