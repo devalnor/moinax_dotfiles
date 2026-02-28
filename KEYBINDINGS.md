@@ -84,7 +84,7 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Consume into column | — | `Mod+J` | Niri only; Hyprland uses `Mod+J` for toggle split |
+| Consume into column | — | `Mod+J` | Niri only; Hyprland uses `Mod+J` for toggle split (layoutmsg togglesplit) |
 | Expel from column | — | `Mod+Shift+J` | Niri only |
 | Toggle tabbed display | — | `Mod+G` | Niri: set-column-display "tabbed" |
 | Normal display | — | `Mod+Shift+G` | Niri: set-column-display "normal" |
