@@ -63,7 +63,7 @@ packages:
 
     # Other Wayland tools
     - inotify-tools
-    
+
     # Network management
     - networkmanager
     - network-manager-applet
