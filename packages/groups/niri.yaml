@@ -17,6 +17,36 @@ services:
   - bluetooth
   - NetworkManager
 
+descriptions:
+  sddm: Display manager (login screen)
+  weston: Wayland compositor for SDDM greeter
+  niri: Scrollable tiling Wayland compositor
+  xwayland-satellite: XWayland support for Niri
+  waybar: Highly customizable status bar
+  rofi-wayland: Application launcher (Wayland fork)
+  rofimoji: Emoji picker for rofi
+  mako: Lightweight notification daemon
+  wlogout: Logout menu for Wayland
+  cliphist: Clipboard history manager
+  wl-clipboard: Wayland clipboard utilities
+  wtype: Wayland keyboard input simulator
+  hyprlock: Screen locker
+  swayidle: Idle management daemon
+  swaybg: Wallpaper setter for Wayland
+  nwg-look: GTK theme configurator
+  polkit-kde-agent: Polkit authentication agent
+  pavucontrol: PulseAudio volume control GUI
+  blueman: Bluetooth device manager
+  bluez-utils: Bluetooth utilities (Arch)
+  bluez: Bluetooth protocol stack (Fedora)
+  inotify-tools: File system event monitor
+  cmatrix: Terminal matrix rain animation
+  networkmanager: Network connection manager (Arch)
+  NetworkManager: Network connection manager (Fedora)
+  network-manager-applet: NetworkManager tray applet
+  nm-connection-editor: NetworkManager connection editor
+  plasma-nm: KDE network management widget
+
 packages:
   arch:
     # Display manager

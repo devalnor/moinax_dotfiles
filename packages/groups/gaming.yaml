@@ -9,6 +9,12 @@ dotfiles: []
 # No services
 services: []
 
+descriptions:
+  steam: Valve game distribution platform
+  discord: Voice and text chat for gamers
+  mangohud: FPS and performance overlay
+  gamemode: Game performance optimization daemon
+
 packages:
   arch:
     - steam

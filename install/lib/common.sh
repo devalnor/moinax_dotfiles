@@ -85,6 +85,42 @@ parse_packages() {
     fi
 }
 
+# Parse YAML descriptions map and output "package=description" lines
+# Usage: parse_descriptions "file.yaml"
+parse_descriptions() {
+    local file="$1"
+
+    if command_exists yq; then
+        yq -r '.descriptions // {} | to_entries[] | .key + "=" + .value' "$file" 2>/dev/null
+    else
+        # Fallback: simple grep-based parsing
+        local in_section=false
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^descriptions:[[:space:]]*$ ]]; then
+                in_section=true
+                continue
+            fi
+            if $in_section; then
+                # Exit when hitting another top-level key
+                if [[ "$line" =~ ^[a-z] ]]; then
+                    break
+                fi
+                # Match "  package_name: some description"
+                if [[ "$line" =~ ^[[:space:]]+([^:]+):[[:space:]]+(.+)$ ]]; then
+                    local pkg="${BASH_REMATCH[1]}"
+                    local desc="${BASH_REMATCH[2]}"
+                    # Strip surrounding quotes if present
+                    desc="${desc#\"}"
+                    desc="${desc%\"}"
+                    desc="${desc#\'}"
+                    desc="${desc%\'}"
+                    echo "${pkg}=${desc}"
+                fi
+            fi
+        done < "$file"
+    fi
+}
+
 # Parse YAML file and extract dotfiles list
 parse_dotfiles() {
     local file="$1"

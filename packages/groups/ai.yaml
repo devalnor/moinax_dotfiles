@@ -7,6 +7,11 @@ icon: 🤖
 dotfiles:
   - dot_config/hyprvoice
 
+descriptions:
+  hyprvoice-bin: Speech-to-text dictation tool (Arch AUR)
+  whisper.cpp: Local speech recognition engine (Arch)
+  whisper-cpp: Local speech recognition engine (Fedora)
+
 packages:
   arch:
     # Dictation (speech-to-text)

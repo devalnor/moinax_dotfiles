@@ -16,6 +16,34 @@ dotfiles:
 services:
   - bluetooth
 
+descriptions:
+  sddm: Display manager (login screen)
+  weston: Wayland compositor for SDDM greeter
+  hyprland: Dynamic tiling Wayland compositor
+  hypridle: Idle daemon for Hyprland
+  hyprlock: Screen locker for Hyprland
+  hyprpaper: Wallpaper manager for Hyprland
+  hyprpicker: Color picker for Hyprland
+  hyprpolkitagent: Polkit authentication agent
+  hyprshot: Screenshot tool for Hyprland
+  waybar: Highly customizable status bar
+  rofi-wayland: Application launcher (Wayland fork)
+  rofimoji: Emoji picker for rofi
+  mako: Lightweight notification daemon
+  wlogout: Logout menu for Wayland
+  cliphist: Clipboard history manager
+  wl-clipboard: Wayland clipboard utilities
+  wtype: Wayland keyboard input simulator
+  nwg-look: GTK theme configurator
+  pavucontrol: PulseAudio volume control GUI
+  blueman: Bluetooth device manager
+  bluez-utils: Bluetooth utilities (Arch)
+  bluez: Bluetooth protocol stack (Fedora)
+  xorg-xhost: X server access control (Arch)
+  xorg-x11-server-utils: X server utilities (Fedora)
+  inotify-tools: File system event monitor
+  cmatrix: Terminal matrix rain animation
+
 packages:
   arch:
     # Display manager

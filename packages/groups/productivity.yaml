@@ -12,6 +12,21 @@ dotfiles:
 # No services
 services: []
 
+descriptions:
+  dolphin: KDE file manager
+  ffmpegthumbnailer: Video thumbnail generator
+  kdegraphics-thumbnailers: Image/PDF thumbnail plugins
+  timeshift: System restore / snapshot tool
+  timeshift-autosnap: Auto-snapshot before upgrades (Arch)
+  grub-btrfs: GRUB entries for Btrfs snapshots (Arch)
+  slack-desktop: Team communication app (Arch AUR)
+  slack: Team communication app (Fedora)
+  google-chrome: Google Chrome web browser (Arch AUR)
+  google-chrome-stable: Google Chrome web browser (Fedora)
+  p7zip: 7-Zip archive tool
+  unrar: RAR archive extractor
+  unzip: ZIP archive extractor
+
 packages:
   arch:
     # File managers

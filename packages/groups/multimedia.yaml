@@ -9,6 +9,15 @@ dotfiles: []
 # No services
 services: []
 
+descriptions:
+  mpv: Lightweight media player
+  obs-studio: Streaming and screen recording
+  ffmpeg: Audio/video encoding framework
+  imagemagick: Image manipulation toolkit
+  ImageMagick: Image manipulation toolkit (Fedora)
+  gimp: GNU Image Manipulation Program
+  inkscape: Vector graphics editor
+
 packages:
   arch:
     - mpv
