@@ -12,7 +12,11 @@ fi
 if ! hyprvoice status &>/dev/null; then
     hyprvoice serve &
     disown
-    sleep 0.5
+    # Wait up to 5s for daemon to be ready
+    for _ in $(seq 1 10); do
+        sleep 0.5
+        hyprvoice status &>/dev/null && break
+    done
 fi
 
 # Toggle recording on/off

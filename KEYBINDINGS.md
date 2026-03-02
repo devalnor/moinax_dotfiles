@@ -25,7 +25,7 @@
 | Calculator | `Mod+C` | `Mod+C` | |
 | Theme selector | `Mod+R` | `Mod+R` | rofi-theme-selector |
 | Toggle monitor layout | `Mod+M` | `Mod+M` | |
-| Toggle dictation (speech-to-text) | `Mod+D` | `Mod+D` | hyprvoice toggle |
+| Toggle dictation (speech-to-text) | `Mod+D` | `Mod+D` | hyprvoice toggle (AI group only) |
 
 ## 2. Window Management
 
