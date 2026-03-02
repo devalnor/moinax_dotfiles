@@ -63,6 +63,7 @@ packages:
 
     # Other Wayland tools
     - inotify-tools
+    - cmatrix
 
     # Network management
     - networkmanager
@@ -111,6 +112,7 @@ packages:
 
     # Other Wayland tools
     - inotify-tools
+    - cmatrix
 
     # Network management
     - NetworkManager

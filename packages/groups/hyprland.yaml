@@ -58,6 +58,7 @@ packages:
     
     # Other Wayland tools
     - inotify-tools
+    - cmatrix
 
   fedora:
     # Hyprland core
@@ -94,6 +95,7 @@ packages:
     
     # Other tools
     - inotify-tools
+    - cmatrix
 
   fedora_copr:
     - solopasha/hyprland  # For latest Hyprland packages

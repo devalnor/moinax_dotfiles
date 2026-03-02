@@ -107,6 +107,15 @@ window-rule {
     opacity 0.85
 }
 
+window-rule {
+    match app-id=r#"^oled-saver$"#
+    open-floating true
+    opacity 0.3
+    focus-ring { off; }
+    border { off; }
+    shadow { off; }
+}
+
 environment {
     QT_QPA_PLATFORM "wayland;xcb"
     QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
@@ -271,6 +280,7 @@ binds {
 
     // ── 14. Session & System ─────────────────────────────────────────
     Mod+N hotkey-overlay-title="Toggle Caffeine Mode" { spawn-sh "~/.local/bin/toggle-caffeine.sh"; }
+    Mod+Alt+N hotkey-overlay-title="Toggle OLED Saver" { spawn-sh "~/.local/bin/toggle-oled-saver.sh"; }
     Mod+Shift+E { quit; }
     Ctrl+Alt+Delete { quit; }
     Mod+L hotkey-overlay-title="Power Menu: wlogout" { spawn "wlogout"; }
