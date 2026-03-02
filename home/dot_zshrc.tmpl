@@ -58,8 +58,6 @@ fi
 export EDITOR="nvim"
 export VISUAL="cursor"
 
-# Replace cd by zoxide
-alias cd="z"
 {{- if ne .chezmoi.osRelease.id "fedora" }}
 # Replace ls by eza
 alias ls="eza"
@@ -101,5 +99,5 @@ function y() {
 # Initialiaze starhsip
 eval "$(starship init zsh)"
 
-# Initialize zoxide
-eval "$(zoxide init zsh)"
+# Initialize zoxide (--cmd cd replaces cd/cdi with smart zoxide versions)
+eval "$(zoxide init zsh --cmd cd)"
