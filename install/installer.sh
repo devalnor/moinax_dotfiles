@@ -459,26 +459,34 @@ install_common_tools() {
 
         # Download whisper model for local transcription
         if command_exists hyprvoice; then
-            print_info "Hyprvoice supports local speech-to-text via whisper models"
-            HYPRVOICE_MODEL=$(gum choose --header "Select a whisper model for dictation:" \
-                "small (500MB — good accuracy, EN+FR)" \
-                "medium (1.5GB — better accuracy, EN+FR)" \
-                "tiny (75MB — fastest, lower accuracy)" \
-                "Skip — download later")
+            local existing_model
+            existing_model=$(hyprvoice model list 2>/dev/null | grep '\[x\]' | head -1 | awk '{print $2}')
 
-            # Extract model name (first word before space)
-            HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% *}"
-
-            if [ "$HYPRVOICE_MODEL" != "Skip" ]; then
-                print_info "Downloading whisper model: $HYPRVOICE_MODEL"
-                if hyprvoice model download "$HYPRVOICE_MODEL"; then
-                    print_success "Whisper model '$HYPRVOICE_MODEL' downloaded"
-                else
-                    print_warning "Failed to download model — run 'hyprvoice model download $HYPRVOICE_MODEL' later"
-                    HYPRVOICE_MODEL="small"
-                fi
+            if [ -n "$existing_model" ]; then
+                HYPRVOICE_MODEL="$existing_model"
+                print_info "Whisper model '$existing_model' is already downloaded"
             else
-                HYPRVOICE_MODEL="small"  # Default for config
+                print_info "Hyprvoice supports local speech-to-text via whisper models"
+                HYPRVOICE_MODEL=$(gum choose --header "Select a whisper model for dictation:" \
+                    "small (500MB — good accuracy, EN+FR)" \
+                    "medium (1.5GB — better accuracy, EN+FR)" \
+                    "tiny (75MB — fastest, lower accuracy)" \
+                    "Skip — download later")
+
+                # Extract model name (first word before space)
+                HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% *}"
+
+                if [ "$HYPRVOICE_MODEL" != "Skip" ]; then
+                    print_info "Downloading whisper model: $HYPRVOICE_MODEL"
+                    if hyprvoice model download "$HYPRVOICE_MODEL"; then
+                        print_success "Whisper model '$HYPRVOICE_MODEL' downloaded"
+                    else
+                        print_warning "Failed to download model — run 'hyprvoice model download $HYPRVOICE_MODEL' later"
+                        HYPRVOICE_MODEL="small"
+                    fi
+                else
+                    HYPRVOICE_MODEL="small"  # Default for config
+                fi
             fi
         fi
     fi
@@ -820,6 +828,14 @@ transform=normal"
 setup_plymouth() {
     # Only relevant on Arch — Fedora ships Plymouth out of the box
     [ "$DISTRO" != "arch" ] && return
+
+    # Skip if Plymouth is already installed and configured
+    if command_exists plymouth-set-default-theme \
+        && grep -qE '^HOOKS=.*\bplymouth\b' /etc/mkinitcpio.conf 2>/dev/null; then
+        print_info "Plymouth is already configured"
+        PLYMOUTH_CONFIGURED=true
+        return
+    fi
 
     echo ""
     if ! gum confirm "Set up Plymouth boot splash screen?"; then
