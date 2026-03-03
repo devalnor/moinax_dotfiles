@@ -174,10 +174,8 @@ if [ -f "$CURSOR_SETTINGS" ] && command -v jq &>/dev/null; then
 fi
 
 # 15. Waybar restart
-if [ -x "$HOME/.config/waybar/launch-waybar.sh" ]; then
-    killall -q waybar 2>/dev/null || true
-    "$HOME/.config/waybar/launch-waybar.sh" &
-    disown
+if [ -x "$HOME/.config/hypr/scripts/reload-waybar.sh" ]; then
+    "$HOME/.config/hypr/scripts/reload-waybar.sh"
 fi
 
 # 16. Notification
