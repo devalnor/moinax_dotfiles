@@ -78,9 +78,10 @@ tooltip label {
   padding-right: 12px;
 }
 #custom-caffeine.activated {
-  color: #e0af68;
+  background: rgba(255, 100, 255, 0.3);
+  color: #1e1e2e;
 }
-#custom-dark-mode.light { color: #df8e1d; }
+#custom-dark-mode.light { color: #4c4f69; padding-right: 16px; }
 #custom-dark-mode.dark { color: #7287fd; }
 #custom-exit {
   margin-right: 20px;

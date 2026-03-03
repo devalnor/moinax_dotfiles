@@ -8,11 +8,11 @@ if pgrep -x Hyprland &>/dev/null; then
 elif pgrep -x niri &>/dev/null; then
     DAEMON="swayidle"
 else
-    printf '{"text": "%s", "class": "deactivated", "tooltip": "Unknown compositor"}\n' "$(printf '\uf236')"
+    printf '{"text": "%s", "class": "deactivated", "tooltip": "Unknown compositor"}\n' "$(printf '\U000f04b2')"
     exit 0
 fi
 
-ICON_SLEEP=$(printf '\uf236')
+ICON_SLEEP=$(printf '\U000f04b2')
 ICON_COFFEE=$(printf '\uf0f4')
 
 if pgrep -x "$DAEMON" &>/dev/null; then

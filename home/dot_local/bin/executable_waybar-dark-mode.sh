@@ -6,7 +6,7 @@ STATE_FILE="$HOME/.local/share/dark-light-mode"
 MODE=$(cat "$STATE_FILE" 2>/dev/null || echo "dark")
 
 ICON_MOON=$(printf '\uf186')
-ICON_SUN=$(printf '\uf185')
+ICON_SUN=$(printf '\uf522')
 
 if [ "$MODE" = "light" ]; then
     printf '{"text": "%s", "class": "light", "tooltip": "Light mode (Catppuccin Latte)"}\n' "$ICON_SUN"
