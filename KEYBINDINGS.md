@@ -208,9 +208,8 @@
 | Power menu (rofi) | `Mod+Shift+L` | `Mod+Shift+L` | Text-based fallback |
 | Lock screen | `Mod+Alt+L` | `Mod+Alt+L` | `loginctl lock-session` |
 | Logout | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `compositor-logout.sh` |
-| Toggle caffeine mode | `Mod+N` | `Mod+N` | Inhibits idle (prevents lock/sleep) |
-| Toggle OLED saver | `Mod+Alt+N` | `Mod+Alt+N` | cmatrix overlay for burn-in prevention |
-| Toggle dark/light mode | `Mod+Ctrl+N` | `Mod+Ctrl+N` | Switches Catppuccin Mocha/Latte + portal |
+| Toggle dark/light mode | `Mod+N` | `Mod+N` | Switches Catppuccin Mocha/Latte + portal |
+| Toggle caffeine mode | `Mod+Alt+N` | `Mod+Alt+N` | Inhibits idle (prevents lock/sleep) |
 | Quit compositor | `Mod+Shift+Q` | `Mod+Shift+E` | **Different key** |
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |
