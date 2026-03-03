@@ -3,7 +3,7 @@
   border: none;
   border-radius: 0;
   font-family:
-    "Fira Code", FontAwesome, sans-serif;
+    "FiraCode Nerd Font", "Font Awesome 7 Free Solid", sans-serif;
   font-size: 14px;
   min-height: 0;
   font-weight: normal;
@@ -67,6 +67,12 @@ tooltip label {
 #idle-inhibitor,
 #workspaces button {
   font-size: 17px;
+}
+#custom-caffeine {
+  padding-right: 16px;
+}
+#custom-exit {
+  padding-right: 12px;
 }
 #custom-caffeine.activated {
   color: #e0af68;
