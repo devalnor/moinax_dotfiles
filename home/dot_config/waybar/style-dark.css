@@ -22,6 +22,9 @@ tooltip {
 tooltip label {
   color: white;
 }
+.modules-right {
+  padding-top: 2px;
+}
 #stats,
 .module {
   margin: 4px 2px;
