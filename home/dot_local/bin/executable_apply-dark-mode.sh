@@ -153,32 +153,12 @@ if command -v git &>/dev/null; then
     git config --global delta.features "$NEW_FEATURES" 2>/dev/null || true
 fi
 
-# 14. Cursor
-CURSOR_SETTINGS="$HOME/.config/Cursor/User/settings.json"
-if [ -f "$CURSOR_SETTINGS" ] && command -v jq &>/dev/null; then
-    if [ "$MODE" = "dark" ]; then
-        THEME="Catppuccin Mocha"
-        ICON_THEME="catppuccin-mocha"
-    else
-        THEME="Catppuccin Latte"
-        ICON_THEME="catppuccin-latte"
-    fi
-    tmp=$(mktemp)
-    if jq --arg theme "$THEME" --arg iconTheme "$ICON_THEME" \
-        '.["workbench.colorTheme"] = $theme | .["workbench.iconTheme"] = $iconTheme' \
-        "$CURSOR_SETTINGS" > "$tmp"; then
-        mv "$tmp" "$CURSOR_SETTINGS"
-    else
-        rm -f "$tmp"
-    fi
-fi
-
-# 15. Waybar restart
+# 14. Waybar restart
 if [ -x "$HOME/.config/hypr/scripts/reload-waybar.sh" ]; then
     "$HOME/.config/hypr/scripts/reload-waybar.sh"
 fi
 
-# 16. Notification
+# 15. Notification
 if [ "$MODE" = "dark" ]; then
     notify-send -u low "Dark Mode" "Switched to Catppuccin Mocha (dark)" 2>/dev/null || true
 else
