@@ -210,6 +210,7 @@
 | Logout | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `compositor-logout.sh` |
 | Toggle dark/light mode | `Mod+N` | `Mod+N` | Switches Catppuccin Mocha/Latte + portal |
 | Toggle caffeine mode | `Mod+Alt+N` | `Mod+Alt+N` | Inhibits idle (prevents lock/sleep) |
+| Toggle Tailscale VPN | `Mod+Ctrl+N` | `Mod+Ctrl+N` | Connect/disconnect Tailscale |
 | Quit compositor | `Mod+Shift+Q` | `Mod+Shift+E` | **Different key** |
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |

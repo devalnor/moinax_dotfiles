@@ -221,4 +221,12 @@
     "interval": "once",
     "on-click": "~/.local/bin/toggle-caffeine.sh",
   },
+  // Tailscale VPN toggle
+  "custom/tailscale": {
+    "exec": "~/.local/bin/waybar-tailscale.sh",
+    "return-type": "json",
+    "signal": 11,
+    "interval": "once",
+    "on-click": "~/.local/bin/toggle-tailscale.sh",
+  },
 }

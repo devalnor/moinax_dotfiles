@@ -66,11 +66,13 @@ tooltip label {
 #custom-exit,
 #custom-system,
 #custom-caffeine,
+#custom-tailscale,
 #custom-dark-mode,
 #idle-inhibitor,
 #workspaces button {
   font-size: 17px;
 }
+#custom-tailscale.connected { color: #40a02b; }
 #custom-caffeine {
   padding-right: 16px;
 }

@@ -13,6 +13,7 @@ dotfiles:
 # Services to enable
 services:
   - docker
+  - tailscaled
 
 descriptions:
   neovim: Hyperextensible text editor
@@ -32,6 +33,7 @@ descriptions:
   gcc: GNU C compiler (Fedora)
   gcc-c++: GNU C++ compiler (Fedora)
   just: Command runner (like make, simpler)
+  tailscale: Mesh VPN for secure networking
 
 packages:
   arch:
@@ -55,6 +57,9 @@ packages:
     - cpio
     - base-devel
     
+    # Networking
+    - tailscale
+
     # Task runner
     - just
 
@@ -80,6 +85,9 @@ packages:
     - gcc
     - gcc-c++
     
+    # Networking
+    - tailscale
+
     # Task runner
     - just
 
