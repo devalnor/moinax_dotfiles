@@ -843,11 +843,19 @@ enable_selected_services() {
         add_user_to_group "docker"
     fi
 
-    # Set tailscale operator if development is selected and tailscale is installed
+    # Set tailscale operator and authenticate if development is selected and tailscale is installed
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]] && command -v tailscale &>/dev/null; then
         print_info "Setting Tailscale operator to $USER"
         sudo tailscale set --operator="$USER"
         print_success "Tailscale operator set (no sudo needed for tailscale commands)"
+
+        # Authenticate if not already logged in
+        if ! tailscale status &>/dev/null; then
+            print_info "Logging into Tailscale (a browser/URL will open for authentication)..."
+            tailscale up
+        else
+            print_info "Tailscale is already authenticated"
+        fi
     fi
 
     print_success "Services enabled"
