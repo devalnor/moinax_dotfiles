@@ -821,6 +821,16 @@ EOF
     fi
 }
 
+# Apply initial dark mode defaults (creates active theme files not tracked by chezmoi)
+apply_dark_mode_defaults() {
+    local script="$HOME/.local/bin/apply-dark-mode.sh"
+    if [ -x "$script" ]; then
+        print_info "Applying default dark mode theme..."
+        "$script" dark
+        print_success "Dark mode defaults applied"
+    fi
+}
+
 # Enable services
 enable_selected_services() {
     if [ ${#SERVICES_TO_ENABLE[@]} -eq 0 ]; then
@@ -1209,6 +1219,7 @@ main() {
     install_group_packages
     install_common_tools
     setup_dotfiles
+    apply_dark_mode_defaults
     enable_selected_services
     setup_sddm
     setup_plymouth
