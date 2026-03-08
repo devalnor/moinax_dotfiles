@@ -823,6 +823,11 @@ EOF
 
 # Apply initial dark mode defaults (creates active theme files not tracked by chezmoi)
 apply_dark_mode_defaults() {
+    local state_file="$HOME/.local/share/dark-light-mode"
+    if [ -f "$state_file" ]; then
+        print_info "Dark/light mode already configured, skipping"
+        return 0
+    fi
     local script="$HOME/.local/bin/apply-dark-mode.sh"
     if [ -x "$script" ]; then
         print_info "Applying default dark mode theme..."
