@@ -70,6 +70,25 @@ packages:
     - unrar
     - unzip
 
+  debian:
+    # File managers
+    - dolphin
+    - ffmpegthumbnailer
+
+    # Backup and snapshots
+    - timeshift
+
+    # Communication
+    # Note: Slack is not available in apt — install manually via .deb from https://slack.com/downloads/linux
+
+    # Web browser (requires Google Chrome repo — added by setup_productivity_repos)
+    - google-chrome-stable
+
+    # Archive tools
+    - p7zip-full
+    - unrar
+    - unzip
+
   fedora_repos:
     # Google Chrome repo
     - google-chrome

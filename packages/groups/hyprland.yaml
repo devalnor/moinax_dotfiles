@@ -125,5 +125,48 @@ packages:
     - inotify-tools
     - cmatrix
 
+  debian:
+    # Ubuntu 24.04+ recommended (hyprland available in universe)
+    # Requires universe repo — enabled by setup_hyprland_repos
+    - hyprland
+    - hyprpaper
+    - hypridle
+    - hyprlock
+
+    # Display manager
+    - sddm
+    - weston
+
+    # Status bar and menus
+    - waybar
+    # rofi-wayland is the correct Wayland fork on Ubuntu 24.04+.
+    # Plain 'rofi' is the X11 build; use rofi-wayland for Wayland support.
+    - rofi-wayland
+    - rofimoji
+
+    # Notifications
+    # Note: dotfiles ship mako configs; dunst is installed as apt alternative.
+    # Manual config adaptation needed for dunst on Debian/Ubuntu.
+    - dunst            # mako is not in apt; dunst is the apt equivalent
+
+    # Clipboard
+    - wl-clipboard
+    - cliphist
+
+    # Audio control
+    - pavucontrol
+    - blueman
+    - bluez
+
+    # X compatibility
+    - x11-xserver-utils
+
+    # Other tools
+    - inotify-tools
+    - cmatrix
+
+    # Note: hyprpicker, hyprpolkitagent, hyprshot, wlogout, wtype, nwg-look
+    # may not be in apt — install via binary or build from source
+
   fedora_copr:
     - solopasha/hyprland  # For latest Hyprland packages
