@@ -1,0 +1,79 @@
+{{- $textEditor := "org.kde.kate.desktop" -}}
+{{- if lookPath "code" -}}
+{{-   $textEditor = "code.desktop" -}}
+{{- end -}}
+{{- if lookPath "cursor" -}}
+{{-   $textEditor = "cursor.desktop" -}}
+{{- end -}}
+{{- $imageViewer := "org.kde.gwenview.desktop" -}}
+{{- if not (lookPath "gwenview") -}}
+{{-   $imageViewer = "org.gnome.Loupe.desktop" -}}
+{{- end -}}
+{{- $pdfViewer := "org.kde.okular.desktop" -}}
+{{- if not (lookPath "okular") -}}
+{{-   $pdfViewer = "org.gnome.Evince.desktop" -}}
+{{- end -}}
+[Default Applications]
+# Images
+image/bmp={{ $imageViewer }}
+image/gif={{ $imageViewer }}
+image/jpeg={{ $imageViewer }}
+image/png={{ $imageViewer }}
+image/svg+xml={{ $imageViewer }}
+image/tiff={{ $imageViewer }}
+image/webp={{ $imageViewer }}
+image/avif={{ $imageViewer }}
+image/heif={{ $imageViewer }}
+
+# Videos
+video/mp4=mpv.desktop
+video/mpeg=mpv.desktop
+video/ogg=mpv.desktop
+video/webm=mpv.desktop
+video/x-matroska=mpv.desktop
+video/x-msvideo=mpv.desktop
+video/quicktime=mpv.desktop
+video/x-flv=mpv.desktop
+
+# Audio
+audio/aac=mpv.desktop
+audio/flac=mpv.desktop
+audio/mpeg=mpv.desktop
+audio/ogg=mpv.desktop
+audio/opus=mpv.desktop
+audio/wav=mpv.desktop
+audio/x-wav=mpv.desktop
+audio/webm=mpv.desktop
+audio/x-vorbis+ogg=mpv.desktop
+
+# Documents
+application/pdf={{ $pdfViewer }}
+
+# Text
+text/plain={{ $textEditor }}
+text/x-csrc={{ $textEditor }}
+text/x-chdr={{ $textEditor }}
+text/x-c++src={{ $textEditor }}
+text/x-python={{ $textEditor }}
+text/x-shellscript={{ $textEditor }}
+text/xml={{ $textEditor }}
+text/csv={{ $textEditor }}
+text/markdown={{ $textEditor }}
+application/json={{ $textEditor }}
+application/x-yaml={{ $textEditor }}
+application/toml={{ $textEditor }}
+
+# Web
+text/html=google-chrome.desktop
+x-scheme-handler/http=google-chrome.desktop
+x-scheme-handler/https=google-chrome.desktop
+x-scheme-handler/about=google-chrome.desktop
+x-scheme-handler/unknown=google-chrome.desktop
+x-scheme-handler/mailto=google-chrome.desktop
+
+# Other schemes
+x-scheme-handler/jetbrains=jetbrainsd.desktop
+x-scheme-handler/slack=slack.desktop
+
+# File manager
+inode/directory=org.kde.dolphin.desktop

@@ -14,6 +14,9 @@ services: []
 
 descriptions:
   dolphin: KDE file manager
+  gwenview: KDE image viewer
+  kate: KDE text editor
+  okular: KDE document viewer (PDF, EPUB, DjVu)
   ffmpegthumbnailer: Video thumbnail generator
   kdegraphics-thumbnailers: Image/PDF thumbnail plugins
   timeshift: System restore / snapshot tool
@@ -33,7 +36,12 @@ packages:
     - dolphin
     - ffmpegthumbnailer
     - kdegraphics-thumbnailers
-    
+
+    # KDE apps
+    - gwenview
+    - kate
+    - okular
+
     # Backup and snapshots
     - timeshift
     - timeshift-autosnap
@@ -55,7 +63,12 @@ packages:
     - dolphin
     - ffmpegthumbnailer
     - kdegraphics-thumbnailers
-    
+
+    # KDE apps
+    - gwenview
+    - kate
+    - okular
+
     # Backup and snapshots
     - timeshift
     
@@ -74,6 +87,11 @@ packages:
     # File managers
     - dolphin
     - ffmpegthumbnailer
+
+    # KDE apps
+    - gwenview
+    - kate
+    - okular
 
     # Backup and snapshots
     - timeshift
