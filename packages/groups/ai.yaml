@@ -20,7 +20,11 @@ packages:
 
   fedora:
     # Dictation (speech-to-text)
+    # whisper-cpp ships only libraries on Fedora — whisper-cli is built from source by the installer
     - whisper-cpp
+    - SDL2-devel    # Build dependency for whisper-cli audio capture
+    - cmake
+    - gcc-c++
 
   debian:
     # whisper.cpp is not packaged for Debian/Ubuntu.

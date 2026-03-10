@@ -671,6 +671,29 @@ install_common_tools() {
             print_info "hyprvoice is already installed"
         fi
 
+        # Build whisper-cli from source (Fedora's whisper-cpp package ships only libraries)
+        if [ "$DISTRO_FAMILY" = "fedora" ] && ! command_exists whisper-cli; then
+            print_info "Building whisper-cli from source (not shipped by Fedora's whisper-cpp package)..."
+            local whisper_tmp="/tmp/whisper.cpp"
+            rm -rf "$whisper_tmp"
+            if git clone --depth 1 https://github.com/ggerganov/whisper.cpp.git "$whisper_tmp" 2>/dev/null; then
+                if cmake -B "$whisper_tmp/build" "$whisper_tmp" -DWHISPER_SDL2=ON -DCMAKE_BUILD_TYPE=Release \
+                    && cmake --build "$whisper_tmp/build" --target whisper-cli -j"$(nproc)"; then
+                    mkdir -p "$HOME/.local/bin"
+                    cp "$whisper_tmp/build/bin/whisper-cli" "$HOME/.local/bin/whisper-cli"
+                    chmod +x "$HOME/.local/bin/whisper-cli"
+                    print_success "whisper-cli installed to ~/.local/bin/whisper-cli"
+                else
+                    print_error "Failed to build whisper-cli"
+                fi
+                rm -rf "$whisper_tmp"
+            else
+                print_error "Failed to clone whisper.cpp"
+            fi
+        elif command_exists whisper-cli; then
+            print_info "whisper-cli is already installed"
+        fi
+
         # Download whisper model for local transcription
         if command_exists hyprvoice; then
             local existing_model
