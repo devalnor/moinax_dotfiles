@@ -677,7 +677,7 @@ install_common_tools() {
             local whisper_tmp="/tmp/whisper.cpp"
             rm -rf "$whisper_tmp"
             if git clone --depth 1 https://github.com/ggerganov/whisper.cpp.git "$whisper_tmp" 2>/dev/null; then
-                if cmake -B "$whisper_tmp/build" "$whisper_tmp" -DWHISPER_SDL2=ON -DCMAKE_BUILD_TYPE=Release \
+                if cmake -B "$whisper_tmp/build" "$whisper_tmp" -DWHISPER_SDL2=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
                     && cmake --build "$whisper_tmp/build" --target whisper-cli -j"$(nproc)"; then
                     mkdir -p "$HOME/.local/bin"
                     cp "$whisper_tmp/build/bin/whisper-cli" "$HOME/.local/bin/whisper-cli"
