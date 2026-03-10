@@ -902,7 +902,7 @@ apply_dark_mode_defaults() {
         local mode
         mode=$(cat "$state_file" 2>/dev/null || echo "dark")
         print_info "Applying $mode mode theme..."
-        "$script" "$mode"
+        APPLY_DARK_MODE_NO_RESTART=1 "$script" "$mode"
         print_success "Theme applied ($mode mode)"
     else
         print_info "Dark/light mode already configured, skipping"
