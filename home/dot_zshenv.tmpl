@@ -12,10 +12,9 @@ esac
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 
-# Turso
-export PATH="$HOME/.turso:$PATH"
-
-# Lazy docker, zozide, ...
+# Lazy docker, zoxide, ...
 export PATH="$HOME/.local/bin:$PATH"
+{{- if or .install_hyprland .install_niri }}
 # Rofi scripts
 export PATH="$HOME/.config/rofi/scripts:$PATH"
+{{- end }}
