@@ -30,6 +30,7 @@ SERVICES_TO_ENABLE=()
 declare -A GROUP_PACKAGE_MODE=()
 declare -A GROUP_CUSTOM_PACKAGE_LIST=()
 HYPRVOICE_MODEL="small"
+INSTALL_PURPOSE="desktop"
 
 # Check if gum is available
 check_gum() {
@@ -63,6 +64,33 @@ confirm_distro() {
         print_info "Supported: $(get_supported_distros)"
         exit 1
     fi
+}
+
+# Select setup purpose (desktop or terminal)
+select_purpose() {
+    echo ""
+    gum style --foreground 212 --bold "What type of setup?"
+    echo ""
+
+    local choice
+    choice=$(gum choose --cursor.foreground="212" \
+        "🖥️  Desktop — full desktop environment with GUI apps" \
+        "⌨️  Terminal — CLI tools only (headless/server)")
+
+    case "$choice" in
+        *Desktop*)
+            INSTALL_PURPOSE="desktop"
+            print_success "Setup type: Desktop"
+            ;;
+        *Terminal*)
+            INSTALL_PURPOSE="terminal"
+            print_success "Setup type: Terminal (CLI only)"
+            ;;
+        *)
+            INSTALL_PURPOSE="desktop"
+            print_info "Defaulting to Desktop setup"
+            ;;
+    esac
 }
 
 # Escape a string for safe inclusion inside a JSON string value.
@@ -104,11 +132,21 @@ _build_tree_json() {
             [ -n "$dkey" ] && descs["$dkey"]="$dval"
         done < <(parse_descriptions "$group_file")
 
+        # Build desktop_only exclusion set for terminal mode
+        local -A desktop_only_pkgs=()
+        if [ "$INSTALL_PURPOSE" = "terminal" ]; then
+            while IFS= read -r do_pkg; do
+                [ -n "$do_pkg" ] && desktop_only_pkgs["$do_pkg"]=1
+            done < <(parse_desktop_only "$group_file")
+        fi
+
         # Collect deduplicated packages
         local pkg_json_items=()
         while IFS= read -r pkg; do
             [ -z "$pkg" ] && continue
             [ -n "${pkg_seen[$pkg]}" ] && continue
+            # Skip desktop_only packages in terminal mode
+            [ -n "${desktop_only_pkgs[$pkg]}" ] && continue
             pkg_seen["$pkg"]="$group"
 
             local desc="$(_json_escape "${descs[$pkg]:-}")"
@@ -171,12 +209,22 @@ _select_packages_gum_fallback() {
             [ -n "$dkey" ] && descs["$dkey"]="$dval"
         done < <(parse_descriptions "$group_file")
 
+        # Build desktop_only exclusion set for terminal mode
+        local -A desktop_only_pkgs=()
+        if [ "$INSTALL_PURPOSE" = "terminal" ]; then
+            while IFS= read -r do_pkg; do
+                [ -n "$do_pkg" ] && desktop_only_pkgs["$do_pkg"]=1
+            done < <(parse_desktop_only "$group_file")
+        fi
+
         local header_line="$group_icon $group_label"
         display_lines+=("$header_line")
 
         local pkg_count=0
         while IFS= read -r pkg; do
             [ -z "$pkg" ] && continue
+            # Skip desktop_only packages in terminal mode
+            [ -n "${desktop_only_pkgs[$pkg]}" ] && continue
             pkg_count=$((pkg_count + 1))
             [ -n "${pkg_seen[$pkg]}" ] && continue
             pkg_seen["$pkg"]="$group"
@@ -375,6 +423,7 @@ confirm_installation() {
     gum style --foreground 212 --bold "Installation Summary:"
     echo ""
     echo "  • Distribution: $DISTRO_NAME"
+    echo "  • Setup type: $([ "$INSTALL_PURPOSE" = "desktop" ] && echo "Desktop" || echo "Terminal (CLI only)")"
     echo "  • Base packages: Yes"
     if [ ${#SELECTED_GROUP_NAMES[@]} -gt 0 ]; then
         echo "  • Groups:"
@@ -468,7 +517,19 @@ install_base_packages() {
     if [ ${#packages[@]} -gt 0 ]; then
         install_packages "${packages[@]}" || print_warning "Some base packages failed to install"
     fi
-    
+
+    # Parse and install desktop packages (only in desktop mode)
+    if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        packages=()
+        while IFS= read -r pkg; do
+            [ -n "$pkg" ] && packages+=("$pkg")
+        done < <(parse_packages "$base_file" "desktop")
+
+        if [ ${#packages[@]} -gt 0 ]; then
+            install_packages "${packages[@]}" || print_warning "Some desktop base packages failed to install"
+        fi
+    fi
+
     # Parse and install AUR packages (Arch family only)
     if [ "$DISTRO_FAMILY" = "arch" ]; then
         packages=()
@@ -563,6 +624,22 @@ install_group_packages() {
             [ -n "$pkg" ] && all_packages+=("$pkg")
         done < <(parse_packages "$group_file" "$DISTRO_FAMILY")
 
+        # Filter out desktop_only packages in terminal mode
+        if [ "$INSTALL_PURPOSE" = "terminal" ]; then
+            local -A desktop_only_pkgs=()
+            while IFS= read -r do_pkg; do
+                [ -n "$do_pkg" ] && desktop_only_pkgs["$do_pkg"]=1
+            done < <(parse_desktop_only "$group_file")
+
+            if [ ${#desktop_only_pkgs[@]} -gt 0 ]; then
+                local filtered_packages=()
+                for pkg in "${all_packages[@]}"; do
+                    [ -z "${desktop_only_pkgs[$pkg]}" ] && filtered_packages+=("$pkg")
+                done
+                all_packages=("${filtered_packages[@]}")
+            fi
+        fi
+
         # Resolve install package list from selected mode
         local packages=()
         local package_mode="${GROUP_PACKAGE_MODE[$group]:-all}"
@@ -637,7 +714,7 @@ install_common_tools() {
     else
         print_info "TPM is already installed"
     fi
-    
+
     # Install rofi themes when a Wayland compositor group is selected
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
         print_info "Installing Rofi themes collection..."
@@ -799,12 +876,18 @@ setup_dotfiles() {
         "dot_zsh"
         "dot_tmux.conf"
         "dot_gitconfig"
-        "dot_config/kitty"
         "dot_config/starship.toml"
         "dot_config/yazi"
         "completion-for-pnpm.bash"
-        "Wallpapers"
     )
+
+    # Add desktop-only base dotfiles
+    if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        dotfiles_to_install+=(
+            "dot_config/kitty"
+            "Wallpapers"
+        )
+    fi
     
     # Add group-specific dotfiles
     for group in "${SELECTED_GROUP_NAMES[@]}"; do
@@ -869,6 +952,7 @@ sourceDir = "$source_dir"
     install_productivity = $install_productivity
     install_ai = $install_ai
     hyprvoice_model = "$HYPRVOICE_MODEL"
+    install_purpose = "$INSTALL_PURPOSE"
     dark_mode = "dark"
 EOF
     
@@ -1298,8 +1382,11 @@ main() {
     # Welcome and confirmation
     show_welcome
     confirm_distro
-    
-    # Auto-populate all groups and go straight to package filter
+
+    # Select setup purpose (desktop or terminal)
+    select_purpose
+
+    # Auto-populate groups based on purpose and go straight to package filter
     local groups_dir="$DOTFILES_DIR/packages/groups"
     shopt -s nullglob
     local group_files=("$groups_dir"/*.yaml)
@@ -1307,6 +1394,14 @@ main() {
     IFS=$'\n' group_files=($(printf '%s\n' "${group_files[@]}" | sort))
     unset IFS
     for group_file in "${group_files[@]}"; do
+        # Filter groups by environment when in terminal mode
+        if [ "$INSTALL_PURPOSE" = "terminal" ]; then
+            local env
+            env=$(grep '^environment:' "$group_file" | awk '{print $2}')
+            if [ "$env" != "both" ]; then
+                continue
+            fi
+        fi
         SELECTED_GROUP_NAMES+=("$(basename "$group_file" .yaml)")
     done
     select_group_packages
@@ -1320,10 +1415,14 @@ main() {
     install_group_packages
     install_common_tools
     setup_dotfiles
-    apply_dark_mode_defaults
+    if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        apply_dark_mode_defaults
+    fi
     enable_selected_services
-    setup_sddm
-    setup_plymouth
+    if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        setup_sddm
+        setup_plymouth
+    fi
     setup_ssh
     setup_shell
     
