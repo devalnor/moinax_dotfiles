@@ -58,6 +58,8 @@ dot_config/Cursor
 dot_config/Cursor/**
 dot_config/delta
 dot_config/delta/**
+dot_config/gh-dash
+dot_config/gh-dash/**
 {{- end }}
 
 # Active theme files managed by apply-dark-mode.sh (variants are still tracked)

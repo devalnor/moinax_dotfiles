@@ -1,0 +1,58 @@
+prSections:
+  - title: My Pull Requests
+    filters: is:open author:@me
+  - title: Needs My Review
+    filters: is:open review-requested:@me
+  - title: Involved
+    filters: is:open involves:@me -author:@me
+
+issueSections:
+  - title: My Issues
+    filters: is:open author:@me
+  - title: Assigned
+    filters: is:open assignee:@me
+
+defaults:
+  preview:
+    open: true
+    width: 0.45
+  prsLimit: 20
+  issuesLimit: 20
+  view: prs
+  refetchIntervalMinutes: 30
+
+{{ if eq .dark_mode "light" }}
+# Catppuccin Latte
+colors:
+  text:
+    primary: "#4c4f69"
+    secondary: "#6c6f85"
+    inverted: "#eff1f5"
+    faint: "#9ca0b0"
+    warning: "#d20f39"
+    success: "#40a02b"
+    actor: "#7287fd"
+  background:
+    selected: "#ccd0da"
+  border:
+    primary: "#1e66f5"
+    secondary: "#8839ef"
+    faint: "#e6e9ef"
+{{ else }}
+# Catppuccin Mocha
+colors:
+  text:
+    primary: "#cdd6f4"
+    secondary: "#a6adc8"
+    inverted: "#1e1e2e"
+    faint: "#6c7086"
+    warning: "#f38ba8"
+    success: "#a6e3a1"
+    actor: "#b4befe"
+  background:
+    selected: "#45475a"
+  border:
+    primary: "#89b4fa"
+    secondary: "#cba6f7"
+    faint: "#313244"
+{{ end }}

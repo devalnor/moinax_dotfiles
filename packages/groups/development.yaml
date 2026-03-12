@@ -9,6 +9,7 @@ dotfiles:
   - dot_config/nvim
   - dot_config/Cursor
   - dot_config/delta
+  - dot_config/gh-dash
   - dot_gitconfig
 
 # Services to enable
@@ -34,6 +35,7 @@ descriptions:
   gcc: GNU C compiler (Fedora)
   gcc-c++: GNU C++ compiler (Fedora)
   just: Command runner (like make, simpler)
+  gh-dash: Terminal UI dashboard for GitHub PRs/issues
   tailscale: Mesh VPN for secure networking
 
 desktop_only:

@@ -738,6 +738,20 @@ install_common_tools() {
         fi
     fi
 
+    # Install gh-dash (development group)
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
+        if command_exists gh; then
+            if ! gh extension list 2>/dev/null | grep -q "dlvhdr/gh-dash"; then
+                print_info "Installing gh-dash extension..."
+                gh extension install dlvhdr/gh-dash && print_success "gh-dash installed" || print_warning "Failed to install gh-dash"
+            else
+                print_info "gh-dash is already installed"
+            fi
+        else
+            print_warning "gh CLI not found — skipping gh-dash extension"
+        fi
+    fi
+
     # Setup hyprvoice (AI group)
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " ai " ]]; then
         # Install hyprvoice binary (Fedora only — Arch uses AUR package)
