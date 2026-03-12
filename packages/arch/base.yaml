@@ -38,3 +38,4 @@ packages:
   aur:
     # AUR-only packages (installed via paru)
     - paru  # Will be installed first if not present
+    - appimagelauncher
