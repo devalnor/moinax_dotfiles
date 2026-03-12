@@ -22,5 +22,4 @@
 [include]
 	path = ~/.config/delta/themes.gitconfig
 [delta]
-	features = arctic-fox line-numbers
-	syntax-theme = Catppuccin Macchiato
+	features = catppuccin-mocha line-numbers

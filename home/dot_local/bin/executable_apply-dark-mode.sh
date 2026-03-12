@@ -144,11 +144,9 @@ done
 if command -v git &>/dev/null; then
     CURRENT_FEATURES=$(git config --global --get delta.features 2>/dev/null || true)
     if [ "$MODE" = "dark" ]; then
-        NEW_FEATURES=$(echo "$CURRENT_FEATURES" | sed 's/hoopoe/arctic-fox/')
-        git config --global delta.syntax-theme "Catppuccin Macchiato" 2>/dev/null || true
+        NEW_FEATURES=$(echo "$CURRENT_FEATURES" | sed 's/catppuccin-latte/catppuccin-mocha/')
     else
-        NEW_FEATURES=$(echo "$CURRENT_FEATURES" | sed 's/arctic-fox/hoopoe/')
-        git config --global delta.syntax-theme "GitHub" 2>/dev/null || true
+        NEW_FEATURES=$(echo "$CURRENT_FEATURES" | sed 's/catppuccin-mocha/catppuccin-latte/')
     fi
     git config --global delta.features "$NEW_FEATURES" 2>/dev/null || true
 fi
