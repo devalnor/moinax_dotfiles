@@ -30,6 +30,9 @@ packages:
     # Terminal emulator
     - kitty
 
+    # Peripherals
+    - headsetcontrol
+
     # Fonts
     - fira-code-fonts
     - fontawesome-fonts

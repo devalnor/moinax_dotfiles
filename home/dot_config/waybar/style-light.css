@@ -67,12 +67,18 @@ tooltip label {
 #custom-system,
 #custom-caffeine,
 #custom-tailscale,
+#custom-headset-battery,
 #custom-dark-mode,
 #idle-inhibitor,
 #workspaces button {
   font-size: 17px;
 }
 #custom-tailscale.connected { color: #40a02b; }
+#custom-headset-battery.good { color: #40a02b; }
+#custom-headset-battery.warning { color: #df8e1d; }
+#custom-headset-battery.critical { color: #d20f39; }
+#custom-headset-battery.charging { color: #1e66f5; }
+#custom-headset-battery.disconnected { font-size: 0; padding: 0; margin: 0; }
 #custom-caffeine {
   padding-right: 16px;
 }

@@ -229,4 +229,12 @@
     "interval": 30,
     "on-click": "~/.local/bin/toggle-tailscale.sh",
   },
+  // Headset battery (via headsetcontrol)
+  "custom/headset-battery": {
+    "exec": "~/.local/bin/waybar-headset-battery.sh",
+    "return-type": "json",
+    "interval": 60,
+    "format": "{}",
+    "tooltip": true,
+  },
 }
