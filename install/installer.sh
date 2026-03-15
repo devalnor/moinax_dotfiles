@@ -1370,6 +1370,7 @@ setup_btrfs_snapshots() {
     print_info "Configuring BTRFS snapshots..."
 
     # Create snapper root config if it doesn't exist
+    local config_created=false
     if ! sudo snapper list-configs 2>/dev/null | grep -q "^root"; then
         print_info "Creating snapper root config..."
         # Remove pre-existing .snapshots subvolume/directory that blocks snapper create-config
@@ -1413,6 +1414,7 @@ setup_btrfs_snapshots() {
             print_warning "Failed to create snapper root config — skipping snapshot setup"
             return 0
         }
+        config_created=true
     fi
 
     # Disable timeline snapshots (we only want pre-upgrade snapshots)
@@ -1465,10 +1467,12 @@ APTEOF
         }
     fi
 
-    # Create initial snapshot
-    sudo snapper create --description "Initial snapshot after dotfiles setup" || {
-        print_warning "Failed to create initial snapshot"
-    }
+    # Create initial snapshot only when config was freshly created
+    if [ "$config_created" = true ]; then
+        sudo snapper create --description "Initial snapshot after dotfiles setup" || {
+            print_warning "Failed to create initial snapshot"
+        }
+    fi
 
     BTRFS_SNAPSHOTS_CONFIGURED=true
     print_success "BTRFS snapshot setup complete"
