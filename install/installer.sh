@@ -1372,6 +1372,43 @@ setup_btrfs_snapshots() {
     # Create snapper root config if it doesn't exist
     if ! sudo snapper list-configs 2>/dev/null | grep -q "^root"; then
         print_info "Creating snapper root config..."
+        # Remove pre-existing .snapshots subvolume/directory that blocks snapper create-config
+        # archinstall creates a top-level @.snapshots subvolume mounted at /.snapshots
+        if findmnt -n /.snapshots &>/dev/null; then
+            print_info "Unmounting pre-existing /.snapshots..."
+            sudo umount /.snapshots || {
+                print_warning "Failed to unmount /.snapshots — skipping snapshot setup"
+                return 0
+            }
+            # Delete the top-level @.snapshots subvolume (e.g. from archinstall)
+            local root_dev
+            root_dev=$(findmnt -n -o SOURCE / | sed 's/\[.*\]//')
+            if [ -n "$root_dev" ]; then
+                local tmp_mnt
+                tmp_mnt=$(mktemp -d)
+                if sudo mount -o subvolid=5 "$root_dev" "$tmp_mnt"; then
+                    if sudo btrfs subvolume show "$tmp_mnt/@.snapshots" &>/dev/null; then
+                        print_info "Deleting top-level @.snapshots subvolume..."
+                        sudo btrfs subvolume delete "$tmp_mnt/@.snapshots" || true
+                    fi
+                    sudo umount "$tmp_mnt"
+                fi
+                rmdir "$tmp_mnt" 2>/dev/null
+            fi
+        fi
+        if sudo btrfs subvolume show /.snapshots &>/dev/null; then
+            print_info "Removing pre-existing /.snapshots subvolume..."
+            sudo btrfs subvolume delete /.snapshots || {
+                print_warning "Failed to remove /.snapshots subvolume — skipping snapshot setup"
+                return 0
+            }
+        fi
+        if [ -d /.snapshots ]; then
+            sudo rmdir /.snapshots || {
+                print_warning "Failed to remove /.snapshots directory — skipping snapshot setup"
+                return 0
+            }
+        fi
         sudo snapper create-config / || {
             print_warning "Failed to create snapper root config — skipping snapshot setup"
             return 0
@@ -1382,6 +1419,17 @@ setup_btrfs_snapshots() {
     sudo snapper -c root set-config "TIMELINE_CREATE=no" || {
         print_warning "Failed to configure snapper timeline settings"
     }
+
+    # Allow the current user to run snapper without sudo
+    sudo snapper -c root set-config "ALLOW_USERS=$USER" || {
+        print_warning "Failed to set ALLOW_USERS for snapper"
+    }
+
+    # Remove stale @.snapshots fstab entry (archinstall leftover, now managed by snapper)
+    if grep -q '@\.snapshots' /etc/fstab; then
+        print_info "Removing stale @.snapshots fstab entry..."
+        sudo sed -i '/@\.snapshots/d' /etc/fstab
+    fi
 
     # Debian: install APT hook for pre-upgrade snapshots
     if [ "$DISTRO_FAMILY" = "debian" ]; then
