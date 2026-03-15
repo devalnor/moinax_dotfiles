@@ -1371,7 +1371,7 @@ setup_btrfs_snapshots() {
 
     # Create snapper root config if it doesn't exist
     local config_created=false
-    if ! sudo snapper list-configs 2>/dev/null | grep -q "^root"; then
+    if ! sudo snapper list-configs 2>/dev/null | grep -q 'root\s*|'; then
         print_info "Creating snapper root config..."
         # Remove pre-existing .snapshots subvolume/directory that blocks snapper create-config
         # archinstall creates a top-level @.snapshots subvolume mounted at /.snapshots
@@ -1392,7 +1392,7 @@ setup_btrfs_snapshots() {
                         print_info "Deleting top-level @.snapshots subvolume..."
                         sudo btrfs subvolume delete "$tmp_mnt/@.snapshots" || true
                     fi
-                    sudo umount "$tmp_mnt"
+                    sudo umount "$tmp_mnt" || print_warning "Failed to unmount $tmp_mnt"
                 fi
                 rmdir "$tmp_mnt" 2>/dev/null
             fi
@@ -1428,9 +1428,9 @@ setup_btrfs_snapshots() {
     }
 
     # Remove stale @.snapshots fstab entry (archinstall leftover, now managed by snapper)
-    if grep -q '@\.snapshots' /etc/fstab; then
+    if grep -q '^UUID=.*@\.snapshots' /etc/fstab; then
         print_info "Removing stale @.snapshots fstab entry..."
-        sudo sed -i '/@\.snapshots/d' /etc/fstab
+        sudo sed -i '/^UUID=.*@\.snapshots/d' /etc/fstab
     fi
 
     # Debian: install APT hook for pre-upgrade snapshots
@@ -1449,7 +1449,7 @@ APTEOF
         print_info "Installing grub-btrfs from source..."
         local tmp_dir
         tmp_dir=$(mktemp -d)
-        if git clone https://github.com/Antynea/grub-btrfs.git "$tmp_dir"; then
+        if git clone --depth 1 https://github.com/Antynea/grub-btrfs.git "$tmp_dir"; then
             (cd "$tmp_dir" && sudo make install) || {
                 print_warning "Failed to install grub-btrfs from source"
             }
