@@ -29,6 +29,9 @@ zstyle :compinstall filename "$HOME/.zshrc"
 zstyle ':completion:*:*:git:*' script ~/.zsh/git-completion.bash
 fpath=(~/.zsh $fpath)
 
+# Load other completion scripts from the standard directory
+fpath=(~/.zsh/completions $fpath)
+
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
