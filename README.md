@@ -184,7 +184,7 @@ After running the installer:
 
 ## Included Configurations
 
-- **Shell**: zsh with starship prompt, zoxide, fzf
+- **Shell**: zsh with starship prompt, zoxide, television
 - **Terminal**: kitty
 - **Editor**: Neovim (AstroNvim-based), Cursor
 - **Git**: delta for diffs, lazygit

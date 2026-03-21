@@ -12,6 +12,10 @@ tools:
     post_install:
       - volta install node npm yarn@1 pnpm
 
+  - name: television
+    description: Terminal fuzzy finder (file picker, history search)
+    install: curl -fsSL https://alexpasmantier.github.io/television/install.sh | bash
+
   - name: tpm
     description: Tmux Plugin Manager
     type: git

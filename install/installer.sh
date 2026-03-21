@@ -714,6 +714,16 @@ install_common_tools() {
         print_info "Volta is already installed"
     fi
     
+    # Install television (Arch has it in extra repo, others use install script)
+    if [ "$DISTRO_FAMILY" != "arch" ]; then
+        if ! command_exists tv; then
+            install_curl_tool "television" \
+                "curl -fsSL https://alexpasmantier.github.io/television/install.sh | bash"
+        else
+            print_info "television is already installed"
+        fi
+    fi
+
     # Install TPM (Tmux Plugin Manager)
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
         install_git_repo "TPM" "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"

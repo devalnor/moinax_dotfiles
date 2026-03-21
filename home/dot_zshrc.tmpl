@@ -87,10 +87,41 @@ alias big="sudo du -sh *(D) | sort -rh | head -n 10"
 source ~/completion-for-pnpm.bash
 
 
-# Set up fzf key bindings and fuzzy completion
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
-export FZF_CTRL_T_COMMAND='fd --type f --hidden --exclude .git'
-source <(fzf --zsh)
+# Set up television for terminal keybindings (CTRL+T file picker, CTRL+R history search)
+eval "$(tv init zsh)"
+
+# Override smart autocomplete to launch tv files channel on empty prompt
+# instead of falling back to zsh's expand-or-complete (shows "5500 possibilities")
+_tv_smart_autocomplete() {
+  _disable_bracketed_paste
+  local tokens prefix lbuf
+  setopt localoptions noshwordsplit noksh_arrays noposixbuiltins
+
+  tokens=(${(z)LBUFFER})
+  if [ ${#tokens} -lt 1 ]; then
+    zle -I
+    local output
+    output=$(tv files --no-status-bar --inline < /dev/tty)
+    if [ -n "$output" ]; then
+      LBUFFER="${(q)output} "
+    fi
+    zle reset-prompt
+    _enable_bracketed_paste
+    return
+  fi
+
+  [[ ${LBUFFER[-1]} == ' ' ]] && tokens+=("")
+  if [[ ${LBUFFER} = *"${tokens[-2]-}${tokens[-1]}" ]]; then
+    tokens[-2]="${tokens[-2]-}${tokens[-1]}"
+    tokens=(${tokens[0,-2]})
+  fi
+
+  lbuf=$LBUFFER
+  prefix=${tokens[-1]}
+  [ -n "${tokens[-1]}" ] && lbuf=${lbuf:0:-${#tokens[-1]}}
+  __tv_path_completion "$prefix" "$lbuf"
+  _enable_bracketed_paste
+}
 
 # Store the ssh key for further use in git
 eval "$(keychain --eval id_ed25519)"
