@@ -15,6 +15,7 @@ packages:
     - stow
     - bat
     - eza
+    - fd
     - fzf
     - fastfetch
     - tldr
