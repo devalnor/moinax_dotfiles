@@ -9,23 +9,29 @@ Personal dotfiles for Arch Linux and Fedora, managed with [Chezmoi](https://www.
 ## Key Commands
 
 ```bash
-# Bootstrap: installs gum + git, then launches interactive installer
-./setup.sh
+# Interactive management menu (single entry point)
+./manage.sh
 
-# After editing files in home/, preview and apply with Chezmoi
+# CLI subcommands
+./manage.sh setup               # bootstrap: installs gum + git, then launches installer
+./manage.sh apply               # apply dotfiles via chezmoi
+./manage.sh diff                # view dotfiles diff
+./manage.sh whisper             # update whisper model for hyprvoice
+./manage.sh reconfig            # toggle chezmoi data flags
+./manage.sh cursor export       # save current Cursor extensions list
+./manage.sh cursor install      # install Cursor extensions from saved list
+./manage.sh update              # update system packages
+
+# Direct chezmoi usage
 chezmoi diff                    # see what would change
 chezmoi apply                   # apply source state to $HOME
 chezmoi edit ~/.zshrc           # edit a managed file (writes back to source)
-
-# Cursor extensions
-./manage-cursor-extensions.sh export   # save current extensions list
-./manage-cursor-extensions.sh install  # install from saved list
 ```
 
 ## Architecture
 
 ### Installer pipeline
-`setup.sh` → `install/installer.sh` → distro-specific scripts + package YAML files
+`manage.sh` → `tools/setup.sh` → `install/installer.sh` → distro-specific scripts + package YAML files
 
 - `install/distros/{arch,fedora}.sh` — package manager wrappers per distro
 - `install/lib/common.sh` — shared utilities

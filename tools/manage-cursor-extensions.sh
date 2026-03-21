@@ -4,7 +4,8 @@ set -e
 set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXTENSIONS_FILE="$SCRIPT_DIR/home/dot_config/Cursor/extensions.txt"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+EXTENSIONS_FILE="$REPO_DIR/home/dot_config/Cursor/extensions.txt"
 
 # Colors
 RED='\033[0;31m'

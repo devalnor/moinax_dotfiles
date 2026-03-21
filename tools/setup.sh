@@ -16,11 +16,12 @@ print_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 
-# Get script directory
+# Get script directory and repo root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Source distro detection helpers (provides detect_distro, get_distro_family, is_supported_distro)
-source "$SCRIPT_DIR/install/lib/detect.sh"
+source "$REPO_DIR/install/lib/detect.sh"
 
 # Show banner
 echo ""
@@ -47,9 +48,9 @@ install_gum() {
         print_info "gum is already installed"
         return 0
     fi
-    
+
     print_info "Installing gum (interactive prompt tool)..."
-    
+
     case "$(get_distro_family "$DISTRO")" in
         arch)
             # Check if paru is installed
@@ -92,7 +93,7 @@ install_gum() {
             exit 1
             ;;
     esac
-    
+
     if command -v gum &> /dev/null; then
         print_success "gum installed successfully"
     else
@@ -106,9 +107,9 @@ install_git() {
     if command -v git &> /dev/null; then
         return 0
     fi
-    
+
     print_info "Installing git..."
-    
+
     case "$(get_distro_family "$DISTRO")" in
         arch)
             sudo pacman -S --needed --noconfirm git
@@ -132,11 +133,11 @@ install_git
 install_gum
 
 # Make installer executable
-chmod +x "$SCRIPT_DIR/install/installer.sh"
-chmod +x "$SCRIPT_DIR/install/distros/"*.sh
-chmod +x "$SCRIPT_DIR/install/lib/"*.sh
+chmod +x "$REPO_DIR/install/installer.sh"
+chmod +x "$REPO_DIR/install/distros/"*.sh
+chmod +x "$REPO_DIR/install/lib/"*.sh
 
 # Run the main installer
 print_info "Starting interactive installer..."
 echo ""
-exec "$SCRIPT_DIR/install/installer.sh"
+exec "$REPO_DIR/install/installer.sh"

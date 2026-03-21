@@ -18,8 +18,11 @@ Personal dotfiles for Arch Linux, Fedora, and Debian/Ubuntu with optional Hyprla
 git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 
-# Run the installer
-./setup.sh
+# Run the interactive management menu
+./manage.sh
+
+# Or run the installer directly
+./manage.sh setup
 ```
 
 The interactive installer will:
@@ -47,8 +50,10 @@ The interactive installer will:
 
 ```
 dotfiles/
-├── setup.sh                 # Bootstrap script (entry point)
-├── manage-cursor-extensions.sh # Export/install Cursor extensions list
+├── manage.sh                # Management script (single entry point)
+├── tools/
+│   ├── setup.sh             # Bootstrap script (installs gum + git, runs installer)
+│   └── manage-cursor-extensions.sh # Export/install Cursor extensions list
 ├── install/
 │   ├── installer.sh         # Main interactive installer
 │   ├── distros/
@@ -86,7 +91,7 @@ dotfiles/
 
 ## Cursor Extensions Script
 
-This repo includes `manage-cursor-extensions.sh` to keep Cursor extensions reproducible across machines.
+This repo includes a Cursor extensions manager to keep extensions reproducible across machines.
 
 It reads/writes the extension list at `home/dot_config/Cursor/extensions.txt`.
 
@@ -94,13 +99,13 @@ It reads/writes the extension list at `home/dot_config/Cursor/extensions.txt`.
 
 ```bash
 # Interactive menu
-./manage-cursor-extensions.sh
+./manage.sh cursor
 
 # Export currently installed extensions to extensions.txt
-./manage-cursor-extensions.sh export
+./manage.sh cursor export
 
 # Install all extensions from extensions.txt
-./manage-cursor-extensions.sh install
+./manage.sh cursor install
 ```
 
 ### Notes
