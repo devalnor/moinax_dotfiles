@@ -731,7 +731,7 @@ install_common_tools() {
         # Install Node.js toolchain
         if command_exists volta; then
             print_info "Installing Node.js and package managers..."
-            volta install node npm yarn@1 pnpm || print_warning "Failed to install Node.js tools"
+            volta install node npm yarn@1 pnpm || track_warning "Failed to install Node.js tools"
         fi
     else
         print_info "Volta is already installed"
@@ -774,7 +774,7 @@ install_common_tools() {
             rm -rf "$temp_dir"
             print_success "Rofi themes installed"
         else
-            print_warning "Failed to install Rofi themes"
+            track_warning "Failed to install Rofi themes"
         fi
     fi
 
@@ -783,7 +783,7 @@ install_common_tools() {
         if command_exists gh; then
             if ! gh extension list 2>/dev/null | grep -q "dlvhdr/gh-dash"; then
                 print_info "Installing gh-dash extension..."
-                gh extension install dlvhdr/gh-dash && print_success "gh-dash installed" || print_warning "Failed to install gh-dash"
+                gh extension install dlvhdr/gh-dash && print_success "gh-dash installed" || track_warning "Failed to install gh-dash"
             else
                 print_info "gh-dash is already installed"
             fi
@@ -1514,20 +1514,20 @@ APTEOF
                     -e 's|^#\?GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
                     "$tmp_dir/config"
             fi
-            (cd "$tmp_dir" && sudo make install) || {
+            if (cd "$tmp_dir" && sudo make install); then
+                # Regenerate grub config with snapshot entries
+                if [ "$DISTRO_FAMILY" = "fedora" ]; then
+                    sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
+                        track_warning "Failed to regenerate GRUB config for grub-btrfs"
+                    }
+                fi
+            else
                 track_warning "Failed to install grub-btrfs from source"
-            }
+            fi
         else
             track_warning "Failed to clone grub-btrfs repository"
         fi
         rm -rf "$tmp_dir"
-
-        # Regenerate grub config with snapshot entries
-        if [ "$DISTRO_FAMILY" = "fedora" ]; then
-            sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
-                track_warning "Failed to regenerate GRUB config for grub-btrfs"
-            }
-        fi
     fi
 
     # Enable grub-btrfsd service if available
