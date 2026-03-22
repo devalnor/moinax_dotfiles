@@ -32,6 +32,10 @@ packages:
     # Terminal emulator
     - kitty
 
+    # Desktop app containers
+    - distrobox
+    - podman
+
     # Peripherals
     - headsetcontrol
 

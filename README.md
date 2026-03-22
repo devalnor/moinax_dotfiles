@@ -114,6 +114,45 @@ It reads/writes the extension list at `home/dot_config/Cursor/extensions.txt`.
 - Requires the `cursor` CLI in your `PATH`.
 - `install` is idempotent: already-installed extensions are skipped/reinstalled safely.
 
+## External Apps Helper
+
+This repo includes an external apps helper for:
+
+- importing an AppImage into your desktop launcher
+- installing a local `.deb`, `.rpm`, or `.pkg.tar.*` inside a Distrobox container
+- exporting the installed app to your host launcher with `distrobox-export`
+- updating that Distrobox-managed app later using saved metadata
+- guiding these flows interactively from `./manage.sh apps`
+
+### Usage
+
+```bash
+# Open the helper from the manager
+./manage.sh apps
+
+# Import an AppImage into the desktop launcher
+./manage.sh apps import-appimage ~/Downloads/MyApp.AppImage
+
+# Install a package into a Distrobox container and export it to the host launcher
+./manage.sh apps install-distrobox --container ubuntu --package ~/Downloads/app.deb
+
+# Update a previously managed Distrobox app
+./manage.sh apps update-distrobox --name app --package ~/Downloads/app-new.deb
+
+# List saved Distrobox app metadata
+./manage.sh apps list
+```
+
+### Notes
+
+- `./manage.sh apps` is a real interactive wizard, not just a help menu.
+- The root `Manage external apps` menu item is shown only on desktop installs where Distrobox is installed.
+- File picking starts in `~/Downloads` and falls back to `$HOME` if that folder does not exist.
+- Distrobox install prefers choosing from existing containers before falling back to manual entry.
+- Distrobox update uses saved managed app records instead of asking you to type the app name.
+- `install-distrobox` tries to auto-detect the new `.desktop` file after install; if multiple entries are added, pass `--app your.desktop`.
+- Managed Distrobox app metadata is stored under `${XDG_STATE_HOME:-~/.local/state}/dotfiles/external-apps/distrobox/`.
+
 ## Adding a New Distribution
 
 1. Create `install/distros/<distro>.sh` with package manager functions

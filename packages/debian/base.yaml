@@ -22,6 +22,10 @@ packages:
     # Terminal emulator
     - kitty
 
+    # Desktop app containers
+    - distrobox
+    - podman
+
     # Fonts
     - fonts-firacode
     - fonts-font-awesome

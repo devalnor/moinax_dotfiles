@@ -23,11 +23,20 @@ Commands:
   whisper     Update whisper model for hyprvoice dictation
   reconfig    Reconfigure chezmoi data flags
   cursor      Manage Cursor extensions
+  apps        Manage AppImages and Distrobox apps
   update      Update system packages
   help        Show this help message
 
 Run without arguments for an interactive menu.
 EOF
+}
+
+is_desktop_install() {
+    [ -f "$CHEZMOI_CONF" ] && grep -Eq '^[[:space:]]*install_purpose[[:space:]]*=[[:space:]]*"desktop"' "$CHEZMOI_CONF"
+}
+
+external_apps_available() {
+    is_desktop_install && command_exists distrobox-enter
 }
 
 # ── Actions ──────────────────────────────────────────────────────────────────
@@ -222,6 +231,21 @@ do_cursor() {
     exec "$SCRIPT_DIR/tools/manage-cursor-extensions.sh" "$@"
 }
 
+do_apps() {
+    if ! is_desktop_install; then
+        print_error "External apps helper is only available for desktop installs"
+        return 1
+    fi
+
+    if ! command_exists distrobox-enter; then
+        print_error "distrobox-enter is not installed"
+        print_info "Run the desktop installer or install Distrobox first."
+        return 1
+    fi
+
+    exec "$SCRIPT_DIR/tools/manage-external-apps.sh" "$@"
+}
+
 do_update() {
     local distro
     distro=$(detect_distro)
@@ -278,6 +302,9 @@ do_menu() {
         if command_exists cursor; then
             options+=("Manage Cursor extensions")
         fi
+        if external_apps_available; then
+            options+=("Manage external apps")
+        fi
         options+=("Update system packages")
         options+=("Exit")
 
@@ -291,6 +318,7 @@ do_menu() {
             "Update whisper model")        do_whisper ;;
             "Reconfigure chezmoi data")    do_reconfig ;;
             "Manage Cursor extensions")    do_cursor ;;
+            "Manage external apps")        do_apps ;;
             "Update system packages")      do_update ;;
             "Exit")                        break ;;
         esac
@@ -306,6 +334,7 @@ case "${1:-}" in
     whisper)    do_whisper ;;
     reconfig)   do_reconfig ;;
     cursor)     shift; do_cursor "$@" ;;
+    apps)       shift; do_apps "$@" ;;
     update)     do_update ;;
     help|--help|-h) usage ;;
     *)          do_menu ;;

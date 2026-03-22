@@ -20,7 +20,12 @@ Personal dotfiles for Arch Linux, Fedora, and Debian/Ubuntu, managed with [Chezm
 ./manage.sh reconfig            # toggle chezmoi data flags
 ./manage.sh cursor export       # save current Cursor extensions list
 ./manage.sh cursor install      # install Cursor extensions from saved list
+./manage.sh apps import-appimage ~/Downloads/App.AppImage
+./manage.sh apps install-distrobox --container ubuntu --package ~/Downloads/app.deb
+./manage.sh apps update-distrobox --name app --package ~/Downloads/app-new.deb
 ./manage.sh update              # update system packages
+
+# ./manage.sh apps opens a wizard-driven helper backed by tools/manage-external-apps.sh
 
 # Direct chezmoi usage
 chezmoi diff                    # see what would change
