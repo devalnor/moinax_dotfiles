@@ -62,6 +62,55 @@ is_root_btrfs() {
     [ "$fstype" = "btrfs" ]
 }
 
+# Read a value from `snapper -c root get-config`.
+snapper_root_config_value() {
+    local key="$1"
+    local line
+
+    line=$(sudo snapper -c root get-config 2>/dev/null | awk -F'|' -v key="$key" '
+        $1 ~ "^[[:space:]]*" key "[[:space:]]*$" {
+            value = $2
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+            print value
+            exit
+        }
+    ')
+
+    [ -n "$line" ] || return 1
+    printf '%s\n' "$line"
+}
+
+# Return success when BTRFS snapshot setup is complete enough to skip rerunning it.
+is_btrfs_snapshots_configured() {
+    local timeline_value allow_users apt_hook
+
+    command_exists snapper || return 1
+    sudo snapper list-configs 2>/dev/null | grep -q 'root\s*|' || return 1
+
+    timeline_value=$(snapper_root_config_value "TIMELINE_CREATE") || return 1
+    [ "$timeline_value" = "no" ] || return 1
+
+    allow_users=$(snapper_root_config_value "ALLOW_USERS") || return 1
+    if ! printf '%s\n' "$allow_users" | tr ',' ' ' | tr -s '[:space:]' '\n' | grep -Fxq "$USER"; then
+        return 1
+    fi
+
+    if [ "$DISTRO_FAMILY" = "debian" ]; then
+        apt_hook="/etc/apt/apt.conf.d/80-snapper"
+        [ -f "$apt_hook" ] || return 1
+    fi
+
+    if [[ "$DISTRO_FAMILY" =~ ^(debian|fedora)$ ]]; then
+        command_exists grub-btrfsd || return 1
+        if ! systemctl is-enabled --quiet grub-btrfsd.service \
+            && ! systemctl is-active --quiet grub-btrfsd.service; then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 # Check if gum is available
 check_gum() {
     if ! command_exists gum; then
@@ -1477,6 +1526,12 @@ setup_btrfs_snapshots() {
     # Verify snapper is installed
     if ! command_exists snapper; then
         print_warning "snapper not found — skipping BTRFS snapshot setup"
+        return 0
+    fi
+
+    if is_btrfs_snapshots_configured; then
+        print_info "BTRFS snapshots already configured, skipping"
+        BTRFS_SNAPSHOTS_CONFIGURED=true
         return 0
     fi
 
