@@ -36,7 +36,7 @@
 | Fullscreen | `Mod+F` | `Mod+F` | |
 | Maximize | `Mod+Alt+F` | `Mod+Alt+F` | |
 | Pin window | `Mod+P` | — | Hyprland only (sticky across workspaces) |
-| Overview | — | `Mod+O` | Niri only; Hyprland uses `Mod+O` for opacity |
+| Overview | — | `Mod+Ctrl+O` | Niri only |
 | Center column | — | `Mod+Alt+C` | Niri only |
 | Center visible columns | — | `Mod+Ctrl+C` | Niri only |
 | Maximize column | — | `Mod+Alt+M` | Niri only |
@@ -55,7 +55,7 @@
 | Focus down | `Mod+Down` | `Mod+Down` | Niri: focus-window-down (within column) |
 | Focus first column | — | `Mod+Home` | Niri only |
 | Focus last column | — | `Mod+End` | Niri only |
-| Cycle prev window | `Mod+Shift+Tab` | — | Hyprland only |
+| Cycle prev window | `Mod+Shift+Tab` | `Mod+Shift+Tab` | Niri: recent-windows previous-window |
 
 ## 4. Move Window / Column
 
@@ -65,8 +65,8 @@
 | Move right | `Mod+Ctrl+Right` | `Mod+Ctrl+Right` | Hyprland: movewindoworgroup; Niri: move-column-right |
 | Move up | `Mod+Ctrl+Up` | `Mod+Ctrl+Up` | Hyprland: movewindoworgroup; Niri: move-window-up |
 | Move down | `Mod+Ctrl+Down` | `Mod+Ctrl+Down` | Hyprland: movewindoworgroup; Niri: move-window-down |
-| Swap window left | `Mod+Alt+Left` | — | Hyprland only; Niri uses `Mod+Alt+Left` for focus monitor |
-| Swap window right | `Mod+Alt+Right` | — | Hyprland only; Niri uses `Mod+Alt+Right` for focus monitor |
+| Swap window left | `Mod+Alt+Left` | `Mod+Alt+Left` | Niri: swap-window-left |
+| Swap window right | `Mod+Alt+Right` | `Mod+Alt+Right` | Niri: swap-window-right |
 | Swap window up | `Mod+Alt+Up` | — | Hyprland only; Niri uses `Mod+Alt+Up` for workspace move |
 | Swap window down | `Mod+Alt+Down` | — | Hyprland only; Niri uses `Mod+Alt+Down` for workspace move |
 | Move column to first | — | `Mod+Ctrl+Home` | Niri only |
@@ -87,7 +87,7 @@
 |---|---|---|---|
 | Consume into column | — | `Mod+J` | Niri only; Hyprland uses `Mod+J` for toggle split (layoutmsg togglesplit) |
 | Expel from column | — | `Mod+Shift+J` | Niri only |
-| Toggle tabbed display | — | `Mod+G` | Niri: set-column-display "tabbed" |
+| Toggle tabbed display | — | `Mod+G` | Niri: toggle-column-tabbed-display |
 | Normal display | — | `Mod+Shift+G` | Niri: set-column-display "normal" |
 | Toggle group | `Mod+G` | — | Hyprland only (togglegroup) |
 | Cycle group forward | `Alt+Tab` | — | Hyprland only (changegroupactive) |
@@ -97,7 +97,7 @@
 
 > **Key reuse**: `Mod+J` and `Mod+G` serve different but analogous purposes in each compositor.
 > Hyprland: `J` = toggle split layout, `G` = toggle group.
-> Niri: `J` = consume/expel column, `G` = tabbed/normal display.
+> Niri: `J` = consume/expel column, `G` = toggle tabbed display.
 
 ## 7. Workspace Navigation
 
@@ -153,8 +153,8 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Focus monitor left | — | `Mod+Alt+Left` | Niri only; Hyprland uses `Mod+Alt+Left` for swap |
-| Focus monitor right | — | `Mod+Alt+Right` | Niri only; Hyprland uses `Mod+Alt+Right` for swap |
+| Focus monitor left | — | `Mod+Alt+Comma` | Niri only |
+| Focus monitor right | — | `Mod+Alt+Period` | Niri only |
 | Move column to monitor left | — | `Mod+Alt+Ctrl+Left` | Niri only |
 | Move column to monitor right | — | `Mod+Alt+Ctrl+Right` | Niri only |
 | Move column to monitor up | — | `Mod+Alt+Ctrl+Up` | Niri only |
@@ -182,7 +182,7 @@
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Screenshot monitor | `Print` | `Print` | Hyprland: hyprshot monitor; Niri: screenshot-screen |
-| Screenshot window | `Mod+Print` | — | Hyprland only (hyprshot window) |
+| Screenshot window | `Mod+Print` | `Mod+Print` | Hyprland: hyprshot window; Niri: screenshot-window |
 | Screenshot region | `Mod+Shift+Print` | `Mod+Shift+Print` | Hyprland: hyprshot region; Niri: built-in screenshot |
 
 ## 13. Media & Volume
@@ -211,7 +211,7 @@
 | Toggle dark/light mode | `Mod+N` | `Mod+N` | Switches Catppuccin Mocha/Latte + portal |
 | Toggle caffeine mode | `Mod+Alt+N` | `Mod+Alt+N` | Inhibits idle (prevents lock/sleep) |
 | Toggle Tailscale VPN | `Mod+Ctrl+N` | `Mod+Ctrl+N` | Connect/disconnect Tailscale |
-| Quit compositor | `Mod+Shift+Q` | `Mod+Shift+E` | **Different key** |
+| Quit compositor | `Mod+Shift+Q` | `Mod+Shift+Q` | |
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |
 | Keyboard shortcut inhibit | — | `Mod+Escape` | Niri only (toggle-keyboard-shortcuts-inhibit) |
@@ -240,8 +240,9 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Toggle full opacity | `Mod+O` | — | Hyprland only; Niri uses `Mod+O` for overview |
+| Toggle full opacity | `Mod+O` | `Mod+O` | Niri: toggle-window-rule-opacity |
 | Toggle half opacity | `Mod+Shift+O` | — | Hyprland only |
+| Focused opacity baseline | — | *(window rule: 0.95)* | Needed for Niri opacity toggle |
 | Unfocused opacity | — | *(window rule: 0.85)* | Niri uses automatic window rules |
 
 ---
@@ -254,7 +255,4 @@ Keys that do **different things** in each compositor:
 |---|---|---|
 | `Mod+G` | Toggle group | Tabbed column display |
 | `Mod+J` | Toggle split | Consume into column |
-| `Mod+O` | Toggle opacity | Toggle overview |
-| `Mod+Alt+Left/Right` | Swap window | Focus monitor |
-| `Mod+Shift+Q` | Quit Hyprland | *(unbound)* |
-| `Mod+Shift+E` | *(unbound)* | Quit Niri |
+| `Mod+Alt+Up/Down` | Swap window | Workspace reorder |

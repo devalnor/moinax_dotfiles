@@ -14,7 +14,7 @@
 //   Mod+G / Mod+Shift+G    = Tabbed display on / off
 //
 // Non-1:1 mappings with Hyprland:
-// - Scratchpad, group, split, opacity toggle have no Niri equivalent.
+// - Scratchpad, group, and split have no direct Niri equivalent.
 // - "move to workspace silently" is approximated with regular move-to-workspace.
 
 input {
@@ -109,6 +109,11 @@ window-rule {
 }
 
 window-rule {
+    match is-focused=true
+    opacity 0.95
+}
+
+window-rule {
     match is-focused=false
     opacity 0.85
 }
@@ -151,6 +156,12 @@ spawn-at-startup "hyprvoice" "serve"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
+recent-windows {
+    binds {
+        Mod+Shift+Tab { previous-window; }
+    }
+}
+
 binds {
     // ── 1. Application Shortcuts ──────────────────────────────────────
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
@@ -178,7 +189,8 @@ binds {
     Mod+Alt+M { maximize-column; }
     Mod+Alt+C { center-column; }
     Mod+Ctrl+C { center-visible-columns; }
-    Mod+O repeat=false { toggle-overview; }
+    Mod+O repeat=false { toggle-window-rule-opacity; }
+    Mod+Ctrl+O repeat=false { toggle-overview; }
     Mod+W { switch-preset-column-width; }
     Mod+Alt+W { switch-preset-window-height; }
     Mod+Ctrl+W { reset-window-height; }
@@ -209,7 +221,7 @@ binds {
     // ── 6. Column / Group Operations ─────────────────────────────────
     Mod+J { consume-window-into-column; }
     Mod+Shift+J { expel-window-from-column; }
-    Mod+G { set-column-display "tabbed"; }
+    Mod+G { toggle-column-tabbed-display; }
     Mod+Shift+G { set-column-display "normal"; }
 
     // ── 7. Workspace Navigation ──────────────────────────────────────
@@ -257,8 +269,10 @@ binds {
     Mod+Alt+Page_Down   { move-workspace-down; }
 
     // ── 9. Monitor Navigation ────────────────────────────────────────
-    Mod+Alt+Left  { focus-monitor-left; }
-    Mod+Alt+Right { focus-monitor-right; }
+    Mod+Alt+Left  { swap-window-left; }
+    Mod+Alt+Right { swap-window-right; }
+    Mod+Alt+Comma  { focus-monitor-left; }
+    Mod+Alt+Period { focus-monitor-right; }
     Mod+Alt+Ctrl+Left  { move-column-to-monitor-left; }
     Mod+Alt+Ctrl+Right { move-column-to-monitor-right; }
     Mod+Alt+Ctrl+Up    { move-column-to-monitor-up; }
@@ -276,6 +290,7 @@ binds {
 
     // ── 12. Screenshots ──────────────────────────────────────────────
     Print { screenshot-screen; }
+    Mod+Print { screenshot-window; }
     Mod+Shift+Print { screenshot; }
 
     // ── 13. Media & Volume ───────────────────────────────────────────
@@ -294,7 +309,7 @@ binds {
     Mod+N hotkey-overlay-title="Toggle Dark/Light Mode" { spawn-sh "~/.local/bin/toggle-dark-mode.sh"; }
     Mod+Alt+N hotkey-overlay-title="Toggle Caffeine Mode" { spawn-sh "~/.local/bin/toggle-caffeine.sh"; }
     Mod+Ctrl+N hotkey-overlay-title="Toggle Tailscale VPN" { spawn-sh "~/.local/bin/toggle-tailscale.sh"; }
-    Mod+Shift+E { quit; }
+    Mod+Shift+Q { quit; }
     Ctrl+Alt+Delete { quit; }
     Mod+L hotkey-overlay-title="Power Menu: wlogout" { spawn "wlogout"; }
     Mod+Shift+L hotkey-overlay-title="Power Menu: rofi" { spawn-sh "rofi -show powermenu -modi 'powermenu:rofi-power-menu'"; }
