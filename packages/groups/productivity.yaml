@@ -74,7 +74,7 @@ packages:
     # Backup and snapshots
     - snapper
     - python3-dnf-plugin-snapper
-    - grub-btrfs
+    # grub-btrfs installed from source by setup_btrfs_snapshots()
 
     # Communication
     - slack
@@ -115,6 +115,3 @@ packages:
   fedora_repos:
     # Google Chrome repo
     - google-chrome
-
-  fedora_copr:
-    - Clefable/grub-btrfs

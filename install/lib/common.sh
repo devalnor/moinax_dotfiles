@@ -23,6 +23,12 @@ print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
+# Print warning and track it for the end-of-install summary
+track_warning() {
+    print_warning "$1"
+    INSTALL_WARNINGS+=("$1")
+}
+
 print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }

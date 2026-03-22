@@ -27,6 +27,7 @@ fi
 # Installer state
 SELECTED_GROUP_NAMES=()
 SERVICES_TO_ENABLE=()
+INSTALL_WARNINGS=()
 declare -A GROUP_PACKAGE_MODE=()
 declare -A GROUP_CUSTOM_PACKAGE_LIST=()
 HYPRVOICE_MODEL="small"
@@ -544,7 +545,7 @@ install_base_packages() {
     done < <(parse_packages "$base_file" "core")
     
     if [ ${#packages[@]} -gt 0 ]; then
-        install_packages "${packages[@]}" || print_warning "Some base packages failed to install"
+        install_packages "${packages[@]}" || track_warning "Some base packages failed to install"
     fi
 
     # Parse and install desktop packages (only in desktop mode)
@@ -555,7 +556,7 @@ install_base_packages() {
         done < <(parse_packages "$base_file" "desktop")
 
         if [ ${#packages[@]} -gt 0 ]; then
-            install_packages "${packages[@]}" || print_warning "Some desktop base packages failed to install"
+            install_packages "${packages[@]}" || track_warning "Some desktop base packages failed to install"
         fi
     fi
 
@@ -567,17 +568,17 @@ install_base_packages() {
         done < <(parse_packages "$base_file" "aur")
 
         if [ ${#packages[@]} -gt 0 ]; then
-            install_packages "${packages[@]}" || print_warning "Some AUR packages failed to install"
+            install_packages "${packages[@]}" || track_warning "Some AUR packages failed to install"
         fi
     fi
 
     # Install binary packages not available in apt (Debian/Ubuntu family only)
     if [ "$DISTRO_FAMILY" = "debian" ]; then
-        install_eza || print_warning "Failed to install eza"
-        install_lazygit || print_warning "Failed to install lazygit"
-        install_starship || print_warning "Failed to install starship"
-        install_fastfetch || print_warning "Failed to install fastfetch"
-        install_yazi || print_warning "Failed to install yazi"
+        install_eza || track_warning "Failed to install eza"
+        install_lazygit || track_warning "Failed to install lazygit"
+        install_starship || track_warning "Failed to install starship"
+        install_fastfetch || track_warning "Failed to install fastfetch"
+        install_yazi || track_warning "Failed to install yazi"
         post_install_bat_alias
     fi
     
@@ -614,7 +615,7 @@ install_group_packages() {
                 done < <(yq -r '.packages.fedora_copr[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
 
                 for repo in "${copr_repos[@]}"; do
-                    enable_copr "$repo"
+                    enable_copr "$repo" || true  # Continue even if COPR fails
                 done
 
                 # Also run legacy setup functions
@@ -687,9 +688,9 @@ install_group_packages() {
         esac
         
         if [ ${#packages[@]} -gt 0 ]; then
-            install_packages "${packages[@]}" || print_warning "Some packages from $group failed to install"
+            install_packages "${packages[@]}" || track_warning "Some packages from $group failed to install"
         elif [ "$package_mode" != "skip" ]; then
-            print_warning "No packages resolved for group $group"
+            track_warning "No packages resolved for group $group"
         fi
         
         # Collect services to enable
@@ -1487,17 +1488,17 @@ APTEOF
         fi
     fi
 
-    # Debian: install grub-btrfs from source (not in apt repos)
-    if [ "$DISTRO_FAMILY" = "debian" ] && ! command_exists grub-btrfsd; then
+    # Debian/Fedora: install grub-btrfs from source (not in repos)
+    if [[ "$DISTRO_FAMILY" =~ ^(debian|fedora)$ ]] && ! command_exists grub-btrfsd; then
         print_info "Installing grub-btrfs from source..."
         local tmp_dir
         tmp_dir=$(mktemp -d)
         if git clone --depth 1 https://github.com/Antynea/grub-btrfs.git "$tmp_dir"; then
             (cd "$tmp_dir" && sudo make install) || {
-                print_warning "Failed to install grub-btrfs from source"
+                track_warning "Failed to install grub-btrfs from source"
             }
         else
-            print_warning "Failed to clone grub-btrfs repository"
+            track_warning "Failed to clone grub-btrfs repository"
         fi
         rm -rf "$tmp_dir"
     fi
@@ -1557,6 +1558,22 @@ show_completion() {
     if [ "$BTRFS_SNAPSHOTS_CONFIGURED" = true ]; then
         steps+=("  $next_step. Run 'snapper list' to verify BTRFS snapshots are working")
         next_step=$((next_step + 1))
+    fi
+
+    # Show warnings summary if any
+    if [ ${#INSTALL_WARNINGS[@]} -gt 0 ]; then
+        local warning_lines=()
+        for w in "${INSTALL_WARNINGS[@]}"; do
+            warning_lines+=("  • $w")
+        done
+        gum style \
+            --border rounded \
+            --border-foreground 214 \
+            --padding "1 2" \
+            --margin "1" \
+            "$(gum style --foreground 214 --bold '⚠ Some steps were skipped:')" \
+            "" \
+            "${warning_lines[@]}"
     fi
 
     gum style \

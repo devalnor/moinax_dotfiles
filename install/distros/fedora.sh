@@ -32,7 +32,7 @@ enable_copr() {
     
     print_info "Enabling COPR repository: $repo"
     if ! sudo dnf copr enable -y "$repo" 2>/dev/null; then
-        print_warning "Failed to enable COPR: $repo (may not exist for this Fedora version)"
+        track_warning "Failed to enable COPR: $repo (may not exist for this Fedora version)"
         return 1
     fi
     return 0
