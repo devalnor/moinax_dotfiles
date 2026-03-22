@@ -835,14 +835,26 @@ install_common_tools() {
                 print_info "Whisper model '$existing_model' is already downloaded"
             else
                 print_info "Hyprvoice supports local speech-to-text via whisper models"
-                HYPRVOICE_MODEL=$(gum choose --header "Select a whisper model for dictation:" \
-                    "small (500MB — good accuracy, EN+FR)" \
-                    "medium (1.5GB — better accuracy, EN+FR)" \
-                    "tiny (75MB — fastest, lower accuracy)" \
-                    "Skip — download later")
 
-                # Extract model name (first word before space)
-                HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% *}"
+                # Parse available models from hyprvoice (same approach as manage.sh)
+                local models=()
+                while IFS= read -r line; do
+                    if [[ "$line" =~ ^[[:space:]]*\[.\][[:space:]]+(.+)$ ]]; then
+                        models+=("${BASH_REMATCH[1]}")
+                    fi
+                done <<< "$(hyprvoice model list 2>/dev/null)"
+
+                if [ ${#models[@]} -gt 0 ]; then
+                    models+=("Skip — download later")
+                    HYPRVOICE_MODEL=$(printf '%s\n' "${models[@]}" | \
+                        gum choose --header "Select a whisper model for dictation:") || HYPRVOICE_MODEL="Skip"
+                    # Extract model name (first word)
+                    HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% -*}"
+                    HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% *}"
+                else
+                    track_warning "Could not fetch model list from hyprvoice"
+                    HYPRVOICE_MODEL="small"
+                fi
 
                 if [ "$HYPRVOICE_MODEL" != "Skip" ]; then
                     print_info "Downloading whisper model: $HYPRVOICE_MODEL"
