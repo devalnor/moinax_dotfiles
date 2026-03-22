@@ -729,6 +729,25 @@ install_common_tools() {
         print_warning "Common tools file not found"
         return 0
     fi
+
+    # Install Nerd Font for desktop setups so Starship/Waybar glyphs render correctly.
+    if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        if fc-list | grep -qi "FiraCode Nerd Font"; then
+            print_info "FiraCode Nerd Font is already installed"
+        else
+            print_info "Installing FiraCode Nerd Font..."
+            mkdir -p "$HOME/.local/share/fonts/FiraCodeNF"
+            if curl -sL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip -o /tmp/FiraCode.zip \
+                && unzip -o /tmp/FiraCode.zip -d "$HOME/.local/share/fonts/FiraCodeNF" >/dev/null \
+                && rm -f /tmp/FiraCode.zip \
+                && fc-cache -fv >/dev/null; then
+                print_success "FiraCode Nerd Font installed"
+            else
+                track_warning "Failed to install FiraCode Nerd Font"
+                rm -f /tmp/FiraCode.zip
+            fi
+        fi
+    fi
     
     # Install zoxide
     if ! command_exists zoxide; then
