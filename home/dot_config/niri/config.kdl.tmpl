@@ -128,10 +128,14 @@ environment {
     // XMODIFIERS intentionally not set
 }
 
-spawn-at-startup "sh" "-c" "/home/moinax/.config/waybar/launch-waybar.sh"
+spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.config/waybar/launch-waybar.sh"
 spawn-at-startup "swayidle" "-w"
-spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/moinax/Wallpapers/colorful.jpg"
+spawn-at-startup "swaybg" "-m" "fill" "-i" "{{ .chezmoi.homeDir }}/Wallpapers/colorful.jpg"
+{{ if or (eq .distro "debian") (eq .distro "ubuntu") (eq .distro "linuxmint") (eq .distro "pop") (eq .distro "elementary") (eq .distro "neon") (eq .distro "zorin") (eq .distro "kali") -}}
+spawn-at-startup "dunst"
+{{ else -}}
 spawn-at-startup "mako"
+{{ end -}}
 {{ if eq .chezmoi.osRelease.id "fedora" -}}
 spawn-at-startup "/usr/libexec/polkit-kde-authentication-agent-1"
 {{ else -}}
@@ -263,7 +267,11 @@ binds {
     // ── 11. Reload Configs ───────────────────────────────────────────
     Mod+Shift+B hotkey-overlay-title="Reload Waybar" { spawn-sh "killall -9 waybar; ~/.config/waybar/launch-waybar.sh &"; }
     Mod+Shift+W hotkey-overlay-title="Reload Wallpaper" { spawn-sh "killall swaybg; swaybg -m fill -i ~/Wallpapers/colorful.jpg &"; }
-    Mod+Shift+M hotkey-overlay-title="Reload Mako" { spawn-sh "killall mako; mako &"; }
+{{ if or (eq .distro "debian") (eq .distro "ubuntu") (eq .distro "linuxmint") (eq .distro "pop") (eq .distro "elementary") (eq .distro "neon") (eq .distro "zorin") (eq .distro "kali") -}}
+    Mod+Shift+M hotkey-overlay-title="Reload Notifications: dunst" { spawn-sh "killall dunst; dunst &"; }
+{{ else -}}
+    Mod+Shift+M hotkey-overlay-title="Reload Notifications: mako" { spawn-sh "killall mako; mako &"; }
+{{ end -}}
     Mod+Shift+R hotkey-overlay-title="Reload Niri Config" { spawn-sh "niri msg action load-config-file && notify-send -u low 'Niri' 'Config reloaded'"; }
 
     // ── 12. Screenshots ──────────────────────────────────────────────

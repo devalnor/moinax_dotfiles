@@ -32,6 +32,28 @@ declare -A GROUP_CUSTOM_PACKAGE_LIST=()
 HYPRVOICE_MODEL="small"
 INSTALL_PURPOSE="desktop"
 
+# Canonicalize a directory path for safe comparisons.
+canonicalize_dir() {
+    local path="$1"
+
+    # Expand a leading ~ for user-provided paths from chezmoi.toml.
+    path="${path/#\~/$HOME}"
+
+    if [ ! -d "$path" ]; then
+        return 1
+    fi
+
+    if command_exists realpath; then
+        realpath "$path"
+    elif readlink -f / >/dev/null 2>&1; then
+        readlink -f "$path"
+    else
+        (
+            cd "$path" >/dev/null 2>&1 && pwd -P
+        )
+    fi
+}
+
 # Check if root filesystem is BTRFS
 is_root_btrfs() {
     local fstype
@@ -937,14 +959,25 @@ setup_dotfiles() {
     local chezmoi_config="$HOME/.config/chezmoi/chezmoi.toml"
     mkdir -p "$(dirname "$chezmoi_config")"
     
-    # Keep existing sourceDir if user already has a working config (e.g. from manual fix or previous run)
     local source_dir="$DOTFILES_DIR/home"
+    local canonical_repo_source
+    canonical_repo_source=$(canonicalize_dir "$source_dir") || canonical_repo_source="$source_dir"
+
     if [[ -f "$chezmoi_config" ]]; then
         local existing_source
         existing_source=$(grep -E '^\s*sourceDir\s*=' "$chezmoi_config" | head -1 | sed -E 's/^[^=]*=\s*["]?([^"]*)["]?.*/\1/' | tr -d '"' | tr -d "'")
-        if [[ -n "$existing_source" && -d "$existing_source" ]]; then
-            source_dir="$existing_source"
-            print_info "Preserving existing chezmoi sourceDir: $source_dir"
+
+        if [[ -n "$existing_source" ]]; then
+            local canonical_existing_source
+            canonical_existing_source=$(canonicalize_dir "$existing_source" 2>/dev/null || true)
+
+            if [[ -n "$canonical_existing_source" && "$canonical_existing_source" = "$canonical_repo_source" ]]; then
+                source_dir="$existing_source"
+                print_info "Preserving existing chezmoi sourceDir: $source_dir"
+            elif [[ -n "$canonical_existing_source" ]]; then
+                print_warning "Ignoring existing chezmoi sourceDir outside this repo: $existing_source"
+                print_info "Using dotfiles sourceDir: $source_dir"
+            fi
         fi
     fi
     

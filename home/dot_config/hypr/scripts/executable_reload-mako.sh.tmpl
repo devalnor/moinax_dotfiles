@@ -1,0 +1,8 @@
+#!/bin/bash
+{{- if or (eq .distro "debian") (eq .distro "ubuntu") (eq .distro "linuxmint") (eq .distro "pop") (eq .distro "elementary") (eq .distro "neon") (eq .distro "zorin") (eq .distro "kali") }}
+killall dunst
+dunst &
+{{- else }}
+killall mako
+mako &
+{{- end }}

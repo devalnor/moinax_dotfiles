@@ -1,7 +1,11 @@
 # Execute your favorite apps at launch
 exec-once = ~/.config/waybar/launch-waybar.sh
 exec-once = hyprpaper
+{{- if or (eq .distro "debian") (eq .distro "ubuntu") (eq .distro "linuxmint") (eq .distro "pop") (eq .distro "elementary") (eq .distro "neon") (eq .distro "zorin") (eq .distro "kali") }}
+exec-once = dunst
+{{- else }}
 exec-once = mako
+{{- end }}
 exec-once = /usr/lib/polkit-kde-authentication-agent-1 &
 exec-once = hypridle
 # Load bluetooth applet
