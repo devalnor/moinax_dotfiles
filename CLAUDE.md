@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Personal dotfiles for Arch Linux and Fedora, managed with [Chezmoi](https://www.chezmoi.io/). Uses an interactive TUI installer powered by [gum](https://github.com/charmbracelet/gum).
+Personal dotfiles for Arch Linux, Fedora, and Debian/Ubuntu, managed with [Chezmoi](https://www.chezmoi.io/). Uses an interactive TUI installer powered by [gum](https://github.com/charmbracelet/gum).
 
 ## Key Commands
 
@@ -42,7 +42,7 @@ chezmoi edit ~/.zshrc           # edit a managed file (writes back to source)
 YAML files define packages per distro. Groups (`packages/groups/`) are selectable during install: `hyprland`, `niri`, `development`, `gaming`, `multimedia`, `productivity`.
 
 - `packages/common.yaml` — cross-distro tools installed via custom methods (zoxide, volta, etc.)
-- `packages/{arch,fedora}/base.yaml` — distro base packages
+- `packages/{arch,fedora,debian}/base.yaml` — distro base packages
 
 ### Chezmoi source directory (`home/`)
 The `home/` directory is the Chezmoi source. Files use Chezmoi naming conventions:
@@ -63,6 +63,6 @@ Hypr, Niri, Waybar, Rofi, Mako, Wlogout (Wayland compositors/desktop), Kitty (te
 ## Conventions
 
 - Shell scripts use `set -e` and consistent color-coded output helpers (`print_info`, `print_success`, `print_error`, `print_warning`)
-- Package lists are YAML with per-distro keys (`arch:`, `fedora:`)
+- Base package YAML supports `core`, `desktop`, and distro-specific extras such as `aur`, `desktop_aur`, `copr`, and `ppa`
 - Wayland desktop components (waybar, rofi, mako) are shared between Hyprland and Niri
 - **Keybinding changes**: When modifying keybindings in Hyprland (`home/dot_config/hypr/conf/binds.conf`) or Niri (`home/dot_config/niri/config.kdl.tmpl`), always update `KEYBINDINGS.md` at the repo root to keep the side-by-side reference in sync

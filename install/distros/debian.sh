@@ -138,6 +138,30 @@ is_package_installed() {
     dpkg -l "$package" 2>/dev/null | grep -q "^ii"
 }
 
+# Install AppImage runtime support using the libfuse2 variant available on the host
+install_appimage_support() {
+    local fuse_pkg=""
+
+    if apt-cache show libfuse2t64 >/dev/null 2>&1; then
+        fuse_pkg="libfuse2t64"
+    elif apt-cache show libfuse2 >/dev/null 2>&1; then
+        fuse_pkg="libfuse2"
+    fi
+
+    if [ -z "$fuse_pkg" ]; then
+        print_warning "No supported AppImage runtime package found (libfuse2t64/libfuse2)"
+        return 1
+    fi
+
+    if is_package_installed "$fuse_pkg"; then
+        print_info "AppImage runtime support is already installed via $fuse_pkg"
+        return 0
+    fi
+
+    print_info "Installing AppImage runtime support via $fuse_pkg..."
+    sudo apt install -y --no-install-recommends "$fuse_pkg"
+}
+
 # Install gum for interactive prompts
 install_gum() {
     if command_exists gum; then

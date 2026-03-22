@@ -8,6 +8,7 @@ Personal dotfiles for Arch Linux, Fedora, and Debian/Ubuntu with optional Hyprla
 - **Desktop or terminal mode**: Choose a full desktop setup or a lightweight terminal-only install
 - **Interactive installer**: Beautiful TUI prompts using [gum](https://github.com/charmbracelet/gum)
 - **Modular packages**: Choose what to install (Hyprland, Niri, Development, Gaming, AI, etc.)
+- **Desktop AppImage support**: Installs AppImage support automatically on desktop setups (Arch: `appimagelauncher`, Fedora: COPR-backed `appimagelauncher` with runtime fallback, Debian/Ubuntu: runtime support via the available `libfuse2` variant)
 - **Chezmoi-powered**: Smart dotfile management with templates and conditional installation
 - **Easy to extend**: Add new distros or package groups with simple YAML files
 
@@ -198,6 +199,7 @@ After running the installer:
 - **Hyprland**: hypridle, hyprlock, hyprpaper, hyprshot, waybar, rofi, mako, wlogout
 - **Niri**: niri with waybar, rofi, mako, wlogout (scrollable tiling Wayland compositor)
 - **AI**: hyprvoice dictation with local Whisper speech recognition
+- **AppImage support**: Desktop installs set up AppImage support per distro family; terminal installs skip it
 
 ## Credits
 

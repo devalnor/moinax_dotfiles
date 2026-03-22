@@ -34,10 +34,17 @@ packages:
     # Peripherals
     - headsetcontrol
 
+    # AppImage runtime support
+    - fuse
+    - fuse-libs
+
     # Fonts
     - fira-code-fonts
     - fontawesome-fonts
     - google-noto-fonts-common
+
+    # Desktop AppImage integration
+    - appimagelauncher
 
   copr:
     # COPR repositories to enable (processed before package installation)
@@ -46,3 +53,4 @@ packages:
       - atim/starship      # Starship prompt
       - atim/lazygit       # Git TUI
       - lihaohong/yazi     # Terminal file manager
+      - langdon/appimagelauncher  # AppImage desktop integration

@@ -129,6 +129,34 @@ install_yq() {
     }
 }
 
+# Install AppImage support with COPR-based desktop integration and runtime fallback
+install_appimage_support() {
+    local runtime_packages=(fuse fuse-libs)
+
+    print_info "Ensuring AppImage runtime support is installed..."
+    install_packages "${runtime_packages[@]}" || print_warning "Failed to install some AppImage runtime packages"
+
+    if ! is_package_installed fuse && ! is_package_installed fuse-libs; then
+        print_warning "AppImage runtime packages are not installed"
+    fi
+
+    if is_package_installed appimagelauncher; then
+        print_info "AppImageLauncher is already installed"
+        return 0
+    fi
+
+    print_info "Installing AppImageLauncher..."
+    install_packages appimagelauncher
+
+    if is_package_installed appimagelauncher; then
+        print_success "AppImageLauncher installed"
+        return 0
+    fi
+
+    print_warning "AppImageLauncher install failed; keeping runtime-only AppImage support"
+    return 1
+}
+
 # Setup COPR repos for specific package groups
 setup_hyprland_repos() {
     print_info "Setting up Hyprland COPR repositories..."

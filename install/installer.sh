@@ -572,6 +572,23 @@ install_base_packages() {
         fi
     fi
 
+    # Parse and install desktop-only AUR packages (Arch family only)
+    if [ "$DISTRO_FAMILY" = "arch" ] && [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        packages=()
+        while IFS= read -r pkg; do
+            [ -n "$pkg" ] && packages+=("$pkg")
+        done < <(parse_packages "$base_file" "desktop_aur")
+
+        if [ ${#packages[@]} -gt 0 ]; then
+            install_packages "${packages[@]}" || track_warning "Some desktop AUR packages failed to install"
+        fi
+    fi
+
+    # Install desktop-only AppImage support via distro-specific hook
+    if [ "$INSTALL_PURPOSE" = "desktop" ] && declare -F install_appimage_support >/dev/null; then
+        install_appimage_support || track_warning "Failed to install AppImage support"
+    fi
+
     # Install binary packages not available in apt (Debian/Ubuntu family only)
     if [ "$DISTRO_FAMILY" = "debian" ]; then
         install_eza || track_warning "Failed to install eza"

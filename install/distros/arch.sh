@@ -124,3 +124,14 @@ install_yq() {
     print_info "Installing yq..."
     sudo pacman -S --needed --noconfirm yq
 }
+
+# Install AppImage desktop integration
+install_appimage_support() {
+    if is_package_installed appimagelauncher; then
+        print_info "AppImageLauncher is already installed"
+        return 0
+    fi
+
+    print_info "Installing AppImageLauncher..."
+    install_packages appimagelauncher
+}
