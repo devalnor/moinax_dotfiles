@@ -23,6 +23,8 @@ packages:
     - jq
     - yq
     - lazygit
+    - unzip
+    - fontconfig
 
     # File management
     - yazi

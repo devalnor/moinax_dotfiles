@@ -17,6 +17,8 @@ packages:
     - btop
     - keychain
     - jq
+    - unzip
+    - fontconfig
 
   desktop:
     # Terminal emulator

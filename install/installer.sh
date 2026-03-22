@@ -730,22 +730,29 @@ install_common_tools() {
         return 0
     fi
 
-    # Install Nerd Font for desktop setups so Starship/Waybar glyphs render correctly.
-    if [ "$INSTALL_PURPOSE" = "desktop" ]; then
-        if fc-list | grep -qi "FiraCode Nerd Font"; then
-            print_info "FiraCode Nerd Font is already installed"
-        else
-            print_info "Installing FiraCode Nerd Font..."
-            mkdir -p "$HOME/.local/share/fonts/FiraCodeNF"
-            if curl -sL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip -o /tmp/FiraCode.zip \
-                && unzip -o /tmp/FiraCode.zip -d "$HOME/.local/share/fonts/FiraCodeNF" >/dev/null \
-                && rm -f /tmp/FiraCode.zip \
-                && fc-cache -fv >/dev/null; then
-                print_success "FiraCode Nerd Font installed"
+    # Install Nerd Font for any local setup so Starship glyphs render in desktop and terminal modes.
+    if command_exists fc-list && fc-list | grep -qi "FiraCode Nerd Font"; then
+        print_info "FiraCode Nerd Font is already installed"
+    elif ! command_exists unzip; then
+        track_warning "Skipping FiraCode Nerd Font install: 'unzip' is not installed"
+    else
+        print_info "Installing FiraCode Nerd Font..."
+        mkdir -p "$HOME/.local/share/fonts/FiraCodeNF"
+        if curl -sL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip -o /tmp/FiraCode.zip \
+            && unzip -o /tmp/FiraCode.zip -d "$HOME/.local/share/fonts/FiraCodeNF" >/dev/null; then
+            rm -f /tmp/FiraCode.zip
+            if command_exists fc-cache; then
+                if fc-cache -fv >/dev/null; then
+                    print_success "FiraCode Nerd Font installed"
+                else
+                    track_warning "FiraCode Nerd Font files installed, but font cache refresh failed"
+                fi
             else
-                track_warning "Failed to install FiraCode Nerd Font"
-                rm -f /tmp/FiraCode.zip
+                track_warning "FiraCode Nerd Font files installed, but 'fc-cache' is not available"
             fi
+        else
+            track_warning "Failed to install FiraCode Nerd Font"
+            rm -f /tmp/FiraCode.zip
         fi
     fi
     
