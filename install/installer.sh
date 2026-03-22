@@ -1196,7 +1196,17 @@ EOF
 
     # --- SDDM configuration (theme + Wayland) ---
     sudo mkdir -p /etc/sddm.conf.d
-    sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
+
+    # On Fedora KDE, sddm-wayland-plasma provides kwin_wayland as the SDDM compositor.
+    # We must not override that with weston, as the breeze greeter requires kwin + layer-shell.
+    if [ -f /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf ]; then
+        print_info "Detected sddm-wayland-plasma — using kwin_wayland compositor (only setting theme)"
+        sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
+[Theme]
+Current=${theme:-breeze}
+EOF
+    elif command_exists weston; then
+        sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
 
@@ -1206,8 +1216,17 @@ DisplayServer=wayland
 [Wayland]
 CompositorCommand=weston --shell=kiosk -c /etc/sddm/weston.ini
 EOF
+    else
+        print_warning "weston not found — skipping Wayland greeter config (SDDM will use its default display server)"
+        sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
+[Theme]
+Current=${theme:-breeze}
+EOF
+    fi
 
     # --- Weston config for Wayland greeter ---
+    # Skip weston.ini generation if plasma-wayland is handling the compositor
+    if [ ! -f /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf ]; then
     sudo mkdir -p /etc/sddm
 
     # Detect keyboard layout from localectl, fallback to "us"
@@ -1256,6 +1275,7 @@ transform=normal"
     fi
 
     echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
+    fi # end of weston config block (skipped when plasma-wayland is present)
 
     # --- Enable SDDM as display manager ---
     local current_dm

@@ -103,6 +103,9 @@ packages:
     - plasma-nm
 
   fedora:
+    # Display manager (weston not needed — Fedora KDE uses kwin_wayland via sddm-wayland-plasma)
+    - sddm
+
     # Niri core
     - niri
     - xwayland-satellite

@@ -90,6 +90,9 @@ packages:
     - cmatrix
 
   fedora:
+    # Display manager (weston not needed — Fedora KDE uses kwin_wayland via sddm-wayland-plasma)
+    - sddm
+
     # Hyprland core
     - hyprland
     - hypridle
