@@ -204,6 +204,50 @@ parse_desktop_only() {
     fi
 }
 
+# Parse a nested list from the top-level packages: map in YAML.
+# Usage: parse_package_nested_list "file.yaml" "fedora_copr"
+parse_package_nested_list() {
+    local file="$1"
+    local key="$2"
+    local in_packages=false
+    local in_list=false
+    local packages_indent=-1
+    local list_indent=-1
+
+    while IFS= read -r line; do
+        local trimmed="${line#"${line%%[![:space:]]*}"}"
+        local indent=$(( ${#line} - ${#trimmed} ))
+
+        if ! $in_packages; then
+            if [[ "$line" =~ ^[[:space:]]*packages:[[:space:]]*$ ]]; then
+                in_packages=true
+                packages_indent=$indent
+            fi
+            continue
+        fi
+
+        if [ -n "$trimmed" ] && [ "$indent" -le "$packages_indent" ]; then
+            break
+        fi
+
+        if ! $in_list; then
+            if [[ "$line" =~ ^[[:space:]]*${key}:[[:space:]]*$ ]]; then
+                in_list=true
+                list_indent=$indent
+            fi
+            continue
+        fi
+
+        if [ -n "$trimmed" ] && [ "$indent" -le "$list_indent" ] && [[ ! "$trimmed" =~ ^- ]]; then
+            break
+        fi
+
+        if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*(.+)$ ]]; then
+            echo "${BASH_REMATCH[1]}" | sed 's/#.*//' | xargs
+        fi
+    done < "$file"
+}
+
 # Parse COPR repositories from YAML
 # Usage: parse_copr_repos "file.yaml"
 parse_copr_repos() {
@@ -212,21 +256,7 @@ parse_copr_repos() {
     if command_exists yq; then
         yq -r '.packages.fedora_copr[]? // ""' "$file" 2>/dev/null | grep -v "^$"
     else
-        local in_section=false
-        while IFS= read -r line; do
-            if [[ "$line" =~ ^[[:space:]]*fedora_copr:[[:space:]]*$ ]]; then
-                in_section=true
-                continue
-            fi
-            if $in_section; then
-                if [[ "$line" =~ ^[[:space:]]*[a-z] ]] && [[ ! "$line" =~ ^[[:space:]]*- ]]; then
-                    break
-                fi
-                if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*(.+)$ ]]; then
-                    echo "${BASH_REMATCH[1]}" | sed 's/#.*//' | xargs
-                fi
-            fi
-        done < "$file"
+        parse_package_nested_list "$file" "fedora_copr"
     fi
 }
 
@@ -238,21 +268,7 @@ parse_ppas() {
     if command_exists yq; then
         yq -r '.packages.debian_ppa[]? // ""' "$file" 2>/dev/null | grep -v "^$"
     else
-        local in_section=false
-        while IFS= read -r line; do
-            if [[ "$line" =~ ^[[:space:]]*debian_ppa:[[:space:]]*$ ]]; then
-                in_section=true
-                continue
-            fi
-            if $in_section; then
-                if [[ "$line" =~ ^[[:space:]]*[a-z] ]] && [[ ! "$line" =~ ^[[:space:]]*- ]]; then
-                    break
-                fi
-                if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*(.+)$ ]]; then
-                    echo "${BASH_REMATCH[1]}" | sed 's/#.*//' | xargs
-                fi
-            fi
-        done < "$file"
+        parse_package_nested_list "$file" "debian_ppa"
     fi
 }
 
