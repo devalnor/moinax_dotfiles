@@ -23,6 +23,7 @@ Commands:
   whisper     Update whisper model for hyprvoice dictation
   reconfig    Reconfigure chezmoi data flags
   cursor      Manage Cursor extensions
+  packages    Manage packages (add/remove from groups)
   apps        Manage AppImages and Distrobox apps
   update      Update system packages
   lazy-lock   Sync nvim lazy-lock.json back to dotfiles source
@@ -232,6 +233,10 @@ do_cursor() {
     exec "$SCRIPT_DIR/tools/manage-cursor-extensions.sh" "$@"
 }
 
+do_packages() {
+    exec "$SCRIPT_DIR/tools/manage-packages.sh" "$@"
+}
+
 do_apps() {
     if ! is_desktop_install; then
         print_error "External apps helper is only available for desktop installs"
@@ -314,6 +319,7 @@ do_menu() {
             options+=("Update whisper model")
         fi
         options+=("Reconfigure chezmoi data")
+        options+=("Manage packages")
         if command_exists cursor; then
             options+=("Manage Cursor extensions")
         fi
@@ -332,6 +338,7 @@ do_menu() {
             "View dotfiles diff")          do_diff ;;
             "Update whisper model")        do_whisper ;;
             "Reconfigure chezmoi data")    do_reconfig ;;
+            "Manage packages")             do_packages ;;
             "Manage Cursor extensions")    do_cursor ;;
             "Manage external apps")        do_apps ;;
             "Update system packages")      do_update ;;
@@ -348,6 +355,7 @@ case "${1:-}" in
     diff)       do_diff ;;
     whisper)    do_whisper ;;
     reconfig)   do_reconfig ;;
+    packages)   shift; do_packages "$@" ;;
     cursor)     shift; do_cursor "$@" ;;
     apps)       shift; do_apps "$@" ;;
     update)     do_update ;;

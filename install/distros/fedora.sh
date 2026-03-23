@@ -26,6 +26,18 @@ install_packages() {
     }
 }
 
+# Remove packages using dnf
+remove_packages() {
+    local packages=("$@")
+
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    print_info "Removing packages: ${packages[*]}"
+    sudo dnf remove -y "${packages[@]}"
+}
+
 # Enable a COPR repository
 enable_copr() {
     local repo="$1"

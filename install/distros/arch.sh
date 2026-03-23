@@ -84,6 +84,18 @@ install_packages() {
     paru -S --needed --noconfirm "${packages[@]}"
 }
 
+# Remove packages
+remove_packages() {
+    local packages=("$@")
+
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    print_info "Removing packages: ${packages[*]}"
+    sudo pacman -Rns --noconfirm "${packages[@]}"
+}
+
 # Check if a package is installed
 is_package_installed() {
     local package="$1"

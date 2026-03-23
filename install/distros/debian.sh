@@ -26,6 +26,18 @@ install_packages() {
     }
 }
 
+# Remove packages using apt
+remove_packages() {
+    local packages=("$@")
+
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    print_info "Removing packages: ${packages[*]}"
+    sudo apt remove -y "${packages[@]}"
+}
+
 # Enable a PPA repository (Ubuntu only; skipped gracefully on pure Debian)
 enable_ppa() {
     local ppa="$1"
