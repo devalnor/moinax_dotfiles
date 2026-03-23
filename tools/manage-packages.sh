@@ -68,7 +68,8 @@ get_chezmoi_flag() {
 get_chezmoi_flag_value() {
     local flag="$1"
     if [ -f "$CHEZMOI_CONF" ]; then
-        grep -oP "^\s*${flag}\s*=\s*\K(true|false)" "$CHEZMOI_CONF" 2>/dev/null || true
+        grep -E "^[[:space:]]*${flag}[[:space:]]*=[[:space:]]*(true|false)" "$CHEZMOI_CONF" 2>/dev/null \
+            | grep -oE '(true|false)' || true
     fi
 }
 
@@ -82,8 +83,8 @@ update_chezmoi_flag() {
         return
     fi
 
-    if grep -q "${flag} = " "$CHEZMOI_CONF"; then
-        sed -i "s/${flag} = .*/${flag} = ${value}/" "$CHEZMOI_CONF"
+    if grep -qF "${flag} = " "$CHEZMOI_CONF"; then
+        sed -i "s/^[[:space:]]*${flag} = .*/    ${flag} = ${value}/" "$CHEZMOI_CONF"
         print_success "Updated ${flag} = ${value} in chezmoi.toml"
     fi
 }
