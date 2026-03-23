@@ -671,48 +671,7 @@ install_group_packages() {
         
         print_info "Installing $group group..."
         
-        # Setup repos if needed (distro-family specific)
-        case "$DISTRO_FAMILY" in
-            fedora)
-                # Enable any COPR repos defined in the group file
-                local copr_repos=()
-                while IFS= read -r repo; do
-                    [ -n "$repo" ] && copr_repos+=("$repo")
-                done < <(yq -r '.packages.fedora_copr[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
-
-                for repo in "${copr_repos[@]}"; do
-                    enable_copr "$repo" || true  # Continue even if COPR fails
-                done
-
-                # Also run legacy setup functions
-                case "$group" in
-                    hyprland) setup_hyprland_repos 2>/dev/null || true ;;
-                    gaming) setup_gaming_repos 2>/dev/null || true ;;
-                    multimedia) setup_multimedia_repos 2>/dev/null || true ;;
-                    productivity) setup_productivity_repos 2>/dev/null || true ;;
-                esac
-                ;;
-            debian)
-                # Enable any PPA repos defined in the group file
-                local debian_ppas=()
-                while IFS= read -r repo; do
-                    [ -n "$repo" ] && debian_ppas+=("$repo")
-                done < <(yq -r '.packages.debian_ppa[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
-
-                for repo in "${debian_ppas[@]}"; do
-                    enable_ppa "$repo" || true
-                done
-
-                # Run group-specific repo setup functions
-                case "$group" in
-                    hyprland) setup_hyprland_repos 2>/dev/null || true ;;
-                    gaming) setup_gaming_repos 2>/dev/null || true ;;
-                    multimedia) setup_multimedia_repos 2>/dev/null || true ;;
-                    productivity) setup_productivity_repos 2>/dev/null || true ;;
-                    development) setup_development_repos 2>/dev/null || true ;;
-                esac
-                ;;
-        esac
+        setup_group_repos "$group_file" "$group"
         
         # Parse package candidates
         local all_packages=()

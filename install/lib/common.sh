@@ -204,6 +204,55 @@ parse_desktop_only() {
     fi
 }
 
+# Enable any extra repositories needed by a package group on the current distro.
+# Uses existing distro-specific helpers when available and is best-effort by design.
+setup_group_repos() {
+    local group_file="$1"
+    local group="$2"
+
+    case "${DISTRO_FAMILY:-}" in
+        fedora)
+            if command_exists yq; then
+                local copr_repos=()
+                while IFS= read -r repo; do
+                    [ -n "$repo" ] && copr_repos+=("$repo")
+                done < <(yq -r '.packages.fedora_copr[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
+
+                for repo in "${copr_repos[@]}"; do
+                    enable_copr "$repo" || true
+                done
+            fi
+
+            case "$group" in
+                hyprland) setup_hyprland_repos 2>/dev/null || true ;;
+                gaming) setup_gaming_repos 2>/dev/null || true ;;
+                multimedia) setup_multimedia_repos 2>/dev/null || true ;;
+                productivity) setup_productivity_repos 2>/dev/null || true ;;
+            esac
+            ;;
+        debian)
+            if command_exists yq; then
+                local debian_ppas=()
+                while IFS= read -r repo; do
+                    [ -n "$repo" ] && debian_ppas+=("$repo")
+                done < <(yq -r '.packages.debian_ppa[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
+
+                for repo in "${debian_ppas[@]}"; do
+                    enable_ppa "$repo" || true
+                done
+            fi
+
+            case "$group" in
+                hyprland) setup_hyprland_repos 2>/dev/null || true ;;
+                gaming) setup_gaming_repos 2>/dev/null || true ;;
+                multimedia) setup_multimedia_repos 2>/dev/null || true ;;
+                productivity) setup_productivity_repos 2>/dev/null || true ;;
+                development) setup_development_repos 2>/dev/null || true ;;
+            esac
+            ;;
+    esac
+}
+
 # Install a tool via curl script
 install_curl_tool() {
     local name="$1"

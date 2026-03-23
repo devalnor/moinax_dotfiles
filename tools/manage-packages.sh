@@ -155,6 +155,20 @@ extract_package_name() {
     echo "$line" | sed 's/ — .*//'
 }
 
+normalize_package_name_for_system() {
+    local pkg="$1"
+    if [ "$DISTRO_FAMILY" = "arch" ] && [[ "$pkg" == */* ]]; then
+        echo "${pkg#*/}"
+    else
+        echo "$pkg"
+    fi
+}
+
+is_group_package_installed() {
+    local pkg="$1"
+    is_package_installed "$(normalize_package_name_for_system "$pkg")"
+}
+
 # ── Group selection ──────────────────────────────────────────────────────────
 
 # Show a gum chooser with all groups and their install counts.
@@ -173,7 +187,7 @@ choose_group() {
         while IFS= read -r pkg; do
             [ -z "$pkg" ] && continue
             total=$((total + 1))
-            if is_package_installed "$pkg"; then
+            if is_group_package_installed "$pkg"; then
                 installed=$((installed + 1))
             fi
         done < <(get_group_packages "$file")
@@ -222,7 +236,7 @@ show_browse() {
             [ -z "$pkg" ] && continue
             local desc="${DESCRIPTIONS[$pkg]:-}"
             local status
-            if is_package_installed "$pkg"; then
+            if is_group_package_installed "$pkg"; then
                 status="${GREEN}[x]${NC}"
             else
                 status="${RED}[ ]${NC}"
@@ -255,7 +269,7 @@ show_add() {
     local pkg
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if ! is_package_installed "$pkg"; then
+        if ! is_group_package_installed "$pkg"; then
             available+=("$(format_package "$pkg")")
         fi
     done < <(get_group_packages "$file")
@@ -292,13 +306,15 @@ show_add() {
         return
     fi
 
+    setup_group_repos "$file" "$group_id"
+
     install_packages "${to_install[@]}"
 
     # Check if all group packages are now installed
     local all_installed=true
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if ! is_package_installed "$pkg"; then
+        if ! is_group_package_installed "$pkg"; then
             all_installed=false
             break
         fi
@@ -360,7 +376,7 @@ show_remove() {
     local pkg
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if is_package_installed "$pkg"; then
+        if is_group_package_installed "$pkg"; then
             removable+=("$(format_package "$pkg")")
         fi
     done < <(get_group_packages "$file")
@@ -390,6 +406,11 @@ show_remove() {
         to_remove+=("$(extract_package_name "$line")")
     done <<< "$selected"
 
+    local remove_args=()
+    for pkg in "${to_remove[@]}"; do
+        remove_args+=("$(normalize_package_name_for_system "$pkg")")
+    done
+
     echo ""
     print_warning "Will remove: ${to_remove[*]}"
     if ! gum confirm "Proceed with removal?"; then
@@ -397,13 +418,13 @@ show_remove() {
         return
     fi
 
-    remove_packages "${to_remove[@]}"
+    remove_packages "${remove_args[@]}"
 
     # Check if any group packages remain installed
     local any_installed=false
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if is_package_installed "$pkg"; then
+        if is_group_package_installed "$pkg"; then
             any_installed=true
             break
         fi
