@@ -204,6 +204,58 @@ parse_desktop_only() {
     fi
 }
 
+# Parse COPR repositories from YAML
+# Usage: parse_copr_repos "file.yaml"
+parse_copr_repos() {
+    local file="$1"
+
+    if command_exists yq; then
+        yq -r '.packages.fedora_copr[]? // ""' "$file" 2>/dev/null | grep -v "^$"
+    else
+        local in_section=false
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[[:space:]]*fedora_copr:[[:space:]]*$ ]]; then
+                in_section=true
+                continue
+            fi
+            if $in_section; then
+                if [[ "$line" =~ ^[[:space:]]*[a-z] ]] && [[ ! "$line" =~ ^[[:space:]]*- ]]; then
+                    break
+                fi
+                if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*(.+)$ ]]; then
+                    echo "${BASH_REMATCH[1]}" | sed 's/#.*//' | xargs
+                fi
+            fi
+        done < "$file"
+    fi
+}
+
+# Parse PPA repositories from YAML
+# Usage: parse_ppas "file.yaml"
+parse_ppas() {
+    local file="$1"
+
+    if command_exists yq; then
+        yq -r '.packages.debian_ppa[]? // ""' "$file" 2>/dev/null | grep -v "^$"
+    else
+        local in_section=false
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[[:space:]]*debian_ppa:[[:space:]]*$ ]]; then
+                in_section=true
+                continue
+            fi
+            if $in_section; then
+                if [[ "$line" =~ ^[[:space:]]*[a-z] ]] && [[ ! "$line" =~ ^[[:space:]]*- ]]; then
+                    break
+                fi
+                if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*(.+)$ ]]; then
+                    echo "${BASH_REMATCH[1]}" | sed 's/#.*//' | xargs
+                fi
+            fi
+        done < "$file"
+    fi
+}
+
 # Enable any extra repositories needed by a package group on the current distro.
 # Uses existing distro-specific helpers when available and is best-effort by design.
 setup_group_repos() {
@@ -212,16 +264,10 @@ setup_group_repos() {
 
     case "${DISTRO_FAMILY:-}" in
         fedora)
-            if command_exists yq; then
-                local copr_repos=()
-                while IFS= read -r repo; do
-                    [ -n "$repo" ] && copr_repos+=("$repo")
-                done < <(yq -r '.packages.fedora_copr[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
-
-                for repo in "${copr_repos[@]}"; do
-                    enable_copr "$repo" || true
-                done
-            fi
+            local repo
+            while IFS= read -r repo; do
+                [ -n "$repo" ] && enable_copr "$repo" || true
+            done < <(parse_copr_repos "$group_file")
 
             case "$group" in
                 hyprland) setup_hyprland_repos 2>/dev/null || true ;;
@@ -231,16 +277,10 @@ setup_group_repos() {
             esac
             ;;
         debian)
-            if command_exists yq; then
-                local debian_ppas=()
-                while IFS= read -r repo; do
-                    [ -n "$repo" ] && debian_ppas+=("$repo")
-                done < <(yq -r '.packages.debian_ppa[]? // ""' "$group_file" 2>/dev/null | grep -v "^$")
-
-                for repo in "${debian_ppas[@]}"; do
-                    enable_ppa "$repo" || true
-                done
-            fi
+            local repo
+            while IFS= read -r repo; do
+                [ -n "$repo" ] && enable_ppa "$repo" || true
+            done < <(parse_ppas "$group_file")
 
             case "$group" in
                 hyprland) setup_hyprland_repos 2>/dev/null || true ;;
