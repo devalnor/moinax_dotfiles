@@ -1,5 +1,6 @@
 # Chezmoi ignore file
 # Files listed here will not be managed by chezmoi based on conditions
+# NOTE: patterns match against TARGET paths (e.g. .config/), not source paths (e.g. dot_config/)
 
 # README and documentation
 README.md
@@ -7,81 +8,84 @@ LICENSE
 
 # Ignore Hyprland configs if not selected
 {{- if not .install_hyprland }}
-dot_config/hypr/hyprland.conf
-dot_config/hypr/hypridle.conf
-dot_config/hypr/hyprpaper.conf
-dot_config/hypr/conf
-dot_config/hypr/conf/**
-dot_config/hypr/scripts
-dot_config/hypr/scripts/**
+.config/hypr/hyprland.conf
+.config/hypr/hypridle.conf
+.config/hypr/hyprpaper.conf
+.config/hypr/conf
+.config/hypr/conf/**
+.config/hypr/scripts
+.config/hypr/scripts/**
 {{- end }}
 {{- if and (not .install_hyprland) (not .install_niri) }}
-dot_config/hypr/hyprlock.conf
+.config/hypr/hyprlock.conf
 {{- end }}
 
 # Ignore Niri configs if not selected
 {{- if not .install_niri }}
-dot_config/niri
-dot_config/niri/**
-dot_config/swayidle
-dot_config/swayidle/**
-dot_config/xdg-desktop-portal
-dot_config/xdg-desktop-portal/**
+.config/niri
+.config/niri/**
+.config/swayidle
+.config/swayidle/**
+.config/xdg-desktop-portal
+.config/xdg-desktop-portal/**
 {{- end }}
 
 # Ignore shared Wayland desktop components if neither compositor is selected
 {{- if and (not .install_hyprland) (not .install_niri) }}
-dot_config/waybar
-dot_config/waybar/**
-dot_config/rofi
-dot_config/rofi/**
-dot_config/mako
-dot_config/mako/**
-dot_config/wlogout
-dot_config/wlogout/**
-dot_local/share/rofi
-dot_local/share/rofi/**
+.config/waybar
+.config/waybar/**
+.config/rofi
+.config/rofi/**
+.config/mako
+.config/mako/**
+.config/wlogout
+.config/wlogout/**
+.local/share/rofi
+.local/share/rofi/**
 {{- end }}
 
 # Ignore AI configs if not selected
 {{- if not .install_ai }}
-dot_config/hyprvoice
-dot_config/hyprvoice/**
-dot_local/bin/toggle-dictation.sh
+.config/hyprvoice
+.config/hyprvoice/**
+.local/bin/toggle-dictation.sh
 {{- end }}
 
 # Ignore Development configs if not selected
 {{- if not .install_development }}
-dot_config/nvim
-dot_config/nvim/**
-dot_config/Cursor
-dot_config/Cursor/**
-dot_config/delta
-dot_config/delta/**
-dot_config/gh-dash
-dot_config/gh-dash/**
+.config/nvim
+.config/nvim/**
+.config/Cursor
+.config/Cursor/**
+.config/delta
+.config/delta/**
+.config/gh-dash
+.config/gh-dash/**
 {{- end }}
 
+# Neovim lazy-lock.json — managed via 'manage.sh lazy-lock' instead of chezmoi apply
+.config/nvim/lazy-lock.json
+
 # Active theme files managed by apply-dark-mode.sh (variants are still tracked)
-dot_config/kitty/current-theme.conf
-dot_config/mako/config
-dot_local/share/rofi/themes/moinax.rasi
-dot_config/wlogout/style.css
-dot_config/waybar/style.css
+.config/kitty/current-theme.conf
+.config/mako/config
+.local/share/rofi/themes/moinax.rasi
+.config/wlogout/style.css
+.config/waybar/style.css
 
 # Ignore desktop-only base dotfiles in terminal mode
 {{- if eq .install_purpose "terminal" }}
-dot_config/kitty
-dot_config/kitty/**
+.config/kitty
+.config/kitty/**
 Wallpapers
 Wallpapers/**
 {{- end }}
 
 # Ignore Productivity configs if not selected
 {{- if not .install_productivity }}
-dot_icons
-dot_icons/**
-dot_themes
-dot_themes/**
-dot_local/share/applications/google-chrome.desktop
+.icons
+.icons/**
+.themes
+.themes/**
+.local/share/applications/google-chrome.desktop
 {{- end }}

@@ -25,6 +25,7 @@ Commands:
   cursor      Manage Cursor extensions
   apps        Manage AppImages and Distrobox apps
   update      Update system packages
+  lazy-lock   Sync nvim lazy-lock.json back to dotfiles source
   help        Show this help message
 
 Run without arguments for an interactive menu.
@@ -279,6 +280,20 @@ do_update() {
     esac
 }
 
+do_lazy_lock() {
+    local src="$HOME/.config/nvim/lazy-lock.json"
+    local dest="$SCRIPT_DIR/home/dot_config/nvim/lazy-lock.json"
+
+    if [[ ! -f "$src" ]]; then
+        print_error "No lazy-lock.json found at $src"
+        exit 1
+    fi
+
+    cp "$src" "$dest"
+    print_success "Synced lazy-lock.json to dotfiles source"
+    print_info "Review with 'git diff' and commit when ready"
+}
+
 # ── Interactive menu ─────────────────────────────────────────────────────────
 
 do_menu() {
@@ -336,6 +351,7 @@ case "${1:-}" in
     cursor)     shift; do_cursor "$@" ;;
     apps)       shift; do_apps "$@" ;;
     update)     do_update ;;
+    lazy-lock)  do_lazy_lock ;;
     help|--help|-h) usage ;;
     *)          do_menu ;;
 esac

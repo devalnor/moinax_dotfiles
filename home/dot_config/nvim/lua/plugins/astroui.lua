@@ -23,7 +23,7 @@ return {
     ---@type AstroUIOpts
     opts = {
       -- change colorscheme
-      colorscheme = "catppuccin",
+      colorscheme = "catppuccin-nvim",
       status = {
         separators = {
           left = { "", "" },
