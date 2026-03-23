@@ -13,6 +13,7 @@
 	helper = !/usr/bin/gh auth git-credential
 [alias]
 	cleanup = !git fetch -p && git for-each-ref --format \"%(refname:short) %(upstream:track)\" refs/heads/ | grep \"\\[gone\\]\" | awk '{print $1}' | xargs -r git branch -D
+	fp = push --force-with-lease
 [init]
 	defaultBranch = main
 [color]
@@ -23,3 +24,5 @@
 	path = ~/.config/delta/themes.gitconfig
 [delta]
 	features = catppuccin-mocha line-numbers
+[push]
+	default = current
