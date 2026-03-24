@@ -217,42 +217,6 @@ choose_group() {
     return 1
 }
 
-# ── Browse flow ──────────────────────────────────────────────────────────────
-
-show_browse() {
-    while true; do
-        local file
-        file=$(choose_group "Browse group packages") || return
-
-        local name icon
-        name=$(get_group_name "$file")
-        icon=$(get_group_icon "$file")
-        load_descriptions "$file"
-
-        print_header "${icon} ${name}"
-
-        local pkg
-        while IFS= read -r pkg; do
-            [ -z "$pkg" ] && continue
-            local desc="${DESCRIPTIONS[$pkg]:-}"
-            local status
-            if is_group_package_installed "$pkg"; then
-                status="${GREEN}[x]${NC}"
-            else
-                status="${RED}[ ]${NC}"
-            fi
-            if [ -n "$desc" ]; then
-                echo -e "  ${status} ${pkg} — ${desc}"
-            else
-                echo -e "  ${status} ${pkg}"
-            fi
-        done < <(get_group_packages "$file")
-
-        echo ""
-        read -rp "Press Enter to continue..."
-    done
-}
-
 # ── Add flow ─────────────────────────────────────────────────────────────────
 
 show_add() {
@@ -477,7 +441,6 @@ usage() {
 Usage: ./manage.sh packages [command]
 
 Commands:
-  browse      Browse groups and see installed status
   add         Add packages from a group
   remove      Remove packages from a group
   help        Show this help message
@@ -496,11 +459,10 @@ main_menu() {
         print_header "Package Manager"
 
         local choice
-        choice=$(printf '%s\n' "Browse groups" "Add packages" "Remove packages" "Back" \
+        choice=$(printf '%s\n' "Add packages" "Remove packages" "Back" \
             | gum choose --cursor.foreground="212" --header "What would you like to do?") || break
 
         case "$choice" in
-            "Browse groups")    show_browse ;;
             "Add packages")     show_add ;;
             "Remove packages")  show_remove ;;
             "Back")             break ;;
@@ -511,7 +473,6 @@ main_menu() {
 # ── CLI dispatch ─────────────────────────────────────────────────────────────
 
 case "${1:-}" in
-    browse)             show_browse ;;
     add)                show_add ;;
     remove)             show_remove ;;
     help|--help|-h)     usage ;;
