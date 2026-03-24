@@ -17,15 +17,12 @@ usage() {
 Usage: ./manage.sh [command]
 
 Commands:
-  setup       Run full installer (bootstrap + interactive setup)
-  apply       Apply dotfiles via chezmoi
-  diff        View dotfiles diff
-  whisper     Update whisper model for hyprvoice dictation
-  reconfig    Reconfigure chezmoi data flags
-  cursor      Manage Cursor extensions
   packages    Manage packages (add/remove from groups)
   apps        Manage AppImages and Distrobox apps
-  update      Update system packages
+  cursor      Manage Cursor extensions
+  reconfig    Reconfigure chezmoi data flags
+  whisper     Update whisper model for hyprvoice dictation
+  setup       Run full installer (bootstrap + interactive setup)
   lazy-lock   Sync nvim lazy-lock.json back to dotfiles source
   help        Show this help message
 
@@ -45,16 +42,6 @@ external_apps_available() {
 
 do_setup() {
     exec "$SCRIPT_DIR/tools/setup.sh"
-}
-
-do_apply() {
-    print_info "Applying dotfiles..."
-    chezmoi apply --force
-    print_success "Dotfiles applied"
-}
-
-do_diff() {
-    chezmoi diff
 }
 
 do_whisper() {
@@ -225,7 +212,9 @@ do_reconfig() {
 
     # Offer to apply immediately
     if gum confirm "Apply dotfiles now?"; then
-        do_apply
+        print_info "Applying dotfiles..."
+        chezmoi apply --force
+        print_success "Dotfiles applied"
     fi
 }
 
@@ -250,39 +239,6 @@ do_apps() {
     fi
 
     exec "$SCRIPT_DIR/tools/manage-external-apps.sh" "$@"
-}
-
-do_update() {
-    local distro
-    distro=$(detect_distro)
-    local family
-    family=$(get_distro_family "$distro")
-
-    print_header "Update System Packages"
-
-    case "$family" in
-        arch)
-            if command_exists paru; then
-                print_info "Updating with paru..."
-                paru -Syu
-            elif command_exists yay; then
-                print_info "Updating with yay..."
-                yay -Syu
-            else
-                print_info "Run: sudo pacman -Syu"
-            fi
-            ;;
-        fedora)
-            print_info "Run: sudo dnf upgrade --refresh"
-            ;;
-        debian)
-            print_info "Run: sudo apt update && sudo apt upgrade"
-            ;;
-        *)
-            print_error "Unsupported distro family: $family"
-            exit 1
-            ;;
-    esac
 }
 
 do_lazy_lock() {
@@ -312,37 +268,31 @@ do_menu() {
 
         # Build menu options dynamically
         local options=()
-        options+=("Run full installer")
-        options+=("Apply dotfiles")
-        options+=("View dotfiles diff")
+        options+=("Manage packages")
+        if external_apps_available; then
+            options+=("External apps")
+        fi
+        if command_exists cursor; then
+            options+=("Cursor extensions")
+        fi
+        options+=("Reconfigure flags")
         if command_exists hyprvoice; then
             options+=("Update whisper model")
         fi
-        options+=("Reconfigure chezmoi data")
-        options+=("Manage packages")
-        if command_exists cursor; then
-            options+=("Manage Cursor extensions")
-        fi
-        if external_apps_available; then
-            options+=("Manage external apps")
-        fi
-        options+=("Update system packages")
+        options+=("Full installer")
         options+=("Exit")
 
         local choice
         choice=$(printf '%s\n' "${options[@]}" | gum choose --cursor.foreground="212" --header "What would you like to do?") || break
 
         case "$choice" in
-            "Run full installer")          do_setup ;;
-            "Apply dotfiles")              do_apply ;;
-            "View dotfiles diff")          do_diff ;;
-            "Update whisper model")        do_whisper ;;
-            "Reconfigure chezmoi data")    do_reconfig ;;
-            "Manage packages")             do_packages ;;
-            "Manage Cursor extensions")    do_cursor ;;
-            "Manage external apps")        do_apps ;;
-            "Update system packages")      do_update ;;
-            "Exit")                        break ;;
+            "Manage packages")         do_packages ;;
+            "External apps")           do_apps ;;
+            "Cursor extensions")       do_cursor ;;
+            "Reconfigure flags")       do_reconfig ;;
+            "Update whisper model")    do_whisper ;;
+            "Full installer")          do_setup ;;
+            "Exit")                    break ;;
         esac
     done
 }
@@ -351,14 +301,11 @@ do_menu() {
 
 case "${1:-}" in
     setup)      do_setup ;;
-    apply)      do_apply ;;
-    diff)       do_diff ;;
     whisper)    do_whisper ;;
     reconfig)   do_reconfig ;;
     packages)   shift; do_packages "$@" ;;
     cursor)     shift; do_cursor "$@" ;;
     apps)       shift; do_apps "$@" ;;
-    update)     do_update ;;
     lazy-lock)  do_lazy_lock ;;
     help|--help|-h) usage ;;
     *)          do_menu ;;
