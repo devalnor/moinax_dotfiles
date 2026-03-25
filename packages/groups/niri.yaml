@@ -103,8 +103,9 @@ packages:
     - plasma-nm
 
   fedora:
-    # Display manager (kwin_wayland auto-detected at install time)
+    # Display manager (kwin_wayland preferred if present, weston as fallback)
     - sddm
+    - weston
 
     # Niri core
     - niri
