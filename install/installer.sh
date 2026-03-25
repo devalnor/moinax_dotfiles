@@ -1317,7 +1317,7 @@ keymap_layout=${kb_layout}"
         # to be detected before starting SDDM, preventing a black screen if DP
         # link training is slow (e.g. monitor waking from deep sleep).
         local primary_outputs=()
-        if command -v xrandr &>/dev/null; then
+        if command -v xrandr &>/dev/null && xrandr --query &>/dev/null; then
             while IFS= read -r line; do
                 local output_name rotation mode transform
                 output_name=$(echo "$line" | awk '{print $1}')
@@ -1333,7 +1333,7 @@ mode=off"
                 else
                     # Non-rotated monitor — enable with native resolution
                     mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
-                    if [ -n "$output_name" ] && [ -n "$mode" ]; then
+                    if [ -n "$output_name" ] && [[ "$mode" =~ ^[0-9]+x[0-9]+ ]]; then
                         primary_outputs+=("$output_name")
                         weston_cfg="${weston_cfg}
 
@@ -1344,6 +1344,8 @@ transform=normal"
                     fi
                 fi
             done < <(xrandr --query 2>/dev/null | grep " connected ")
+        else
+            print_warning "xrandr not available — skipping monitor rotation detection for weston.ini"
         fi
 
         echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
@@ -1379,6 +1381,10 @@ WAITEOF
 [Service]
 ExecStartPre=/etc/sddm/wait-for-primary-monitor.sh
 DROPEOF
+        else
+            # No primary outputs detected — clean up stale wait-script artifacts
+            sudo rm -f /etc/sddm/wait-for-primary-monitor.sh
+            sudo rm -f /etc/systemd/system/sddm.service.d/wait-for-monitor.conf
         fi
     else
         # Clean up weston artifacts from previous installs
