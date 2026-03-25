@@ -20,7 +20,7 @@ services:
 
 descriptions:
   sddm: Display manager (login screen)
-  weston: Wayland compositor for SDDM greeter
+  weston: Fallback SDDM greeter compositor (used when kwin_wayland is absent)
   niri: Scrollable tiling Wayland compositor
   xwayland-satellite: XWayland support for Niri
   waybar: Highly customizable status bar
@@ -50,7 +50,7 @@ descriptions:
 
 packages:
   arch:
-    # Display manager
+    # Display manager (kwin_wayland preferred if present, weston as fallback)
     - sddm
     - weston
 
@@ -103,7 +103,7 @@ packages:
     - plasma-nm
 
   fedora:
-    # Display manager (weston not needed — Fedora KDE uses kwin_wayland via sddm-wayland-plasma)
+    # Display manager (kwin_wayland auto-detected at install time)
     - sddm
 
     # Niri core

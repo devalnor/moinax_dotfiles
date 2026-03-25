@@ -19,7 +19,7 @@ services:
 
 descriptions:
   sddm: Display manager (login screen)
-  weston: Wayland compositor for SDDM greeter
+  weston: Fallback SDDM greeter compositor (used when kwin_wayland is absent)
   hyprland: Dynamic tiling Wayland compositor
   hypridle: Idle daemon for Hyprland
   hyprlock: Screen locker for Hyprland
@@ -47,7 +47,7 @@ descriptions:
 
 packages:
   arch:
-    # Display manager
+    # Display manager (kwin_wayland preferred if present, weston as fallback)
     - sddm
     - weston
 
@@ -90,7 +90,7 @@ packages:
     - cmatrix
 
   fedora:
-    # Display manager (weston not needed — Fedora KDE uses kwin_wayland via sddm-wayland-plasma)
+    # Display manager (kwin_wayland auto-detected at install time)
     - sddm
 
     # Hyprland core
@@ -137,7 +137,7 @@ packages:
     - hypridle
     - hyprlock
 
-    # Display manager
+    # Display manager (kwin_wayland preferred if present, weston as fallback)
     - sddm
     - weston
 

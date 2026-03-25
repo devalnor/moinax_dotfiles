@@ -1248,15 +1248,34 @@ EOF
     # --- SDDM configuration (theme + Wayland) ---
     sudo mkdir -p /etc/sddm.conf.d
 
-    # On Fedora KDE, sddm-wayland-plasma provides kwin_wayland as the SDDM compositor.
-    # We must not override that with weston, as the breeze greeter requires kwin + layer-shell.
+    # Compositor priority: distro-provided config > kwin_wayland > weston > fallback.
+    # KDE-based installs already ship kwin_wayland which handles multi-monitor
+    # natively. Weston is the lightweight fallback for non-KDE systems.
+    local sddm_compositor="none"
     if [ -f /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf ]; then
-        print_info "Detected sddm-wayland-plasma — using kwin_wayland compositor (only setting theme)"
+        # Distro (e.g. Fedora) ships its own SDDM Wayland config — only set theme
+        sddm_compositor="distro"
+        print_info "Detected distro-provided SDDM Wayland config — only setting theme"
         sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
 EOF
+    elif command_exists kwin_wayland; then
+        sddm_compositor="kwin"
+        print_info "Using kwin_wayland as SDDM compositor"
+        sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
+[Theme]
+Current=${theme:-breeze}
+
+[General]
+DisplayServer=wayland
+
+[Wayland]
+CompositorCommand=kwin_wayland --no-global-shortcuts --no-lockscreen --locale1
+EOF
     elif command_exists weston; then
+        sddm_compositor="weston"
+        print_info "Using weston as SDDM compositor"
         sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
@@ -1268,66 +1287,106 @@ DisplayServer=wayland
 CompositorCommand=weston --shell=kiosk -c /etc/sddm/weston.ini
 EOF
     else
-        print_warning "weston not found — skipping Wayland greeter config (SDDM will use its default display server)"
+        print_warning "No Wayland compositor found for SDDM greeter — using default display server"
         sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
 EOF
     fi
 
-    # --- Weston config for Wayland greeter ---
-    # Skip weston.ini generation if plasma-wayland is handling the compositor
-    if [ ! -f /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf ]; then
-    sudo mkdir -p /etc/sddm
+    # --- Weston config (only needed when weston is the SDDM compositor) ---
+    if [ "$sddm_compositor" = "weston" ]; then
+        sudo mkdir -p /etc/sddm
 
-    # Detect keyboard layout from localectl, fallback to "us"
-    local kb_layout
-    kb_layout=$(localectl status 2>/dev/null | grep "X11 Layout" | awk '{print $3}')
-    kb_layout=${kb_layout:-us}
+        # Detect keyboard layout from localectl, fallback to "us"
+        local kb_layout
+        kb_layout=$(localectl status 2>/dev/null | grep "X11 Layout" | awk '{print $3}')
+        kb_layout=${kb_layout:-us}
 
-    # Build weston.ini with keyboard layout and monitor rotation
-    local weston_cfg
-    weston_cfg="[core]
+        # Build weston.ini with keyboard layout and monitor rotation
+        local weston_cfg
+        weston_cfg="[core]
 shell=kiosk-shell.so
 
 [keyboard]
 keymap_layout=${kb_layout}"
 
-    # Detect connected monitors via xrandr
-    # Non-rotated monitors get their native resolution; rotated monitors use
-    # mode=preferred as a fallback — if the primary screen is not detected at
-    # boot (e.g. deep-sleep DP link failure), weston still has an output to
-    # display the greeter on instead of exiting immediately.
-    if command -v xrandr &>/dev/null; then
-        while IFS= read -r line; do
-            local output_name rotation mode transform
-            output_name=$(echo "$line" | awk '{print $1}')
-            # Check if rotation keyword is present before the parenthesized list of supported rotations
-            rotation=$(echo "$line" | sed 's/(.*//' | grep -oE '\b(left|right|inverted)\b' || true)
-            if [ -n "$rotation" ]; then
-                # Rotated monitor — use preferred mode as fallback
-                weston_cfg="${weston_cfg}
+        # Detect connected monitors via xrandr
+        # Rotated monitors are disabled (mode=off) so the greeter only shows on
+        # the horizontal screen. A systemd drop-in waits for the primary monitor
+        # to be detected before starting SDDM, preventing a black screen if DP
+        # link training is slow (e.g. monitor waking from deep sleep).
+        local primary_outputs=()
+        if command -v xrandr &>/dev/null; then
+            while IFS= read -r line; do
+                local output_name rotation mode transform
+                output_name=$(echo "$line" | awk '{print $1}')
+                # Check if rotation keyword is present before the parenthesized list of supported rotations
+                rotation=$(echo "$line" | sed 's/(.*//' | grep -oE '\b(left|right|inverted)\b' || true)
+                if [ -n "$rotation" ]; then
+                    # Rotated monitor — disable for greeter
+                    weston_cfg="${weston_cfg}
 
 [output]
 name=${output_name}
-mode=preferred"
-            else
-                # Non-rotated monitor — enable with native resolution
-                mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
-                if [ -n "$output_name" ] && [ -n "$mode" ]; then
-                    weston_cfg="${weston_cfg}
+mode=off"
+                else
+                    # Non-rotated monitor — enable with native resolution
+                    mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
+                    if [ -n "$output_name" ] && [ -n "$mode" ]; then
+                        primary_outputs+=("$output_name")
+                        weston_cfg="${weston_cfg}
 
 [output]
 name=${output_name}
 mode=${mode}
 transform=normal"
+                    fi
                 fi
-            fi
-        done < <(xrandr --query 2>/dev/null | grep " connected ")
+            done < <(xrandr --query 2>/dev/null | grep " connected ")
+        fi
+
+        echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
+
+        # --- Wait-for-monitor script ---
+        # Ensures the primary (non-rotated) monitor is detected before SDDM starts
+        if [ ${#primary_outputs[@]} -gt 0 ]; then
+            local grep_pattern
+            grep_pattern=$(printf '%s\\|' "${primary_outputs[@]}")
+            grep_pattern=${grep_pattern%\\|}
+
+            sudo tee /etc/sddm/wait-for-primary-monitor.sh > /dev/null <<WAITEOF
+#!/bin/bash
+# Wait up to 10s for a primary monitor to be connected before SDDM starts.
+# Generated by dotfiles installer — do not edit manually.
+TIMEOUT=10
+for i in \$(seq 1 \$TIMEOUT); do
+    for status_file in /sys/class/drm/card*-*/status; do
+        name=\$(basename "\$(dirname "\$status_file")")
+        name=\${name#card*-}
+        if echo "\$name" | grep -qx '${grep_pattern}'; then
+            [ "\$(cat "\$status_file")" = "connected" ] && exit 0
+        fi
+    done
+    sleep 1
+done
+exit 0
+WAITEOF
+            sudo chmod +x /etc/sddm/wait-for-primary-monitor.sh
+
+            sudo mkdir -p /etc/systemd/system/sddm.service.d
+            sudo tee /etc/systemd/system/sddm.service.d/wait-for-monitor.conf > /dev/null <<DROPEOF
+[Service]
+ExecStartPre=/etc/sddm/wait-for-primary-monitor.sh
+DROPEOF
+        fi
+    else
+        # Clean up weston artifacts from previous installs
+        sudo rm -f /etc/sddm/weston.ini /etc/sddm/wait-for-primary-monitor.sh
+        sudo rm -f /etc/systemd/system/sddm.service.d/wait-for-monitor.conf
     fi
 
-    echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
-    fi # end of weston config block (skipped when plasma-wayland is present)
+    sudo systemctl daemon-reload 2>/dev/null
 
     # --- Enable SDDM as display manager ---
     local current_dm
