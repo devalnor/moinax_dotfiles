@@ -1294,9 +1294,10 @@ shell=kiosk-shell.so
 keymap_layout=${kb_layout}"
 
     # Detect connected monitors via xrandr
-    # Only the non-rotated (horizontal) monitor is enabled for the greeter;
-    # rotated monitors are disabled (mode=off) so the greeter lands on the right screen.
-    # They turn back on once the user session compositor (Hyprland/Niri) starts.
+    # Non-rotated monitors get their native resolution; rotated monitors use
+    # mode=preferred as a fallback — if the primary screen is not detected at
+    # boot (e.g. deep-sleep DP link failure), weston still has an output to
+    # display the greeter on instead of exiting immediately.
     if command -v xrandr &>/dev/null; then
         while IFS= read -r line; do
             local output_name rotation mode transform
@@ -1304,12 +1305,12 @@ keymap_layout=${kb_layout}"
             # Check if rotation keyword is present before the parenthesized list of supported rotations
             rotation=$(echo "$line" | sed 's/(.*//' | grep -oE '\b(left|right|inverted)\b' || true)
             if [ -n "$rotation" ]; then
-                # Rotated monitor — disable it during login screen
+                # Rotated monitor — use preferred mode as fallback
                 weston_cfg="${weston_cfg}
 
 [output]
 name=${output_name}
-mode=off"
+mode=preferred"
             else
                 # Non-rotated monitor — enable with native resolution
                 mode=$(xrandr --query 2>/dev/null | grep -A 1 "^${output_name} connected" | tail -1 | awk '{print $1}')
