@@ -425,7 +425,7 @@ select_group_packages() {
             tsv_output=$(printf '%s' "$tree_json" | python3 "$SCRIPT_DIR/lib/tree_select.py") || select_rc=$?
         else
             # Fallback to gum filter if python3 unavailable
-            print_warning "python3 not found, falling back to gum filter"
+            print_info "python3 not found, falling back to gum filter"
             if _select_packages_gum_fallback; then
                 # Fallback already populated GROUP_PACKAGE_MODE/GROUP_CUSTOM_PACKAGE_LIST
                 break
@@ -465,7 +465,7 @@ select_group_packages() {
 
     # Handle empty selection
     if [ -z "$tsv_output" ]; then
-        print_warning "No packages selected — only dotfiles/services will be applied."
+        print_info "No packages selected — only dotfiles/services will be applied."
         for group in "${SELECTED_GROUP_NAMES[@]}"; do
             GROUP_PACKAGE_MODE["$group"]="skip"
         done
@@ -840,7 +840,7 @@ install_common_tools() {
                 print_info "gh-dash is already installed"
             fi
         else
-            print_warning "gh CLI not found — skipping gh-dash extension"
+            print_info "gh CLI not found — skipping gh-dash extension"
         fi
     fi
 
@@ -977,7 +977,7 @@ setup_dotfiles() {
     
     # Warn if running inside Hyprland session
     if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-        print_warning "Running inside Hyprland session"
+        print_info "Running inside Hyprland session"
         print_info "You may see transient errors during config migration"
         print_info "Run 'hyprctl reload' after setup completes"
     fi
@@ -1018,7 +1018,7 @@ setup_dotfiles() {
         fi
     done
     
-    print_info "Dotfiles to install: ${dotfiles_to_install[*]}"
+    print_info "Installing ${#dotfiles_to_install[@]} dotfiles..."
     
     # Create chezmoi config with selected options
     local chezmoi_config="$HOME/.config/chezmoi/chezmoi.toml"
@@ -1138,7 +1138,7 @@ apply_dark_mode_defaults() {
         local mode
         mode=$(cat "$state_file" 2>/dev/null || echo "dark")
         print_info "Applying $mode mode theme..."
-        APPLY_DARK_MODE_NO_RESTART=1 "$script" "$mode"
+        APPLY_DARK_MODE_NO_RESTART=1 "$script" "$mode" > /dev/null
         print_success "Theme applied ($mode mode)"
     else
         print_info "Dark/light mode already configured, skipping"
@@ -1288,7 +1288,7 @@ DisplayServer=wayland
 CompositorCommand=weston --shell=kiosk -c /etc/sddm/weston.ini
 EOF
     else
-        print_warning "No Wayland compositor found for SDDM greeter — using default display server"
+        print_info "No Wayland compositor found for SDDM greeter — using default display server"
         sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
@@ -1346,7 +1346,7 @@ transform=normal"
                 fi
             done < <(xrandr --query 2>/dev/null | grep " connected ")
         else
-            print_warning "xrandr not available — skipping monitor rotation detection for weston.ini"
+            print_info "xrandr not available — skipping monitor rotation detection for weston.ini"
         fi
 
         echo "$weston_cfg" | sudo tee /etc/sddm/weston.ini > /dev/null
@@ -1411,7 +1411,7 @@ DROPEOF
             sudo systemctl enable sddm
             print_success "SDDM enabled (active after reboot)"
         else
-            print_warning "SDDM not enabled — login screen wallpaper will not be visible"
+            print_info "SDDM not enabled — login screen wallpaper will not be visible"
         fi
     fi
 
@@ -1460,7 +1460,7 @@ setup_plymouth() {
     theme=$(printf '%s\n' "${themes[@]}" | gum choose --header "Select Plymouth theme")
 
     if [ -z "$theme" ]; then
-        print_warning "No theme selected, using default (spinner)"
+        print_info "No theme selected, using default (spinner)"
         theme="spinner"
     fi
 
@@ -1506,7 +1506,7 @@ setup_plymouth() {
             print_info "GRUB already has 'quiet splash'"
         fi
     else
-        print_warning "$grub_default not found — skipping GRUB configuration"
+        print_info "$grub_default not found — skipping GRUB configuration"
     fi
 
     PLYMOUTH_CONFIGURED=true
@@ -1551,7 +1551,7 @@ setup_btrfs_snapshots() {
 
     # Verify snapper is installed
     if ! command_exists snapper; then
-        print_warning "snapper not found — skipping BTRFS snapshot setup"
+        print_info "snapper not found — skipping BTRFS snapshot setup"
         return 0
     fi
 

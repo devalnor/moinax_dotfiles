@@ -19,7 +19,7 @@ install_packages() {
         return 0
     fi
 
-    print_info "Installing packages: ${packages[*]}"
+    print_info "Installing ${#packages[@]} packages..."
     # Use --no-install-recommends to keep the install lean
     sudo apt install -y --no-install-recommends "${packages[@]}" || {
         print_warning "Some packages may not have been installed. Check the output above."

@@ -5,6 +5,30 @@
 _DISTRO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_DISTRO_DIR/../lib/common.sh"
 
+# Run a pacman/paru command, converting "up to date" messages to info and
+# suppressing boilerplate noise. Both stdout and stderr are captured and filtered.
+_run_pkg_cmd() {
+    local output_tmp
+    output_tmp=$(mktemp)
+    local rc=0
+    "$@" &>"$output_tmp" || rc=$?
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^warning:\ (.+)\ is\ up\ to\ date\ --\ skipping$ ]]; then
+            print_info "Already installed: ${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^::\ (.+)\ is\ up\ to\ date\ --\ skipping$ ]]; then
+            print_info "Already installed: ${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^\ *there\ is\ nothing\ to\ do\ *$ ]]; then
+            :
+        elif [[ "$line" =~ ^::\ (Resolving\ dependencies|Calculating\ (inner\ )?conflicts)\.\.\. ]]; then
+            :
+        else
+            echo "$line"
+        fi
+    done < "$output_tmp"
+    rm -f "$output_tmp"
+    return $rc
+}
+
 # Check if paru is installed, install if not
 ensure_paru() {
     if command_exists paru; then
@@ -15,7 +39,7 @@ ensure_paru() {
     print_info "Installing paru (AUR helper)..."
     
     # Ensure base-devel and git are installed
-    sudo pacman -S --needed --noconfirm git base-devel
+    _run_pkg_cmd sudo pacman -S --needed --noconfirm git base-devel
     
     # Clone and build paru
     local temp_dir="/tmp/paru-build"
@@ -52,8 +76,8 @@ install_pacman_packages() {
         return 0
     fi
     
-    print_info "Installing packages with pacman: ${packages[*]}"
-    sudo pacman -S --needed --noconfirm "${packages[@]}"
+    print_info "Installing ${#packages[@]} packages with pacman..."
+    _run_pkg_cmd sudo pacman -S --needed --noconfirm "${packages[@]}"
 }
 
 # Install packages using paru (for AUR packages)
@@ -66,8 +90,8 @@ install_paru_packages() {
     
     ensure_paru
     
-    print_info "Installing packages with paru: ${packages[*]}"
-    paru -S --needed --noconfirm "${packages[@]}"
+    print_info "Installing ${#packages[@]} packages with paru..."
+    _run_pkg_cmd paru -S --needed --noconfirm "${packages[@]}"
 }
 
 # Install all packages (handles both official and AUR)
@@ -80,8 +104,8 @@ install_packages() {
     
     ensure_paru
     
-    print_info "Installing packages: ${packages[*]}"
-    paru -S --needed --noconfirm "${packages[@]}"
+    print_info "Installing ${#packages[@]} packages..."
+    _run_pkg_cmd paru -S --needed --noconfirm "${packages[@]}"
 }
 
 # Remove packages
@@ -111,7 +135,7 @@ install_gum() {
     
     print_info "Installing gum..."
     ensure_paru
-    paru -S --needed --noconfirm gum
+    _run_pkg_cmd paru -S --needed --noconfirm gum
 }
 
 # Install chezmoi
@@ -123,7 +147,7 @@ install_chezmoi() {
     
     print_info "Installing chezmoi..."
     ensure_paru
-    paru -S --needed --noconfirm chezmoi
+    _run_pkg_cmd paru -S --needed --noconfirm chezmoi
 }
 
 # Install yq for YAML parsing
@@ -134,7 +158,7 @@ install_yq() {
     fi
     
     print_info "Installing yq..."
-    sudo pacman -S --needed --noconfirm yq
+    _run_pkg_cmd sudo pacman -S --needed --noconfirm yq
 }
 
 # Install AppImage desktop integration

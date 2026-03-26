@@ -19,7 +19,7 @@ install_packages() {
         return 0
     fi
     
-    print_info "Installing packages: ${packages[*]}"
+    print_info "Installing ${#packages[@]} packages..."
     # Use --skip-unavailable to continue even if some packages aren't found
     sudo dnf install -y --skip-unavailable "${packages[@]}" || {
         print_warning "Some packages may not have been installed. Check the output above."
