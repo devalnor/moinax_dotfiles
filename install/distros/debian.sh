@@ -416,6 +416,18 @@ setup_productivity_repos() {
         sudo apt update
         print_success "Google Chrome repository added"
     fi
+
+    # Slack
+    if [ ! -f /etc/apt/sources.list.d/slack.list ]; then
+        print_info "Adding Slack repository..."
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://packagecloud.io/slacktechnologies/slack/gpgkey \
+            | sudo gpg --yes --dearmor -o /etc/apt/keyrings/slack.gpg
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/slack.gpg] https://packagecloud.io/slacktechnologies/slack/debian/ jessie main" \
+            | sudo tee /etc/apt/sources.list.d/slack.list > /dev/null
+        sudo apt update
+        print_success "Slack repository added"
+    fi
 }
 
 # Setup repos for development (GitHub CLI, Docker CE, Tailscale)

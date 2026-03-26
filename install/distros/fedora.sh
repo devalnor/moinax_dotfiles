@@ -20,8 +20,9 @@ install_packages() {
     fi
     
     print_info "Installing ${#packages[@]} packages..."
-    # Use --skip-unavailable to continue even if some packages aren't found
-    sudo dnf install -y --skip-unavailable "${packages[@]}" || {
+    # --skip-unavailable: continue even if some packages aren't found
+    # --allowerasing: allow replacing conflicting packages (e.g. ffmpeg-free → ffmpeg from RPM Fusion)
+    sudo dnf install -y --skip-unavailable --allowerasing "${packages[@]}" || {
         print_warning "Some packages may not have been installed. Check the output above."
     }
 }
@@ -89,6 +90,28 @@ gpgkey=https://dl.google.com/linux/linux_signing_key.pub
 EOF
     
     print_success "Google Chrome repository added"
+}
+
+# Enable Slack repository
+enable_slack_repo() {
+    local repo_file="/etc/yum.repos.d/slack.repo"
+
+    if [ -f "$repo_file" ]; then
+        print_info "Slack repository already configured"
+        return 0
+    fi
+
+    print_info "Adding Slack repository..."
+    sudo tee "$repo_file" > /dev/null << 'EOF'
+[slack]
+name=slack
+baseurl=https://packagecloud.io/slacktechnologies/slack/fedora/21/x86_64
+enabled=1
+gpgcheck=0
+gpgkey=https://packagecloud.io/slacktechnologies/slack/gpgkey
+EOF
+
+    print_success "Slack repository added"
 }
 
 # Check if a package is installed
@@ -197,4 +220,5 @@ setup_multimedia_repos() {
 # Note: grub-btrfs COPR is handled via fedora_copr key in productivity.yaml
 setup_productivity_repos() {
     enable_google_chrome_repo
+    enable_slack_repo
 }
