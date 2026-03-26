@@ -63,15 +63,16 @@ is_root_btrfs() {
 }
 
 # Read a value from `snapper -c root get-config`.
+# Tries without sudo first (works when ALLOW_USERS includes $USER), falls back to sudo.
 snapper_root_config_value() {
     local key="$1"
-    local line
+    local line raw
 
-    line=$(sudo snapper -c root get-config 2>/dev/null | awk -F'|' -v key="$key" '
-        $1 ~ "^[[:space:]]*" key "[[:space:]]*$" {
-            value = $2
-            gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
-            print value
+    raw=$(snapper -c root --csvout get-config 2>/dev/null || sudo snapper -c root --csvout get-config 2>/dev/null) || return 1
+
+    line=$(printf '%s\n' "$raw" | awk -F',' -v key="$key" '
+        $1 == key {
+            print $2
             exit
         }
     ')
@@ -85,7 +86,7 @@ is_btrfs_snapshots_configured() {
     local timeline_value allow_users apt_hook
 
     command_exists snapper || return 1
-    sudo snapper list-configs 2>/dev/null | grep -q 'root\s*|' || return 1
+    [ -f /etc/snapper/configs/root ] || return 1
 
     timeline_value=$(snapper_root_config_value "TIMELINE_CREATE") || return 1
     [ "$timeline_value" = "no" ] || return 1
@@ -1570,8 +1571,17 @@ setup_btrfs_snapshots() {
 
     # Create snapper root config if it doesn't exist
     local config_created=false
-    if ! sudo snapper list-configs 2>/dev/null | grep -q 'root\s*|'; then
+    if [ ! -f /etc/snapper/configs/root ]; then
         print_info "Creating snapper root config..."
+        # Safety: if /.snapshots contains numbered snapshot dirs, snapper was previously
+        # configured — the root config check above likely failed due to permissions.
+        # Bail out rather than destroying existing snapshots.
+        if ls -d /.snapshots/[0-9]* &>/dev/null; then
+            print_warning "/.snapshots contains existing snapshots but no snapper root config was detected"
+            print_warning "This likely means snapper is configured but the check failed — skipping destructive setup"
+            print_warning "Run 'snapper list-configs' manually to verify"
+            return 0
+        fi
         # Remove pre-existing .snapshots subvolume/directory that blocks snapper create-config
         # archinstall creates a top-level @.snapshots subvolume mounted at /.snapshots
         if findmnt -n /.snapshots &>/dev/null; then
@@ -1589,6 +1599,10 @@ setup_btrfs_snapshots() {
                 if sudo mount -o subvolid=5 "$root_dev" "$tmp_mnt"; then
                     if sudo btrfs subvolume show "$tmp_mnt/@.snapshots" &>/dev/null; then
                         print_info "Deleting top-level @.snapshots subvolume..."
+                        # Delete nested snapshot subvolumes first
+                        for snap_dir in "$tmp_mnt/@.snapshots"/*/snapshot; do
+                            [ -d "$snap_dir" ] && sudo btrfs subvolume delete "$snap_dir" 2>/dev/null || true
+                        done
                         sudo btrfs subvolume delete "$tmp_mnt/@.snapshots" || true
                     fi
                     sudo umount "$tmp_mnt" || print_warning "Failed to unmount $tmp_mnt"
@@ -1598,6 +1612,10 @@ setup_btrfs_snapshots() {
         fi
         if sudo btrfs subvolume show /.snapshots &>/dev/null; then
             print_info "Removing pre-existing /.snapshots subvolume..."
+            # Delete nested snapshot subvolumes first (btrfs refuses to delete non-empty subvolumes)
+            for snap_dir in /.snapshots/*/snapshot; do
+                [ -d "$snap_dir" ] && sudo btrfs subvolume delete "$snap_dir" 2>/dev/null || true
+            done
             sudo btrfs subvolume delete /.snapshots || {
                 print_warning "Failed to remove /.snapshots subvolume — skipping snapshot setup"
                 return 0
