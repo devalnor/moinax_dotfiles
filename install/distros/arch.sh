@@ -6,13 +6,10 @@ _DISTRO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_DISTRO_DIR/../lib/common.sh"
 
 # Run a pacman/paru command, converting "up to date" messages to info and
-# suppressing boilerplate noise. Both stdout and stderr are captured and filtered.
+# suppressing boilerplate noise. Output is filtered in real time via a pipe
+# so that download/install progress remains visible.
 _run_pkg_cmd() {
-    local output_tmp
-    output_tmp=$(mktemp)
-    local rc=0
-    "$@" &>"$output_tmp" || rc=$?
-    while IFS= read -r line; do
+    "$@" 2>&1 | while IFS= read -r line; do
         if [[ "$line" =~ ^warning:\ (.+)\ is\ up\ to\ date\ --\ skipping$ ]]; then
             print_info "Already installed: ${BASH_REMATCH[1]}"
         elif [[ "$line" =~ ^::\ (.+)\ is\ up\ to\ date\ --\ skipping$ ]]; then
@@ -24,9 +21,8 @@ _run_pkg_cmd() {
         else
             echo "$line"
         fi
-    done < "$output_tmp"
-    rm -f "$output_tmp"
-    return $rc
+    done
+    return "${PIPESTATUS[0]}"
 }
 
 # Check if paru is installed, install if not
