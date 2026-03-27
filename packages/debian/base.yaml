@@ -17,6 +17,7 @@ packages:
     - btop
     - keychain
     - jq
+    - rsync
     - unzip
     - fontconfig
 

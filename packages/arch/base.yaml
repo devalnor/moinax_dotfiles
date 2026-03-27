@@ -24,6 +24,7 @@ packages:
     - keychain
     - jq
     - yq
+    - rsync
     - unzip
     - fontconfig
 

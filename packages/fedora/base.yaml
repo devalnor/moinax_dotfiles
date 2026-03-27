@@ -23,6 +23,7 @@ packages:
     - jq
     - yq
     - lazygit
+    - rsync
     - unzip
     - fontconfig
 
