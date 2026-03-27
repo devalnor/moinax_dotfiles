@@ -26,6 +26,7 @@ descriptions:
   grub-btrfs: GRUB entries for BTRFS snapshots
   slack-desktop: Team communication app (Arch AUR / Debian/Ubuntu)
   slack: Team communication app (Fedora)
+  telegram-desktop: Telegram messaging app
   google-chrome: Google Chrome web browser (Arch AUR)
   google-chrome-stable: Google Chrome web browser (Fedora)
   p7zip: 7-Zip archive tool
@@ -51,7 +52,8 @@ packages:
 
     # Communication
     - slack-desktop  # AUR
-    
+    - telegram-desktop
+
     # Web browser
     - google-chrome  # AUR
     
@@ -78,7 +80,8 @@ packages:
 
     # Communication
     - slack
-    
+    - telegram-desktop
+
     # Web browser
     - google-chrome-stable
     
@@ -103,6 +106,7 @@ packages:
 
     # Communication
     - slack-desktop
+    - telegram-desktop
 
     # Web browser (requires Google Chrome repo — added by setup_productivity_repos)
     - google-chrome-stable
