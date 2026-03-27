@@ -28,6 +28,9 @@ Commands:
   import-appimage <file> [--name NAME]
       Copy an AppImage to a stable location and create a desktop launcher.
 
+  remove-appimage [--name NAME]
+      Remove an installed AppImage, its desktop entry, and icon.
+
   install-distrobox --container NAME --package FILE [--app DESKTOP_ID] [--name APP_NAME]
       Install a local package inside a Distrobox container, export it to the host launcher,
       and save metadata for future updates.
@@ -36,9 +39,11 @@ Commands:
       Update a previously managed Distrobox app using saved metadata.
 
   list
-      List managed Distrobox app metadata.
+      List all managed apps (AppImages and Distrobox apps).
 
-Run without arguments for an interactive wizard.
+Run without arguments for an interactive wizard:
+  - Install app: fuzzy-find a file (.AppImage, .deb, .rpm) and auto-detect the install method
+  - Manage installed apps: update or uninstall any managed app
 EOF
 }
 
@@ -52,6 +57,23 @@ command_exists() {
 
 slugify() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g; s/--*/-/g; s/^-//; s/-$//'
+}
+
+# Turn a raw AppImage filename into a human-readable app name
+# e.g. "T3-Code-0.0.13-x86_64_e879597ed9181500dac6cae7f7d710a7" → "T3 Code"
+humanize_appimage_name() {
+    local name="$1"
+    # Strip .AppImage suffix if still present
+    name="${name%.AppImage}"
+    # Remove hex hashes (8+ hex chars preceded by separator)
+    name=$(printf '%s' "$name" | sed 's/[_-][0-9a-f]\{8,\}//g')
+    # Remove arch strings
+    name=$(printf '%s' "$name" | sed 's/[_-]\(x86_64\|aarch64\|arm64\|i686\|armhf\)//gi')
+    # Remove version patterns (e.g. -0.0.13, _2.1, -v1.2.3)
+    name=$(printf '%s' "$name" | sed 's/[_-]v\?[0-9]\+\(\.[0-9]\+\)*//g')
+    # Replace separators with spaces and trim
+    name=$(printf '%s' "$name" | tr '_-' '  ' | sed 's/  */ /g; s/^ *//; s/ *$//')
+    printf '%s' "$name"
 }
 
 require_file() {
@@ -118,11 +140,37 @@ pick_file_from_downloads() {
     local root=""
     root=$(default_picker_root)
 
+    # Build glob pattern based on mode
+    local -a patterns=()
+    case "$mode" in
+        appimage) patterns=(-name '*.AppImage') ;;
+        package)  patterns=( \( -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar' -o -name '*.pkg.tar.*' \) ) ;;
+        all)      patterns=( \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar' -o -name '*.pkg.tar.*' \) ) ;;
+        *)        patterns=(-type f) ;;
+    esac
+
     while true; do
         local selection=""
 
         if command_exists gum; then
-            selection=$(gum file "$root" --file --header "$header") || return 1
+            local -a candidates=()
+            mapfile -t candidates < <(find "$root" -maxdepth 3 -type f "${patterns[@]}" 2>/dev/null | sort)
+
+            if [ ${#candidates[@]} -eq 0 ]; then
+                print_warning "No matching files found in $root"
+                return 1
+            fi
+
+            # Show relative paths for readability, resolve back after selection
+            local -a display=()
+            local c
+            for c in "${candidates[@]}"; do
+                display+=("${c#"$root"/}")
+            done
+
+            local picked=""
+            picked=$(printf '%s\n' "${display[@]}" | gum filter --header "$header" --placeholder "Type to search...") || return 1
+            selection="$root/$picked"
         else
             selection=$(prompt_with_default "$header" "$root/" "Enter a file path" true) || return 1
         fi
@@ -311,16 +359,16 @@ do_import_appimage() {
         if [ -n "$APPIMAGE_META_NAME" ]; then
             app_name="$APPIMAGE_META_NAME"
         else
-            app_name="$(basename "$source_path" .AppImage)"
+            app_name="$(humanize_appimage_name "$(basename "$source_path")")"
         fi
     fi
 
     execute_import_appimage "$source_path" "$app_name"
 }
 
-interactive_import_appimage() {
-    local source_path=""
-    source_path=$(pick_file_from_downloads "Pick an AppImage from Downloads" appimage) || return 0
+interactive_import_appimage_with_file() {
+    local source_path="$1"
+    local default_name="${2:-}"
 
     local extract_dir=""
     extract_dir=$(mktemp -d)
@@ -328,10 +376,12 @@ interactive_import_appimage() {
     extract_appimage_metadata "$source_path" "$extract_dir"
 
     local detected_name=""
-    if [ -n "$APPIMAGE_META_NAME" ]; then
+    if [ -n "$default_name" ]; then
+        detected_name="$default_name"
+    elif [ -n "$APPIMAGE_META_NAME" ]; then
         detected_name="$APPIMAGE_META_NAME"
     else
-        detected_name="$(basename "$source_path" .AppImage)"
+        detected_name="$(humanize_appimage_name "$(basename "$source_path")")"
     fi
 
     local app_name=""
@@ -357,6 +407,92 @@ interactive_import_appimage() {
     fi
 
     execute_import_appimage "$source_path" "$app_name"
+}
+
+list_installed_appimages() {
+    ensure_dirs
+    shopt -s nullglob
+    local files=("$APPIMAGE_DIR"/*.AppImage)
+    shopt -u nullglob
+    if [ ${#files[@]} -gt 0 ]; then
+        printf '%s\n' "${files[@]}"
+    fi
+}
+
+execute_remove_appimage() {
+    local appimage_path="$1"
+    local slug=""
+    slug=$(basename "$appimage_path" .AppImage)
+
+    local desktop_file="$APP_DESKTOP_DIR/${slug}.desktop"
+    local removed=()
+
+    rm -f "$appimage_path"
+    removed+=("AppImage: $appimage_path")
+
+    if [ -f "$desktop_file" ]; then
+        rm -f "$desktop_file"
+        removed+=("Desktop entry: $desktop_file")
+    fi
+
+    shopt -s nullglob
+    local icons=("$APP_ICON_DIR/${slug}".*)
+    shopt -u nullglob
+    local icon
+    for icon in "${icons[@]}"; do
+        rm -f "$icon"
+        removed+=("Icon: $icon")
+    done
+
+    refresh_desktop_db
+    print_success "Removed AppImage"
+    local line
+    for line in "${removed[@]}"; do
+        echo "  $line"
+    done
+}
+
+do_remove_appimage() {
+    local app_name=""
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --name)
+                app_name="$2"
+                shift 2
+                ;;
+            --help|-h)
+                usage
+                return 0
+                ;;
+            *)
+                if [ -z "$app_name" ]; then
+                    app_name="$1"
+                else
+                    print_error "Unexpected argument: $1"
+                    exit 1
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [ -z "$app_name" ]; then
+        print_error "Missing AppImage name"
+        usage
+        exit 1
+    fi
+
+    local slug=""
+    slug=$(slugify "$app_name")
+    local appimage_path="$APPIMAGE_DIR/${slug}.AppImage"
+
+    if [ ! -f "$appimage_path" ]; then
+        print_error "AppImage not found: $appimage_path"
+        exit 1
+    fi
+
+    execute_remove_appimage "$appimage_path"
 }
 
 require_distrobox() {
@@ -559,7 +695,7 @@ pick_exported_app_id_interactive() {
 
 export_distrobox_app() {
     local container="$1"
-    local app_id="$2"
+    local app_id="${2%.desktop}"
     run_in_distrobox "$container" distrobox-export --app "$app_id"
 }
 
@@ -593,51 +729,6 @@ load_distrobox_metadata() {
     fi
     # shellcheck disable=SC1090
     source "$metadata_file"
-}
-
-list_saved_metadata_files() {
-    ensure_dirs
-    shopt -s nullglob
-    local files=("$DISTROBOX_STATE_DIR"/*.env)
-    shopt -u nullglob
-    printf '%s\n' "${files[@]}"
-}
-
-pick_saved_distrobox_app() {
-    local files=()
-    while IFS= read -r file; do
-        [ -n "$file" ] && files+=("$file")
-    done < <(list_saved_metadata_files)
-
-    if [ ${#files[@]} -eq 0 ]; then
-        return 1
-    fi
-
-    local options=()
-    local file
-    for file in "${files[@]}"; do
-        # shellcheck disable=SC1090
-        source "$file"
-        options+=("$APP_NAME | container=$CONTAINER | app=$APP_ID | type=$PACKAGE_TYPE")
-    done
-
-    local choice=""
-    if command_exists gum; then
-        choice=$(printf '%s\n' "${options[@]}" | gum choose --header "Pick a managed Distrobox app") || return 1
-    else
-        choice=$(prompt_with_default "Managed app" "${options[0]}" "" true) || return 1
-    fi
-
-    local index=0
-    for option in "${options[@]}"; do
-        if [ "$option" = "$choice" ]; then
-            printf '%s\n' "${files[$index]}"
-            return 0
-        fi
-        index=$((index + 1))
-    done
-
-    return 1
 }
 
 execute_install_distrobox() {
@@ -730,14 +821,12 @@ do_install_distrobox() {
     execute_install_distrobox "$container" "$package_path" "$app_name" "$app_id"
 }
 
-interactive_install_distrobox() {
+interactive_install_distrobox_with_file() {
+    local package_path="$1"
     require_distrobox || return 0
 
     local container=""
     container=$(pick_existing_distrobox_container) || return 0
-
-    local package_path=""
-    package_path=$(pick_file_from_downloads "Pick a package from Downloads" package) || return 0
 
     local package_type=""
     package_type=$(package_type_for_file "$package_path") || return 0
@@ -830,6 +919,38 @@ execute_update_distrobox() {
     echo "  Desktop entry: $APP_ID"
 }
 
+execute_remove_distrobox() {
+    local metadata_file="$1"
+
+    # shellcheck disable=SC1090
+    source "$metadata_file"
+
+    print_info "Removing exported app '$APP_ID' from container '$CONTAINER'..."
+    run_in_distrobox "$CONTAINER" distrobox-export --delete --app "$APP_ID" 2>/dev/null || true
+
+    # Clean up lingering host desktop files (distrobox names them as container-appid)
+    local app_basename
+    app_basename=$(basename "$APP_ID" .desktop)
+    shopt -s nullglob
+    local -a lingering=(
+        "$APP_DESKTOP_DIR/${app_basename}.desktop"
+        "$APP_DESKTOP_DIR"/*"-${app_basename}.desktop"
+    )
+    shopt -u nullglob
+    local f
+    for f in "${lingering[@]}"; do
+        rm -f "$f"
+    done
+
+    rm -f "$metadata_file"
+    refresh_desktop_db
+
+    print_success "Removed Distrobox app"
+    echo "  App: $APP_NAME"
+    echo "  Container: $CONTAINER"
+    echo "  Desktop entry: $APP_ID"
+}
+
 do_update_distrobox() {
     local app_name=""
     local package_path=""
@@ -865,76 +986,370 @@ do_update_distrobox() {
     execute_update_distrobox "$app_name" "$package_path"
 }
 
-interactive_update_distrobox() {
-    require_distrobox || return 0
-
-    local metadata_file=""
-    metadata_file=$(pick_saved_distrobox_app) || {
-        print_info "No managed Distrobox apps found."
-        return 0
-    }
-
-    # shellcheck disable=SC1090
-    source "$metadata_file"
-
-    local package_path=""
-    package_path=$(pick_file_from_downloads "Pick the updated package from Downloads" package) || return 0
-
-    local new_package_type=""
-    new_package_type=$(package_type_for_file "$package_path") || return 0
-    local type_warning=""
-    if [ "$new_package_type" != "$PACKAGE_TYPE" ]; then
-        type_warning="  Warning: saved type $PACKAGE_TYPE, new file looks like $new_package_type"
-    fi
-
-    if ! confirm_summary "Update Distrobox app" \
-        "  App: $APP_NAME" \
-        "  Container: $CONTAINER" \
-        "  Desktop entry: $APP_ID" \
-        "  Saved type: $PACKAGE_TYPE" \
-        "  New package: $package_path" \
-        "  New type: $new_package_type" \
-        "${type_warning:-  Package type matches saved metadata}"; then
-        print_info "Cancelled."
-        return 0
-    fi
-
-    print_info "Updating '$APP_NAME' in container '$CONTAINER'..."
-    install_package_in_distrobox "$CONTAINER" "$package_path" "$new_package_type" || {
-        print_error "Package update failed."
-        return 1
-    }
-
-    print_info "Refreshing exported desktop entry '$APP_ID'..."
-    export_distrobox_app "$CONTAINER" "$APP_ID" || {
-        print_error "Export refresh failed."
-        return 1
-    }
-
-    save_distrobox_metadata "$APP_NAME" "$CONTAINER" "$new_package_type" "$APP_ID"
-    print_success "Updated Distrobox app"
-    echo "  App: $APP_NAME"
-    echo "  Container: $CONTAINER"
-    echo "  Desktop entry: $APP_ID"
-}
-
 do_list() {
     ensure_dirs
+    local found=false
+
+    # List AppImages
+    local -a appimages=()
+    mapfile -t appimages < <(list_installed_appimages)
+    if [ ${#appimages[@]} -gt 0 ]; then
+        found=true
+        local path
+        for path in "${appimages[@]}"; do
+            echo "$(basename "$path" .AppImage) | type=appimage | path=$path"
+        done
+    fi
+
+    # List managed Distrobox apps
+    local -a _listed_ids=()
     shopt -s nullglob
     local files=("$DISTROBOX_STATE_DIR"/*.env)
     shopt -u nullglob
+    if [ ${#files[@]} -gt 0 ]; then
+        found=true
+        local file
+        for file in "${files[@]}"; do
+            # shellcheck disable=SC1090
+            source "$file"
+            _listed_ids+=("$APP_ID")
+            echo "$APP_NAME | type=distrobox | container=$CONTAINER | app=$APP_ID | pkg=$PACKAGE_TYPE"
+        done
+    fi
 
-    if [ ${#files[@]} -eq 0 ]; then
-        print_info "No managed Distrobox apps found"
+    # List unmanaged Distrobox apps (exported but no metadata)
+    shopt -s nullglob
+    local -a desktop_files=("$APP_DESKTOP_DIR"/*.desktop)
+    shopt -u nullglob
+    local df
+    for df in "${desktop_files[@]}"; do
+        grep -q 'distrobox-enter' "$df" 2>/dev/null || continue
+        local df_basename
+        df_basename=$(basename "$df")
+        local already=false
+        local mid
+        for mid in "${_listed_ids[@]}"; do
+            if [[ "$df_basename" == *"$mid"* || "$mid" == "$df_basename" ]]; then
+                already=true
+                break
+            fi
+        done
+        [ "$already" = true ] && continue
+
+        found=true
+        local df_name df_container
+        df_name=$(sed -n 's/^Name=//p' "$df" | head -1)
+        df_container=$(sed -n 's/.*distrobox-enter.*-n \([^ ]*\).*/\1/p' "$df" | head -1)
+        echo "${df_name:-$df_basename} | type=distrobox (unmanaged) | container=${df_container:-unknown} | file=$df"
+    done
+
+    if [ "$found" = false ]; then
+        print_info "No managed apps found"
+    fi
+}
+
+interactive_install_app() {
+    local file_path=""
+    file_path=$(pick_file_from_downloads "Pick an app to install" all) || return 0
+
+    case "$file_path" in
+        *.AppImage)
+            interactive_import_appimage_with_file "$file_path"
+            ;;
+        *.deb|*.rpm|*.pkg.tar|*.pkg.tar.*)
+            interactive_install_distrobox_with_file "$file_path"
+            ;;
+        *)
+            print_error "Unsupported file type: $(basename "$file_path")"
+            return 1
+            ;;
+    esac
+}
+
+interactive_manage_apps() {
+    ensure_dirs
+
+    # Build unified list of installed apps
+    local -a app_labels=()
+    local -a app_types=()
+    local -a app_keys=()
+
+    # Collect AppImages
+    local -a appimages=()
+    mapfile -t appimages < <(list_installed_appimages)
+    local path
+    for path in "${appimages[@]}"; do
+        local name
+        name=$(basename "$path" .AppImage)
+        app_labels+=("$name [AppImage]")
+        app_types+=("appimage")
+        app_keys+=("$path")
+    done
+
+    # Collect managed Distrobox apps (with .env metadata)
+    local -a _managed_app_ids=()
+    shopt -s nullglob
+    local -a meta_files=("$DISTROBOX_STATE_DIR"/*.env)
+    shopt -u nullglob
+    local file
+    for file in "${meta_files[@]}"; do
+        local _app_name _container _app_id
+        # shellcheck disable=SC1090
+        IFS=$'\t' read -r _app_name _container _app_id < <(
+            source "$file" && printf '%s\t%s\t%s' "$APP_NAME" "$CONTAINER" "$APP_ID"
+        )
+        _managed_app_ids+=("$_app_id")
+        app_labels+=("$_app_name [Distrobox: $_container]")
+        app_types+=("distrobox")
+        app_keys+=("$file")
+    done
+
+    # Discover distrobox-exported apps without metadata (installed manually)
+    shopt -s nullglob
+    local -a desktop_files=("$APP_DESKTOP_DIR"/*.desktop)
+    shopt -u nullglob
+    local df
+    for df in "${desktop_files[@]}"; do
+        # Only match desktop files that invoke distrobox-enter
+        grep -q 'distrobox-enter' "$df" 2>/dev/null || continue
+
+        local df_basename
+        df_basename=$(basename "$df")
+
+        # Skip if already tracked by metadata
+        local already_managed=false
+        local mid
+        for mid in "${_managed_app_ids[@]}"; do
+            if [[ "$df_basename" == *"$mid"* || "$mid" == "$df_basename" ]]; then
+                already_managed=true
+                break
+            fi
+        done
+        [ "$already_managed" = true ] && continue
+
+        # Extract name and container from the desktop file
+        local df_name df_container
+        df_name=$(sed -n 's/^Name=//p' "$df" | head -1)
+        df_container=$(sed -n 's/.*distrobox-enter.*-n \([^ ]*\).*/\1/p' "$df" | head -1)
+        [ -z "$df_name" ] && df_name="$df_basename"
+        [ -z "$df_container" ] && df_container="unknown"
+
+        app_labels+=("$df_name [Distrobox: $df_container] (unmanaged)")
+        app_types+=("distrobox-unmanaged")
+        app_keys+=("$df")
+    done
+
+    if [ ${#app_labels[@]} -eq 0 ]; then
+        print_info "No installed apps found"
         return 0
     fi
 
-    local file
-    for file in "${files[@]}"; do
-        # shellcheck disable=SC1090
-        source "$file"
-        echo "$APP_NAME | container=$CONTAINER | app=$APP_ID | type=$PACKAGE_TYPE"
+    # Pick an app
+    local selection=""
+    local selected_index=-1
+
+    if command_exists gum; then
+        selection=$(printf '%s\n' "${app_labels[@]}" | gum filter --header "Manage installed apps" --placeholder "Type to search...") || return 0
+    else
+        echo "Installed apps:"
+        local i
+        for i in "${!app_labels[@]}"; do
+            echo "  $((i + 1))) ${app_labels[$i]}"
+        done
+        local choice
+        read -r -p "Choose [1-${#app_labels[@]}]: " choice
+        if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le ${#app_labels[@]} ]; then
+            selection="${app_labels[$((choice - 1))]}"
+        else
+            print_info "Cancelled."
+            return 0
+        fi
+    fi
+
+    # Find the selected index
+    local idx
+    for idx in "${!app_labels[@]}"; do
+        if [ "${app_labels[$idx]}" = "$selection" ]; then
+            selected_index=$idx
+            break
+        fi
     done
+
+    if [ "$selected_index" -lt 0 ]; then
+        print_error "Selection not found"
+        return 1
+    fi
+
+    local app_type="${app_types[$selected_index]}"
+    local app_key="${app_keys[$selected_index]}"
+
+    # Pre-extract unmanaged distrobox info (used by both Update and Uninstall)
+    local um_name="" um_container="" um_app_id=""
+    if [ "$app_type" = "distrobox-unmanaged" ]; then
+        um_name=$(sed -n 's/^Name=//p' "$app_key" | head -1)
+        um_container=$(sed -n 's/.*distrobox-enter.*-n \([^ ]*\).*/\1/p' "$app_key" | head -1)
+        # Host desktop file is named ${container}-${app_id}, strip the container prefix
+        local _host_basename
+        _host_basename=$(basename "$app_key")
+        um_app_id="${_host_basename#"${um_container}-"}"
+    fi
+
+    # Pick an action
+    local action=""
+    if [ "$app_type" = "distrobox-unmanaged" ]; then
+        if command_exists gum; then
+            action=$(gum choose "Update (adopt)" "Uninstall" "Cancel") || return 0
+        else
+            echo "1) Update (adopt)"
+            echo "2) Uninstall"
+            echo "3) Cancel"
+            local achoice
+            read -r -p "Choose [1-3]: " achoice
+            case "$achoice" in
+                1) action="Update (adopt)" ;;
+                2) action="Uninstall" ;;
+                *) action="Cancel" ;;
+            esac
+        fi
+    else
+        if command_exists gum; then
+            action=$(gum choose "Update" "Uninstall" "Cancel") || return 0
+        else
+            echo "1) Update"
+            echo "2) Uninstall"
+            echo "3) Cancel"
+            local achoice
+            read -r -p "Choose [1-3]: " achoice
+            case "$achoice" in
+                1) action="Update" ;;
+                2) action="Uninstall" ;;
+                *) action="Cancel" ;;
+            esac
+        fi
+    fi
+
+    case "$action" in
+        "Update (adopt)")
+            # Adopt an unmanaged distrobox app: pick a package, update, and save metadata
+            local package_path=""
+            package_path=$(pick_file_from_downloads "Pick the package to install" package) || return 0
+
+            local pkg_type=""
+            pkg_type=$(package_type_for_file "$package_path") || return 0
+
+            local app_name=""
+            app_name=$(prompt_with_default "App name" "$um_name" "Saved app name") || return 0
+
+            if ! confirm_summary "Adopt & update Distrobox app" \
+                "  App: $app_name" \
+                "  Container: $um_container" \
+                "  Desktop entry: $um_app_id" \
+                "  Package: $package_path" \
+                "  Type: $pkg_type"; then
+                print_info "Cancelled."
+                return 0
+            fi
+
+            install_package_in_distrobox "$um_container" "$package_path" "$pkg_type" || {
+                print_error "Package install failed."
+                return 1
+            }
+            # Skip re-export: app is already exported and may have custom flags in its desktop file
+            save_distrobox_metadata "$app_name" "$um_container" "$pkg_type" "$um_app_id"
+            print_success "Adopted and updated Distrobox app"
+            echo "  App: $app_name"
+            echo "  Container: $um_container"
+            echo "  Desktop entry: $um_app_id"
+            ;;
+        "Update")
+            if [ "$app_type" = "appimage" ]; then
+                local current_name
+                current_name=$(basename "$app_key" .AppImage)
+                local new_file=""
+                new_file=$(pick_file_from_downloads "Pick the updated AppImage" appimage) || return 0
+                interactive_import_appimage_with_file "$new_file" "$current_name"
+            else
+                # shellcheck disable=SC1090
+                source "$app_key"
+                local package_path=""
+                package_path=$(pick_file_from_downloads "Pick the updated package" package) || return 0
+
+                local new_package_type=""
+                new_package_type=$(package_type_for_file "$package_path") || return 0
+                local type_warning=""
+                if [ "$new_package_type" != "$PACKAGE_TYPE" ]; then
+                    type_warning="  Warning: saved type $PACKAGE_TYPE, new file looks like $new_package_type"
+                fi
+
+                if ! confirm_summary "Update Distrobox app" \
+                    "  App: $APP_NAME" \
+                    "  Container: $CONTAINER" \
+                    "  Desktop entry: $APP_ID" \
+                    "  New package: $package_path" \
+                    "${type_warning:-  Package type matches saved metadata}"; then
+                    print_info "Cancelled."
+                    return 0
+                fi
+
+                install_package_in_distrobox "$CONTAINER" "$package_path" "$new_package_type" || {
+                    print_error "Package update failed."
+                    return 1
+                }
+                export_distrobox_app "$CONTAINER" "$APP_ID" || {
+                    print_error "Export refresh failed."
+                    return 1
+                }
+                save_distrobox_metadata "$APP_NAME" "$CONTAINER" "$new_package_type" "$APP_ID"
+                print_success "Updated Distrobox app"
+                echo "  App: $APP_NAME"
+                echo "  Container: $CONTAINER"
+                echo "  Desktop entry: $APP_ID"
+            fi
+            ;;
+        "Uninstall")
+            if [ "$app_type" = "appimage" ]; then
+                if ! confirm_summary "Remove AppImage" \
+                    "  AppImage: $app_key"; then
+                    print_info "Cancelled."
+                    return 0
+                fi
+                execute_remove_appimage "$app_key"
+            elif [ "$app_type" = "distrobox-unmanaged" ]; then
+                if ! confirm_summary "Remove Distrobox app (unmanaged)" \
+                    "  App: $um_name" \
+                    "  Container: $um_container" \
+                    "  Desktop file: $app_key"; then
+                    print_info "Cancelled."
+                    return 0
+                fi
+
+                if [ -n "$um_container" ]; then
+                    print_info "Removing exported app '$um_app_id' from container '$um_container'..."
+                    run_in_distrobox "$um_container" distrobox-export --delete --app "$um_app_id" 2>/dev/null || true
+                fi
+                rm -f "$app_key"
+                refresh_desktop_db
+                print_success "Removed Distrobox app"
+                echo "  App: $um_name"
+                echo "  Container: $um_container"
+            else
+                # shellcheck disable=SC1090
+                source "$app_key"
+                if ! confirm_summary "Remove Distrobox app" \
+                    "  App: $APP_NAME" \
+                    "  Container: $CONTAINER" \
+                    "  Desktop entry: $APP_ID"; then
+                    print_info "Cancelled."
+                    return 0
+                fi
+                execute_remove_distrobox "$app_key"
+            fi
+            ;;
+        *)
+            print_info "Cancelled."
+            return 0
+            ;;
+    esac
 }
 
 main_menu() {
@@ -943,39 +1358,27 @@ main_menu() {
 
         if command_exists gum; then
             action=$(gum choose \
-                "Import AppImage" \
-                "Install package in Distrobox" \
-                "Update Distrobox app" \
-                "List managed Distrobox apps" \
+                "Install app" \
+                "Manage installed apps" \
                 "Cancel") || action="Cancel"
         else
-            echo "1) Import AppImage"
-            echo "2) Install package in Distrobox"
-            echo "3) Update Distrobox app"
-            echo "4) List managed Distrobox apps"
-            echo "5) Cancel"
-            read -r -p "Choose an option [1-5]: " choice
+            echo "1) Install app"
+            echo "2) Manage installed apps"
+            echo "3) Cancel"
+            read -r -p "Choose an option [1-3]: " choice
             case "$choice" in
-                1) action="Import AppImage" ;;
-                2) action="Install package in Distrobox" ;;
-                3) action="Update Distrobox app" ;;
-                4) action="List managed Distrobox apps" ;;
+                1) action="Install app" ;;
+                2) action="Manage installed apps" ;;
                 *) action="Cancel" ;;
             esac
         fi
 
         case "$action" in
-            "Import AppImage")
-                interactive_import_appimage || true
+            "Install app")
+                interactive_install_app || true
                 ;;
-            "Install package in Distrobox")
-                interactive_install_distrobox || true
-                ;;
-            "Update Distrobox app")
-                interactive_update_distrobox || true
-                ;;
-            "List managed Distrobox apps")
-                do_list || true
+            "Manage installed apps")
+                interactive_manage_apps || true
                 ;;
             *)
                 print_info "Cancelled."
@@ -989,6 +1392,10 @@ case "${1:-}" in
     import-appimage)
         shift
         do_import_appimage "$@"
+        ;;
+    remove-appimage)
+        shift
+        do_remove_appimage "$@"
         ;;
     install-distrobox)
         shift

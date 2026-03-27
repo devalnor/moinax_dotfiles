@@ -157,13 +157,13 @@ install_yq() {
     _run_pkg_cmd sudo pacman -S --needed --noconfirm yq
 }
 
-# Install AppImage desktop integration
+# Install AppImage runtime support
 install_appimage_support() {
-    if is_package_installed appimagelauncher; then
-        print_info "AppImageLauncher is already installed"
+    if is_package_installed fuse2; then
+        print_info "AppImage runtime support is already installed via fuse2"
         return 0
     fi
 
-    print_info "Installing AppImageLauncher..."
-    install_packages appimagelauncher
+    print_info "Installing AppImage runtime support via fuse2..."
+    install_packages fuse2
 }

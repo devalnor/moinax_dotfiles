@@ -21,6 +21,7 @@ Personal dotfiles for Arch Linux, Fedora, and Debian/Ubuntu, managed with [Chezm
 ./manage.sh cursor export       # save current Cursor extensions list
 ./manage.sh cursor install      # install Cursor extensions from saved list
 ./manage.sh apps import-appimage ~/Downloads/App.AppImage
+./manage.sh apps remove-appimage --name App
 ./manage.sh apps install-distrobox --container ubuntu --package ~/Downloads/app.deb
 ./manage.sh apps update-distrobox --name app --package ~/Downloads/app-new.deb
 ./manage.sh update              # update system packages

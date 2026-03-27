@@ -46,10 +46,9 @@ packages:
     - ttf-fira-sans
     - ttf-font-awesome
 
+    # AppImage runtime support
+    - fuse2
+
   aur:
     # AUR-only packages (installed via paru)
     - paru  # Will be installed first if not present
-
-  desktop_aur:
-    # Desktop-only AUR packages
-    - appimagelauncher

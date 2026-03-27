@@ -49,9 +49,6 @@ packages:
     - fontawesome-fonts
     - google-noto-fonts-common
 
-    # Desktop AppImage integration
-    - appimagelauncher
-
   copr:
     # COPR repositories to enable (processed before package installation)
     # Note: Only include COPRs that exist and support current Fedora version
@@ -59,4 +56,3 @@ packages:
       - atim/starship      # Starship prompt
       - atim/lazygit       # Git TUI
       - lihaohong/yazi     # Terminal file manager
-      - langdon/appimagelauncher  # AppImage desktop integration
