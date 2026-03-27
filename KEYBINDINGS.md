@@ -204,7 +204,7 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Power menu (wlogout) | `Mod+L` | `Mod+L` | Full-screen overlay with 6 buttons |
+| Power menu (wlogout) | `Mod+L` | `Mod+L` | Centered vertical list with keybind hints |
 | Power menu (rofi) | `Mod+Shift+L` | `Mod+Shift+L` | Text-based fallback |
 | Lock screen | `Mod+Alt+L` | `Mod+Alt+L` | `loginctl lock-session` |
 | Logout | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `compositor-logout.sh` |

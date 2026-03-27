@@ -1,6 +1,6 @@
 * {
     font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 window {
@@ -12,10 +12,8 @@ button {
     background-color: rgba(30, 30, 46, 0.6);
     border: 2px solid rgba(100, 100, 255, 0.2);
     border-radius: 16px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 25%;
     margin: 8px;
+    padding: 8px 0;
 }
 
 button:hover,
@@ -30,28 +28,4 @@ button:active {
     color: #ffffff;
     background-color: rgba(255, 100, 255, 0.3);
     border-color: #ff64ff;
-}
-
-#lock {
-    background-image: image(url("/usr/share/wlogout/icons/lock.png"));
-}
-
-#logout {
-    background-image: image(url("/usr/share/wlogout/icons/logout.png"));
-}
-
-#suspend {
-    background-image: image(url("/usr/share/wlogout/icons/suspend.png"));
-}
-
-#hibernate {
-    background-image: image(url("/usr/share/wlogout/icons/hibernate.png"));
-}
-
-#reboot {
-    background-image: image(url("/usr/share/wlogout/icons/reboot.png"));
-}
-
-#shutdown {
-    background-image: image(url("/usr/share/wlogout/icons/shutdown.png"));
 }
