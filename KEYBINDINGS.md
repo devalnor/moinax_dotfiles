@@ -215,7 +215,7 @@
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |
 | Keyboard shortcut inhibit | — | `Mod+Escape` | Niri only (toggle-keyboard-shortcuts-inhibit) |
-| Help / hotkey overlay | — | `Mod+H` | Niri only (show-hotkey-overlay) |
+| Keybinding help (rofi) | `Mod+H` | `Mod+H` | rofi-keybindings |
 
 ## 15. Mouse & Scroll
 

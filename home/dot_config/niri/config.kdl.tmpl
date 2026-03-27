@@ -162,6 +162,10 @@ recent-windows {
     }
 }
 
+hotkey-overlay {
+    skip-at-startup
+}
+
 binds {
     // ── 1. Application Shortcuts ──────────────────────────────────────
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
@@ -317,7 +321,7 @@ binds {
     Mod+Ctrl+L hotkey-overlay-title="Logout" { spawn-sh "~/.local/bin/compositor-logout.sh"; }
     Mod+Alt+P { power-off-monitors; }
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-    Mod+H { show-hotkey-overlay; }
+    Mod+H hotkey-overlay-title="Keybinding Help: rofi" { spawn "rofi-keybindings"; }
 
     // ── 15. Mouse & Scroll ───────────────────────────────────────────
     Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }

@@ -1,0 +1,254 @@
+#!/bin/bash
+set -euo pipefail
+
+# rofi-keybindings — searchable keybinding menu for Hyprland and Niri
+# Parses the active compositor config and displays bindings in rofi dmenu.
+
+# ── Compositor detection ──────────────────────────────────────────
+
+if [ "${XDG_CURRENT_DESKTOP:-}" = "Hyprland" ] || [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    COMPOSITOR="hyprland"
+elif [ "${XDG_CURRENT_DESKTOP:-}" = "niri" ] || pgrep -x niri &>/dev/null; then
+    COMPOSITOR="niri"
+else
+    notify-send -u critical "rofi-keybindings" "No supported compositor detected"
+    exit 1
+fi
+
+# ── Section icons (Nerd Font) ─────────────────────────────────────
+
+declare -A SECTION_ICON=(
+    ["Application Shortcuts"]=$'\uf135'       #
+    ["Window Management"]=$'\uf2d0'           #
+    ["Focus Navigation"]=$'\uf05b'            #
+    ["Move Window / Column"]=$'\uf0b2'        #
+    ["Resize"]=$'\uf065'                      #
+    ["Column / Group Operations"]=$'\uf0db'   #
+    ["Workspace Navigation"]=$'\uf009'        #
+    ["Move to Workspace"]=$'\uf009'           #
+    ["Monitor Navigation"]=$'\uf108'          #
+    ["Scratchpad"]=$'\uf24d'                  #
+    ["Reload Configs"]=$'\uf021'              #
+    ["Screenshots"]=$'\uf030'                 #
+    ["Media & Volume"]=$'\uf028'              #
+    ["Session & System"]=$'\uf011'            #
+    ["Mouse & Scroll"]=$'\uf245'              #
+    ["Opacity"]=$'\uf042'                     #
+    ["Window Switching"]=$'\uf074'            #
+)
+
+format_icons() {
+    while IFS= read -r line; do
+        local section="${line%%\]*}"
+        section="${section#\[}"
+        local icon="${SECTION_ICON[$section]:-·}"
+        local rest="${line#*\]  }"
+        printf '%s    %s\n' "$icon" "$rest"
+    done
+}
+
+# ── Shared awk: XF86 key descriptions ─────────────────────────────
+
+XF86_AWK='
+function xf86(k) {
+    if (k == "XF86AudioRaiseVolume") return "Volume up"
+    if (k == "XF86AudioLowerVolume") return "Volume down"
+    if (k == "XF86AudioMute")        return "Mute toggle"
+    if (k == "XF86AudioMicMute")     return "Mic mute toggle"
+    if (k == "XF86AudioPlay")        return "Play / Pause"
+    if (k == "XF86AudioStop")        return "Stop playback"
+    if (k == "XF86AudioPrev")        return "Previous track"
+    if (k == "XF86AudioNext")        return "Next track"
+    if (k == "XF86MonBrightnessUp")  return "Brightness up"
+    if (k == "XF86MonBrightnessDown") return "Brightness down"
+    return ""
+}
+'
+
+# ── Hyprland parser ───────────────────────────────────────────────
+
+parse_hyprland() {
+    local config="$HOME/.config/hypr/conf/binds.conf"
+    [ -f "$config" ] || { echo "Config not found: $config" >&2; return 1; }
+
+    awk "$XF86_AWK"'
+    function norm_key(k) {
+        if (k ~ /^[a-z]+$/)
+            return toupper(substr(k, 1, 1)) substr(k, 2)
+        if (k ~ /^[A-Z]+$/ && length(k) > 1)
+            return toupper(substr(k, 1, 1)) tolower(substr(k, 2))
+        return k
+    }
+
+    function dir(d) {
+        if (d == "r") return "right"
+        if (d == "l") return "left"
+        if (d == "u") return "up"
+        if (d == "d") return "down"
+        return d
+    }
+
+    BEGIN { section = ""; skip = 0 }
+
+    # Section headers: # ── N. Name ───...
+    /^# ── [0-9]+\./ {
+        s = $0; sub(/^# ── [0-9]+\. /, "", s); sub(/ ─+$/, "", s)
+        section = s; skip = 0; next
+    }
+
+    # AZERTY skip control
+    /^# AZERTY/ || /^# Silent move/ { skip = 1; next }
+    /^# QWERTY/                      { skip = 0; next }
+    /^#/ || /^$/                      { next }
+    skip                              { next }
+    /^bindm/ || /^windowrule/         { next }
+
+    # Keybinding lines: bind[e] = MODS, KEY, ACTION[, ARGS] [# COMMENT]
+    /^binde? = / {
+        line = $0; sub(/^binde? = /, "", line)
+
+        # Extract trailing comment
+        comment = ""
+        if (match(line, /[ \t]# /)) {
+            comment = substr(line, RSTART + 3)
+            line = substr(line, 1, RSTART - 1)
+            sub(/[ \t]+$/, "", line)
+        }
+
+        # Split: mods, key, action [, args...]
+        n = split(line, p, ",")
+        if (n < 3) next
+        for (i = 1; i <= n; i++) gsub(/^[ \t]+|[ \t]+$/, "", p[i])
+
+        mods = p[1]; key = p[2]; action = p[3]
+        args = ""
+        for (i = 4; i <= n; i++) {
+            a = p[i]; gsub(/^[ \t]+|[ \t]+$/, "", a)
+            if (a != "") { if (args != "") args = args " "; args = args a }
+        }
+
+        # Build key combo display
+        if (mods != "") {
+            gsub(/SUPER/, "Mod", mods)
+            gsub(/ +ALT/, "+Alt", mods);   gsub(/^ALT/, "Alt", mods)
+            gsub(/ +CTRL/, "+Ctrl", mods); gsub(/^CTRL/, "Ctrl", mods)
+            gsub(/ +SHIFT/, "+Shift", mods); gsub(/^SHIFT/, "Shift", mods)
+            combo = mods "+" norm_key(key)
+        } else {
+            combo = norm_key(key)
+        }
+
+        # Description: prefer comment, then XF86 lookup, then humanize action
+        desc = comment
+        if (desc == "" && key ~ /^XF86/) desc = xf86(key)
+        if (desc == "") {
+            if (action == "movewindoworgroup")     desc = "Move window " dir(args)
+            else if (action == "swapwindow")       desc = "Swap window " dir(args)
+            else if (action == "movefocus")        desc = "Focus " dir(args)
+            else if (action == "cyclenext")        desc = "Cycle window " args
+            else if (action == "resizeactive") {
+                split(args, r, " ")
+                if (r[1]+0 > 0) desc = "Resize right"
+                else if (r[1]+0 < 0) desc = "Resize left"
+                else if (r[2]+0 > 0) desc = "Resize down"
+                else desc = "Resize up"
+            }
+            else if (action == "workspace")        desc = "Workspace " args
+            else if (action == "movetoworkspace") {
+                if (args == "special") desc = "Move to scratchpad"
+                else desc = "Move to workspace " args
+            }
+            else if (action == "movetoworkspacesilent") {
+                if (args == "special") desc = "Move to scratchpad (silent)"
+                else desc = "Move to workspace " args " (silent)"
+            }
+            else if (action == "tagwindow")        desc = "Toggle opacity"
+            else if (action == "exec") {
+                desc = args; sub(/.*\//, "", desc)
+            }
+            else { desc = action; if (args != "") desc = desc " " args }
+        }
+
+        printf "[%s]  %s  →  %s\n", section, combo, desc
+    }
+    ' "$config"
+}
+
+# ── Niri parser ───────────────────────────────────────────────────
+
+parse_niri() {
+    local config="$HOME/.config/niri/config.kdl"
+    [ -f "$config" ] || { echo "Config not found: $config" >&2; return 1; }
+
+    awk "$XF86_AWK"'
+    BEGIN { section = ""; skip = 0 }
+
+    # Section headers
+    /\/\/ ── [0-9]+\./ {
+        s = $0; sub(/.*\/\/ ── [0-9]+\. /, "", s); sub(/ ─+$/, "", s)
+        section = s; skip = 0; next
+    }
+
+    # recent-windows block → treat as a section
+    /recent-windows \{/ { section = "Window Switching"; next }
+
+    # AZERTY skip control
+    /\/\/ AZERTY/ { skip = 1; next }
+    /\/\/ QWERTY/ || /\/\/ Directional/ { skip = 0; next }
+    /^[ \t]*\/\// || /^[ \t]*$/ { next }
+    skip { next }
+    /WheelScroll/ { next }
+
+    # Keybinding lines: KeyCombo [attrs] { action [args]; }
+    # Must start with a key combo pattern and contain { ... ; ... }
+    /^[ \t]*(Mod\+|XF86|Print|Ctrl\+|Alt\+)/ && /\{[^}]*;[^}]*\}/ {
+        line = $0; gsub(/^[ \t]+/, "", line)
+
+        # Key combo: first token
+        combo = line; sub(/[ \t{].*/, "", combo)
+
+        # hotkey-overlay-title="..."
+        desc = ""
+        if (match(line, /hotkey-overlay-title="/)) {
+            rest = substr(line, RSTART + 22)
+            sub(/".*/, "", rest)
+            desc = rest
+        }
+
+        # XF86 key lookup
+        if (desc == "" && combo ~ /^XF86/) desc = xf86(combo)
+
+        # Humanize action name
+        if (desc == "") {
+            act = line
+            sub(/.*\{[ \t]*/, "", act)
+            sub(/[ \t]*;.*/, "", act)
+
+            aname = act; aargs = ""
+            if (match(act, / /)) {
+                aname = substr(act, 1, RSTART - 1)
+                aargs = substr(act, RSTART + 1)
+                gsub(/"/, "", aargs)
+            }
+
+            if (aname == "spawn" || aname == "spawn-sh") {
+                desc = aargs; sub(/.*\//, "", desc)
+            } else {
+                desc = aname; gsub(/-/, " ", desc)
+                desc = toupper(substr(desc, 1, 1)) substr(desc, 2)
+                if (aargs != "") desc = desc " " aargs
+            }
+        }
+
+        printf "[%s]  %s  →  %s\n", section, combo, desc
+    }
+    ' "$config"
+}
+
+# ── Main ──────────────────────────────────────────────────────────
+
+if [ "$COMPOSITOR" = "hyprland" ]; then
+    parse_hyprland
+else
+    parse_niri
+fi | format_icons | rofi -dmenu -i -p "Keybindings" -no-custom > /dev/null || true
