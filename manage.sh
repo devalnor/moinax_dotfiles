@@ -23,6 +23,7 @@ Commands:
   reconfig    Reconfigure chezmoi data flags
   whisper     Update whisper model for hyprvoice dictation
   setup       Run full installer (bootstrap + interactive setup)
+  grub-theme  Manage GRUB bootloader themes
   lazy-lock   Sync nvim lazy-lock.json back to dotfiles source
   help        Show this help message
 
@@ -241,6 +242,10 @@ do_apps() {
     exec "$SCRIPT_DIR/tools/manage-external-apps.sh" "$@"
 }
 
+do_grub_theme() {
+    exec "$SCRIPT_DIR/tools/manage-grub-theme.sh" "$@"
+}
+
 do_lazy_lock() {
     local src="$HOME/.config/nvim/lazy-lock.json"
     local dest="$SCRIPT_DIR/home/dot_config/nvim/lazy-lock.json"
@@ -279,6 +284,9 @@ do_menu() {
         if command_exists hyprvoice; then
             options+=("Update whisper model")
         fi
+        if [ -f /etc/default/grub ]; then
+            options+=("GRUB theme")
+        fi
         options+=("Full installer")
         options+=("Exit")
 
@@ -291,6 +299,7 @@ do_menu() {
             "Cursor extensions")       do_cursor ;;
             "Reconfigure flags")       do_reconfig ;;
             "Update whisper model")    do_whisper ;;
+            "GRUB theme")              do_grub_theme ;;
             "Full installer")          do_setup ;;
             "Exit")                    break ;;
         esac
@@ -306,6 +315,7 @@ case "${1:-}" in
     packages)   shift; do_packages "$@" ;;
     cursor)     shift; do_cursor "$@" ;;
     apps)       shift; do_apps "$@" ;;
+    grub-theme) shift; do_grub_theme "$@" ;;
     lazy-lock)  do_lazy_lock ;;
     help|--help|-h) usage ;;
     *)          do_menu ;;

@@ -1564,6 +1564,14 @@ setup_shell() {
     fi
 }
 
+# Setup GRUB theme (delegates to manage-grub-theme.sh)
+setup_grub_theme() {
+    [ "$INSTALL_PURPOSE" = "desktop" ] || return 0
+    [ -f /etc/default/grub ] || return 0
+
+    "$DOTFILES_DIR/tools/manage-grub-theme.sh" setup
+}
+
 # Configure GRUB to remember last booted kernel when multiple kernels are installed
 configure_grub_saved_default() {
     local grub_default="/etc/default/grub"
@@ -1916,6 +1924,7 @@ main() {
     fi
     enable_selected_services
     configure_grub_saved_default
+    setup_grub_theme
     setup_btrfs_snapshots
     if [ "$INSTALL_PURPOSE" = "desktop" ]; then
         setup_sddm
