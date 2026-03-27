@@ -101,12 +101,18 @@ is_btrfs_snapshots_configured() {
         [ -f "$apt_hook" ] || return 1
     fi
 
-    if [[ "$DISTRO_FAMILY" =~ ^(debian|fedora)$ ]]; then
-        command_exists grub-btrfsd || return 1
+    if systemctl list-unit-files grub-btrfsd.service &>/dev/null; then
         if ! systemctl is-enabled --quiet grub-btrfsd.service \
             && ! systemctl is-active --quiet grub-btrfsd.service; then
             return 1
         fi
+        # Verify grub-btrfsd is watching /.snapshots (snapper), not --timeshift-auto
+        if ! systemctl cat grub-btrfsd.service 2>/dev/null | grep -q 'ExecStart=.*/\.snapshots'; then
+            return 1
+        fi
+    elif [[ "$DISTRO_FAMILY" =~ ^(debian|fedora)$ ]]; then
+        # grub-btrfs not in repos for debian/fedora — needs source install
+        command_exists grub-btrfsd || return 1
     fi
 
     return 0
@@ -1558,6 +1564,45 @@ setup_shell() {
     fi
 }
 
+# Configure GRUB to remember last booted kernel when multiple kernels are installed
+configure_grub_saved_default() {
+    local grub_default="/etc/default/grub"
+    [ -f "$grub_default" ] || return 0
+
+    # Only relevant when multiple kernels are present
+    local kernel_count
+    kernel_count=$(find /boot -maxdepth 1 -name 'vmlinuz-*' 2>/dev/null | wc -l)
+    [ "$kernel_count" -gt 1 ] || return 0
+
+    local updated=false
+    if ! grep -q '^GRUB_DEFAULT=saved' "$grub_default"; then
+        print_info "Setting GRUB to remember last booted kernel..."
+        sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$grub_default"
+        updated=true
+    fi
+    if ! grep -q '^GRUB_SAVEDEFAULT=true' "$grub_default"; then
+        if grep -q '^#\?GRUB_SAVEDEFAULT=' "$grub_default"; then
+            sudo sed -i 's/^#\?GRUB_SAVEDEFAULT=.*/GRUB_SAVEDEFAULT=true/' "$grub_default"
+        else
+            echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$grub_default" > /dev/null
+        fi
+        updated=true
+    fi
+
+    if [ "$updated" = true ]; then
+        print_info "Regenerating GRUB config..."
+        if [ "$DISTRO_FAMILY" = "fedora" ]; then
+            sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
+                track_warning "Failed to regenerate GRUB config"
+            }
+        else
+            sudo grub-mkconfig -o /boot/grub/grub.cfg || {
+                track_warning "Failed to regenerate GRUB config"
+            }
+        fi
+    fi
+}
+
 # Setup BTRFS snapshots with Snapper (conditional on BTRFS + productivity group)
 setup_btrfs_snapshots() {
     # Only run if productivity group was selected
@@ -1697,14 +1742,7 @@ APTEOF
                     -e 's|^#\?GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
                     "$tmp_dir/config"
             fi
-            if (cd "$tmp_dir" && sudo make install); then
-                # Regenerate grub config with snapshot entries
-                if [ "$DISTRO_FAMILY" = "fedora" ]; then
-                    sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
-                        track_warning "Failed to regenerate GRUB config for grub-btrfs"
-                    }
-                fi
-            else
+            if ! (cd "$tmp_dir" && sudo make install); then
                 track_warning "Failed to install grub-btrfs from source"
             fi
         else
@@ -1715,10 +1753,30 @@ APTEOF
 
     # Enable grub-btrfsd service if available
     if systemctl list-unit-files grub-btrfsd.service &>/dev/null; then
+        print_info "Configuring grub-btrfsd to watch snapper snapshots..."
+        # Override the default service to watch /.snapshots (snapper) instead of --timeshift-auto
+        sudo mkdir -p /etc/systemd/system/grub-btrfsd.service.d
+        sudo tee /etc/systemd/system/grub-btrfsd.service.d/override.conf > /dev/null << 'SVCEOF'
+[Service]
+ExecStart=
+ExecStart=/usr/bin/grub-btrfsd --syslog /.snapshots
+SVCEOF
+        sudo systemctl daemon-reload
         print_info "Enabling grub-btrfsd service..."
         sudo systemctl enable --now grub-btrfsd || {
             print_warning "Failed to enable grub-btrfsd service"
         }
+        # Regenerate grub config to include snapshot entries
+        print_info "Regenerating GRUB config with snapshot entries..."
+        if [ "$DISTRO_FAMILY" = "fedora" ]; then
+            sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
+                track_warning "Failed to regenerate GRUB config for grub-btrfs"
+            }
+        else
+            sudo grub-mkconfig -o /boot/grub/grub.cfg || {
+                track_warning "Failed to regenerate GRUB config for grub-btrfs"
+            }
+        fi
     fi
 
     # Create initial snapshot only when config was freshly created
@@ -1857,6 +1915,7 @@ main() {
         apply_dark_mode_defaults
     fi
     enable_selected_services
+    configure_grub_saved_default
     setup_btrfs_snapshots
     if [ "$INSTALL_PURPOSE" = "desktop" ]; then
         setup_sddm
