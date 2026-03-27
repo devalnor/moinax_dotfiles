@@ -139,3 +139,10 @@ eval "$(starship init zsh)"
 
 # Initialize zoxide (--cmd cd replaces cd/cdi with smart zoxide versions)
 eval "$(zoxide init zsh --cmd cd)"
+
+{{- if .install_development }}
+# Initialize WorkTrunk shell integration (directory switching for worktrees)
+if command -v wt &> /dev/null; then
+  eval "$(wt config shell init zsh)"
+fi
+{{- end }}

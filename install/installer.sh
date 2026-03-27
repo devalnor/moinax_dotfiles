@@ -844,6 +844,28 @@ install_common_tools() {
         fi
     fi
 
+    # Install Claude Code (development group)
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
+        if ! command_exists claude; then
+            install_curl_tool "Claude Code" \
+                "curl -fsSL https://claude.ai/install.sh | sh"
+        else
+            print_info "Claude Code is already installed"
+        fi
+    fi
+
+    # Install WorkTrunk (development group, non-Arch — Arch uses worktrunk-bin AUR package)
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
+        if [ "$DISTRO_FAMILY" != "arch" ]; then
+            if ! command_exists wt; then
+                install_curl_tool "WorkTrunk" \
+                    "curl -fsSL https://github.com/max-sixty/worktrunk/releases/latest/download/worktrunk-installer.sh | sh"
+            else
+                print_info "WorkTrunk is already installed"
+            fi
+        fi
+    fi
+
     # Setup hyprvoice (AI group)
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " ai " ]]; then
         # Install hyprvoice binary (Fedora only — Arch uses AUR package)
@@ -1735,6 +1757,11 @@ show_completion() {
 
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " ai " ]]; then
         steps+=("  $next_step. Press Mod+D to toggle dictation (hyprvoice)")
+        next_step=$((next_step + 1))
+    fi
+
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
+        steps+=("  $next_step. Install WorkTrunk + Claude Code plugin: claude plugin marketplace add max-sixty/worktrunk && claude plugin install worktrunk@worktrunk")
         next_step=$((next_step + 1))
     fi
 

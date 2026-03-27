@@ -10,6 +10,7 @@ dotfiles:
   - dot_config/Cursor
   - dot_config/delta
   - dot_config/gh-dash
+  - dot_config/worktrunk
   - dot_gitconfig
 
 # Services to enable
@@ -37,6 +38,9 @@ descriptions:
   just: Command runner (like make, simpler)
   gh-dash: Terminal UI dashboard for GitHub PRs/issues
   tailscale: Mesh VPN for secure networking
+  worktrunk-bin: Git worktree manager for AI workflows (Arch AUR)
+  worktrunk: Git worktree manager for AI workflows
+  claude-code: AI-powered coding assistant CLI
 
 desktop_only:
   - cursor-bin
@@ -68,6 +72,9 @@ packages:
 
     # Task runner
     - just
+
+    # Worktree management
+    - worktrunk-bin  # AUR
 
   fedora:
     # Editors

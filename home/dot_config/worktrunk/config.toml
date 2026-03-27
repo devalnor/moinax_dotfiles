@@ -1,0 +1,7 @@
+# WorkTrunk configuration
+# https://worktrunk.dev/
+
+# LLM-generated commit messages using Claude Code (Haiku for speed)
+# Used by: wt merge, wt step commit, wt step squash
+[commit.generation]
+command = "CLAUDECODE= MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --disable-slash-commands --setting-sources='' --system-prompt=''"
