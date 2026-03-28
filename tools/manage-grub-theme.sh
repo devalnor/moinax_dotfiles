@@ -60,6 +60,7 @@ Commands:
   switch      Switch the active theme (from already installed themes)
   remove      Remove an installed theme
   resolution  Change GRUB display resolution
+  variant     Change the active theme's variant
   status      Show current theme and resolution
 
 Run without arguments for an interactive wizard.
@@ -138,6 +139,72 @@ get_current_theme_name() {
         dir=$(dirname "$path")
         basename "$dir"
     fi
+}
+
+# Map an installed theme directory name back to its registry theme_id
+identify_theme_id() {
+    local name="$1"
+    case "$name" in
+        catppuccin-*-grub-theme)     echo "catppuccin" ;;
+        hyperfluent-*)               echo "hyperfluent" ;;
+        poly-dark)                   echo "poly-dark" ;;
+        tela|vimix|stylish|whitesur) echo "vinceliuice" ;;
+        *)                           return 1 ;;
+    esac
+}
+
+# Extract current variant from installed theme directory name
+extract_variant() {
+    local name="$1" theme_id="$2"
+    case "$theme_id" in
+        catppuccin)  local tmp="${name#catppuccin-}"; echo "${tmp%-grub-theme}" ;;
+        hyperfluent) echo "${name#hyperfluent-}" ;;
+        vinceliuice) echo "$name" ;;
+        *)           echo "" ;;
+    esac
+}
+
+# Prompt user to pick a variant for a theme. Outputs chosen variant ID.
+# Returns 1 if the theme has no variants or the user cancels.
+# Args: theme_id [current_variant]
+pick_variant() {
+    local theme_id="$1" current_variant="${2:-}"
+    local variants=() variant_labels=()
+    mapfile -t variants < <(_theme_var_array "$theme_id" "VARIANTS")
+    mapfile -t variant_labels < <(_theme_var_array "$theme_id" "VARIANT_LABELS")
+
+    if [ ${#variants[@]} -eq 0 ] || [ -z "${variants[0]}" ]; then
+        return 1
+    fi
+
+    local options=()
+    for i in "${!variant_labels[@]}"; do
+        local label="${variant_labels[$i]}"
+        [ "${variants[$i]}" = "$current_variant" ] && label="$label (current)"
+        options+=("$label")
+    done
+
+    local chosen_label
+    chosen_label=$(printf '%s\n' "${options[@]}" | gum choose --cursor.foreground="212" \
+        --header "Select variant:") || return 1
+    chosen_label="${chosen_label% (current)}"
+
+    for i in "${!variant_labels[@]}"; do
+        if [ "${variant_labels[$i]}" = "$chosen_label" ]; then
+            echo "${variants[$i]}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Get the base resolution from GRUB_GFXMODE, stripping depth and fallbacks
+get_current_resolution() {
+    local raw
+    raw=$(get_current_gfxmode)
+    [ -z "$raw" ] && { echo "1920x1080"; return; }
+    raw="${raw%%x[0-9]*}"
+    echo "${raw%%,*}"
 }
 
 # Set a GRUB config variable (add or update)
@@ -471,7 +538,25 @@ do_switch() {
         return 0
     fi
 
-    # Pick resolution
+    # If the selected theme has variants, offer to switch variant
+    local theme_id
+    if theme_id=$(identify_theme_id "$chosen"); then
+        local current_variant
+        current_variant=$(extract_variant "$chosen" "$theme_id")
+
+        local chosen_variant
+        if chosen_variant=$(pick_variant "$theme_id" "$current_variant"); then
+            if [ "$chosen_variant" != "$current_variant" ]; then
+                local resolution
+                resolution=$(pick_resolution) || return 0
+                clone_install_activate "$theme_id" "$chosen_variant" "$resolution"
+                print_success "Switched to theme: $theme_id ($chosen_variant)"
+                return 0
+            fi
+        fi
+    fi
+
+    # Same theme/variant — just update resolution
     local resolution
     resolution=$(pick_resolution) || return 0
 
@@ -550,6 +635,46 @@ do_resolution() {
     print_success "Resolution updated"
 }
 
+do_variant() {
+    if [ ! -f "$GRUB_DEFAULT" ]; then
+        print_error "$GRUB_DEFAULT not found"
+        return 1
+    fi
+
+    local current_name
+    current_name=$(get_current_theme_name)
+    if [ "$current_name" = "None" ]; then
+        print_warning "No active theme — install and activate a theme first"
+        return 0
+    fi
+
+    local theme_id
+    theme_id=$(identify_theme_id "$current_name") || {
+        print_warning "Cannot identify theme family for '$current_name'"
+        return 0
+    }
+
+    local current_variant
+    current_variant=$(extract_variant "$current_name" "$theme_id")
+
+    local chosen_variant
+    chosen_variant=$(pick_variant "$theme_id" "$current_variant") || {
+        print_info "This theme has no variants"
+        return 0
+    }
+
+    if [ "$chosen_variant" = "$current_variant" ]; then
+        print_info "Already using this variant"
+        return 0
+    fi
+
+    local resolution
+    resolution=$(get_current_resolution)
+
+    clone_install_activate "$theme_id" "$chosen_variant" "$resolution"
+    print_success "Variant switched to: $chosen_variant"
+}
+
 # ── Wizard ───────────────────────────────────────────────────────────────────
 
 do_wizard() {
@@ -572,6 +697,7 @@ do_wizard() {
             "Switch theme" \
             "Remove theme" \
             "Change resolution" \
+            "Change variant" \
             "Exit") || break
 
         case "$choice" in
@@ -579,6 +705,7 @@ do_wizard() {
             "Switch theme")      do_switch ;;
             "Remove theme")      do_remove ;;
             "Change resolution") do_resolution ;;
+            "Change variant")    do_variant ;;
             "Exit")              break ;;
         esac
     done
@@ -657,6 +784,7 @@ case "${1:-}" in
     switch)     do_switch ;;
     remove)     do_remove ;;
     resolution) do_resolution ;;
+    variant)    do_variant ;;
     status)     do_status ;;
     setup)      do_setup ;;
     help|--help|-h) usage ;;
