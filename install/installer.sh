@@ -1583,19 +1583,23 @@ configure_grub_saved_default() {
     [ "$kernel_count" -gt 1 ] || return 0
 
     local updated=false
-    if ! grep -q '^GRUB_DEFAULT=saved' "$grub_default"; then
-        print_info "Setting GRUB to remember last booted kernel..."
-        sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$grub_default"
-        updated=true
-    fi
-    if ! grep -q '^GRUB_SAVEDEFAULT=true' "$grub_default"; then
-        if grep -q '^#\?GRUB_SAVEDEFAULT=' "$grub_default"; then
-            sudo sed -i 's/^#\?GRUB_SAVEDEFAULT=.*/GRUB_SAVEDEFAULT=true/' "$grub_default"
+    # Ensure a GRUB variable is set; handles active, commented-out, or missing lines
+    ensure_grub_var() {
+        local var="$1" value="$2"
+        grep -q "^${var}=${value}$" "$grub_default" && return
+        if grep -q "^#\?${var}=" "$grub_default"; then
+            sudo sed -i "s/^#\?${var}=.*/${var}=${value}/" "$grub_default"
         else
-            echo 'GRUB_SAVEDEFAULT=true' | sudo tee -a "$grub_default" > /dev/null
+            echo "${var}=${value}" | sudo tee -a "$grub_default" > /dev/null
         fi
         updated=true
-    fi
+    }
+
+    print_info "Setting GRUB to remember last booted kernel..."
+    ensure_grub_var GRUB_DEFAULT saved
+    ensure_grub_var GRUB_SAVEDEFAULT true
+    # Disable submenus so saved_entry uses flat IDs (submenu '>' paths break GRUB_SAVEDEFAULT)
+    ensure_grub_var GRUB_DISABLE_SUBMENU y
 
     if [ "$updated" = true ]; then
         print_info "Regenerating GRUB config..."
