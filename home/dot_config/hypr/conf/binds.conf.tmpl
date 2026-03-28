@@ -3,7 +3,7 @@
 
 # ── 1. Application Shortcuts ──────────────────────────────────────
 bind = SUPER, RETURN, exec, kitty # Open terminal
-bind = SUPER, SPACE, exec, rofi -show drun # App launcher
+bind = SUPER, SPACE, exec, rofi -show combi # Unified launcher
 bind = SUPER, B, exec, google-chrome-stable --password-store=basic # Open browser
 bind = SUPER, E, exec, dolphin # Open file manager
 bind = SUPER, I, exec, rofimoji --action clipboard --clipboarder wl-copy --typer wtype # Emoji selector
@@ -11,7 +11,8 @@ bind = SUPER, A, exec, ~/.local/bin/toggle-audio-switch.sh # Switch audio output
 bind = SUPER, K, exec, ~/.config/hypr/scripts/toggle-keyboard-layout.sh # Switch keyboard layout
 bind = SUPER, TAB, exec, rofi -show window -window-thumbnail # Window switcher
 bind = SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wtype - # Clipboard
-bind = SUPER, C, exec, gnome-calculator # Open calculator
+bind = SUPER, C, exec, rofi -show calc # Calculator (rofi)
+bind = SUPER ALT, C, exec, gnome-calculator # Open calculator
 bind = SUPER SHIFT, P, exec, hyprpicker # Color picker
 bind = SUPER, R, exec, rofi-theme-selector # Theme selector
 bind = SUPER, M, exec, ~/.config/hypr/scripts/toggle-monitor-layout.sh # Toggle monitor layout
@@ -127,7 +128,6 @@ bind = SUPER ALT, N, exec, ~/.local/bin/toggle-caffeine.sh # Toggle caffeine mod
 bind = SUPER CTRL, N, exec, ~/.local/bin/toggle-tailscale.sh # Toggle Tailscale VPN
 bind = SUPER SHIFT, Q, exit # Exit Hyprland
 bind = SUPER, L, exec, wlogout-wrapper.sh # Power menu (wlogout)
-bind = SUPER SHIFT, L, exec, rofi -show powermenu -modi "powermenu:rofi-power-menu" # Power menu (rofi)
 bind = SUPER ALT, L, exec, loginctl lock-session # Lock screen
 bind = SUPER CTRL, L, exec, ~/.local/bin/compositor-logout.sh # Logout
 bind = SUPER, H, exec, rofi-keybindings # Keybinding help (rofi)

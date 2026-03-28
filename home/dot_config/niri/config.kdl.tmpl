@@ -169,7 +169,7 @@ hotkey-overlay {
 binds {
     // ── 1. Application Shortcuts ──────────────────────────────────────
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
-    Mod+Space hotkey-overlay-title="Run an Application: rofi" { spawn-sh "rofi -show drun"; }
+    Mod+Space hotkey-overlay-title="Unified Launcher: rofi" { spawn-sh "rofi -show combi"; }
     Mod+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable" "--password-store=basic"; }
     Mod+E hotkey-overlay-title="Open File Manager: dolphin" { spawn "dolphin"; }
     Mod+I hotkey-overlay-title="Emoji Selector: rofimoji" { spawn-sh "rofimoji --action clipboard --clipboarder wl-copy --typer wtype"; }
@@ -177,7 +177,8 @@ binds {
     Mod+K hotkey-overlay-title="Switch Keyboard Layout" { spawn-sh "~/.local/bin/niri-switch-layout.sh"; }
     Mod+Tab hotkey-overlay-title="Switch Window: rofi" { spawn-sh "rofi -show window -window-thumbnail"; }
     Mod+V hotkey-overlay-title="Clipboard: cliphist" { spawn-sh "cliphist list | rofi -dmenu | cliphist decode | wtype -"; }
-    Mod+C hotkey-overlay-title="Calculator: gnome-calculator" { spawn "gnome-calculator"; }
+    Mod+C hotkey-overlay-title="Calculator: rofi-calc" { spawn-sh "rofi -show calc"; }
+    Mod+Alt+C hotkey-overlay-title="Calculator: gnome-calculator" { spawn "gnome-calculator"; }
     Mod+Shift+P hotkey-overlay-title="Color Picker: hyprpicker" { spawn "hyprpicker"; }
     Mod+R hotkey-overlay-title="Theme Selector: rofi" { spawn "rofi-theme-selector"; }
     Mod+M hotkey-overlay-title="Toggle Monitor Layout" { spawn-sh "~/.config/hypr/scripts/toggle-monitor-layout.sh"; }
@@ -316,7 +317,6 @@ binds {
     Mod+Shift+Q { quit; }
     Ctrl+Alt+Delete { quit; }
     Mod+L hotkey-overlay-title="Power Menu: wlogout" { spawn "wlogout-wrapper.sh"; }
-    Mod+Shift+L hotkey-overlay-title="Power Menu: rofi" { spawn-sh "rofi -show powermenu -modi 'powermenu:rofi-power-menu'"; }
     Mod+Alt+L hotkey-overlay-title="Lock Screen" { spawn-sh "loginctl lock-session"; }
     Mod+Ctrl+L hotkey-overlay-title="Logout" { spawn-sh "~/.local/bin/compositor-logout.sh"; }
     Mod+Alt+P { power-off-monitors; }

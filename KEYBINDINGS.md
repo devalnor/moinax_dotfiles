@@ -10,10 +10,15 @@
 
 ## 1. Application Shortcuts
 
+> **Unified Launcher** (`Mod+Space`): search across all sources. Filter by prefix:
+> `!drun` apps, `!window` windows, `!calc` calculator, `!clipboard` clipboard,
+> `!files` file search, `!snippets` text snippets, `!actions` quick actions.
+> Dedicated shortcuts below remain as fast-access overrides.
+
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Open terminal (kitty) | `Mod+Return` | `Mod+Return` | |
-| App launcher (rofi) | `Mod+Space` | `Mod+Space` | |
+| Unified launcher (rofi) | `Mod+Space` | `Mod+Space` | combi mode: apps, windows, calc, files, clipboard, snippets, actions |
 | Open browser (Chrome) | `Mod+B` | `Mod+B` | |
 | File manager (Dolphin) | `Mod+E` | `Mod+E` | |
 | Emoji selector | `Mod+I` | `Mod+I` | rofimoji (clipboard paste) |
@@ -22,7 +27,8 @@
 | Window switcher (rofi) | `Mod+Tab` | `Mod+Tab` | |
 | Clipboard (cliphist) | `Mod+V` | `Mod+V` | |
 | Color picker (hyprpicker) | `Mod+Shift+P` | `Mod+Shift+P` | |
-| Calculator | `Mod+C` | `Mod+C` | |
+| Calculator (rofi-calc) | `Mod+C` | `Mod+C` | Quick inline calculator |
+| Calculator (gnome) | `Mod+Alt+C` | `Mod+Alt+C` | Full calculator app |
 | Theme selector | `Mod+R` | `Mod+R` | rofi-theme-selector |
 | Toggle monitor layout | `Mod+M` | `Mod+M` | |
 | Toggle dictation (speech-to-text) | `Mod+D` | `Mod+D` | hyprvoice toggle (AI group only) |
@@ -205,7 +211,6 @@
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Power menu (wlogout) | `Mod+L` | `Mod+L` | Centered vertical list with keybind hints |
-| Power menu (rofi) | `Mod+Shift+L` | `Mod+Shift+L` | Text-based fallback |
 | Lock screen | `Mod+Alt+L` | `Mod+Alt+L` | `loginctl lock-session` |
 | Logout | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `compositor-logout.sh` |
 | Toggle dark/light mode | `Mod+N` | `Mod+N` | Switches Catppuccin Mocha/Latte + portal |

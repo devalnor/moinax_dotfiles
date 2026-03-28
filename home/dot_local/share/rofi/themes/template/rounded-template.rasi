@@ -93,3 +93,7 @@ element-icon {
 element-text {
     text-color: inherit;
 }
+
+mode-switcher {
+    margin:     12px 0 0;
+}

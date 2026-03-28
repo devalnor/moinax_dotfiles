@@ -29,6 +29,7 @@ descriptions:
   hyprshot: Screenshot tool for Hyprland
   waybar: Highly customizable status bar
   rofi-wayland: Application launcher (Wayland fork)
+  rofi-calc: Calculator plugin for rofi
   rofimoji: Emoji picker for rofi
   mako: Lightweight notification daemon
   wlogout: Logout menu for Wayland
@@ -63,6 +64,7 @@ packages:
     # Status bar and menus
     - waybar
     - rofi-wayland
+    - rofi-calc
     - rofimoji
     # Notifications
     - mako
@@ -104,6 +106,7 @@ packages:
     # Status bar and menus
     - waybar
     - rofi-wayland
+    - rofi-calc
     - rofimoji
     # Notifications
     - mako
@@ -147,6 +150,7 @@ packages:
     # rofi-wayland is the correct Wayland fork on Ubuntu 24.04+.
     # Plain 'rofi' is the X11 build; use rofi-wayland for Wayland support.
     - rofi-wayland
+    - rofi-calc
     - rofimoji
 
     # Notifications
