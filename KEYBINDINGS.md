@@ -12,13 +12,13 @@
 
 > **Unified Launcher** (`Mod+Space`): search across all sources. Filter by prefix:
 > `!drun` apps, `!window` windows, `!calc` calculator, `!clipboard` clipboard,
-> `!files` file search, `!snippets` text snippets, `!actions` quick actions.
+> `!files` file search, `!emoji` emoji, `!actions` quick actions.
 > Dedicated shortcuts below remain as fast-access overrides.
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Open terminal (kitty) | `Mod+Return` | `Mod+Return` | |
-| Unified launcher (rofi) | `Mod+Space` | `Mod+Space` | combi mode: apps, windows, calc, files, clipboard, snippets, actions |
+| Unified launcher (rofi) | `Mod+Space` | `Mod+Space` | combi mode: apps, windows, calc, files, clipboard, emoji, actions |
 | Open browser (Chrome) | `Mod+B` | `Mod+B` | |
 | File manager (Dolphin) | `Mod+E` | `Mod+E` | |
 | Emoji selector | `Mod+I` | `Mod+I` | rofimoji (clipboard paste) |
