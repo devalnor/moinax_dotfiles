@@ -1,6 +1,11 @@
 # This file is sourced for all zsh shells (interactive and non-interactive)
 # Perfect for PATH configuration needed by VS Code and other tools
 
+# AppImages export ARGV0 pointing to the .AppImage path. This leaks into
+# child processes and breaks tools like Volta whose shims use argv[0] to
+# detect which command was invoked.
+[[ -n "$APPIMAGE" ]] && unset ARGV0
+
 # Pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
