@@ -270,15 +270,16 @@ extract_appimage_metadata() {
 execute_import_appimage() {
     local source_path="$1"
     local app_name="$2"
+    local extract_dir="${3:-}"
 
     ensure_dirs
     require_file "$source_path"
 
-    local extract_dir=""
-    extract_dir=$(mktemp -d)
-    trap 'rm -rf "$extract_dir"' RETURN
-
-    extract_appimage_metadata "$source_path" "$extract_dir"
+    if [ -z "$extract_dir" ]; then
+        extract_dir=$(mktemp -d)
+        trap 'rm -rf "$extract_dir"' RETURN
+        extract_appimage_metadata "$source_path" "$extract_dir"
+    fi
 
     local slug=""
     slug=$(slugify "$app_name")
@@ -351,8 +352,8 @@ do_import_appimage() {
     source_path=$(realpath "$source_path")
     require_file "$source_path"
 
+    local extract_dir=""
     if [ -z "$app_name" ]; then
-        local extract_dir=""
         extract_dir=$(mktemp -d)
         trap 'rm -rf "$extract_dir"' RETURN
         extract_appimage_metadata "$source_path" "$extract_dir"
@@ -363,7 +364,7 @@ do_import_appimage() {
         fi
     fi
 
-    execute_import_appimage "$source_path" "$app_name"
+    execute_import_appimage "$source_path" "$app_name" "$extract_dir"
 }
 
 interactive_import_appimage_with_file() {
@@ -406,7 +407,7 @@ interactive_import_appimage_with_file() {
         return 0
     fi
 
-    execute_import_appimage "$source_path" "$app_name"
+    execute_import_appimage "$source_path" "$app_name" "$extract_dir"
 }
 
 list_installed_appimages() {
