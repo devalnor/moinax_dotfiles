@@ -236,6 +236,7 @@ extract_appimage_metadata() {
     local work_dir=""
     work_dir=$(mktemp -d)
 
+    chmod +x "$appimage_path"
     if ! (cd "$work_dir" && "$appimage_path" --appimage-extract >/dev/null 2>&1); then
         rm -rf "$work_dir"
         return 0
