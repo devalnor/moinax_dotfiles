@@ -83,32 +83,38 @@ if [ -f "$YAZI_THEME" ]; then
     sed -i "s/^dark = .*/dark = \"catppuccin-${FLAVOR}\"/" "$YAZI_THEME"
 fi
 
-# 7. Mako
+# 7. Eza
+EZA_THEME_SRC="$HOME/.config/eza/theme-${MODE}.yml"
+if [ -f "$EZA_THEME_SRC" ]; then
+    cp "$EZA_THEME_SRC" "$HOME/.config/eza/theme.yml"
+fi
+
+# 8. Mako
 MAKO_SRC="$HOME/.config/mako/config-${MODE}"
 if [ -f "$MAKO_SRC" ]; then
     cp "$MAKO_SRC" "$HOME/.config/mako/config"
     makoctl reload 2>/dev/null || true
 fi
 
-# 8. Rofi
+# 9. Rofi
 ROFI_SRC="$HOME/.local/share/rofi/themes/moinax-${MODE}.rasi"
 if [ -f "$ROFI_SRC" ]; then
     cp "$ROFI_SRC" "$HOME/.local/share/rofi/themes/moinax.rasi"
 fi
 
-# 9. Wlogout
+# 10. Wlogout
 WLOGOUT_SRC="$HOME/.config/wlogout/style-${MODE}.css"
 if [ -f "$WLOGOUT_SRC" ]; then
     cp "$WLOGOUT_SRC" "$HOME/.config/wlogout/style.css"
 fi
 
-# 10. Waybar CSS
+# 11. Waybar CSS
 WAYBAR_CSS_SRC="$HOME/.config/waybar/style-${MODE}.css"
 if [ -f "$WAYBAR_CSS_SRC" ]; then
     cp "$WAYBAR_CSS_SRC" "$HOME/.config/waybar/style.css"
 fi
 
-# 11. Compositor borders
+# 12. Compositor borders
 if pgrep -x Hyprland &>/dev/null; then
     if [ "$MODE" = "dark" ]; then
         hyprctl keyword general:col.active_border "rgba(ff64ff80) rgba(9696ffff) 45deg" 2>/dev/null || true
@@ -131,7 +137,7 @@ elif pgrep -x niri &>/dev/null; then
     fi
 fi
 
-# 12. Neovim
+# 13. Neovim
 NVIM_THEME_FILE="$HOME/.local/share/nvim-theme"
 echo "$FLAVOR" > "$NVIM_THEME_FILE"
 # Best-effort remote send to running nvim instances
@@ -140,7 +146,7 @@ for addr in /run/user/$(id -u)/nvim.*.0 /tmp/nvim.*/0; do
     nvim --server "$addr" --remote-send "<Cmd>lua local c = require('catppuccin'); c.options.flavour = '${FLAVOR}'; c.compile(); vim.cmd.colorscheme('catppuccin')<CR>" 2>/dev/null || true
 done
 
-# 13. Delta (git diff) — swap theme feature while preserving other features
+# 14. Delta (git diff) — swap theme feature while preserving other features
 if command -v git &>/dev/null; then
     CURRENT_FEATURES=$(git config --global --get delta.features 2>/dev/null || true)
     if [ "$MODE" = "dark" ]; then
@@ -151,7 +157,7 @@ if command -v git &>/dev/null; then
     git config --global delta.features "$NEW_FEATURES" 2>/dev/null || true
 fi
 
-# 14. Waybar restart + 15. Notification (skipped when called from installer)
+# 15. Waybar restart + 16. Notification (skipped when called from installer)
 if [ "$APPLY_DARK_MODE_NO_RESTART" != "1" ]; then
     if [ -x "$HOME/.config/hypr/scripts/reload-waybar.sh" ]; then
         "$HOME/.config/hypr/scripts/reload-waybar.sh"

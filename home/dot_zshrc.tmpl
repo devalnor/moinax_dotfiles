@@ -63,10 +63,11 @@ export VISUAL="cursor"
 
 {{- if ne .chezmoi.osRelease.id "fedora" }}
 # Replace ls by eza
-alias ls="eza"
+alias ls="eza --icons --group-directories-first"
+alias ll="eza --icons --group-directories-first -l --git"
+alias lsa="eza --icons --group-directories-first -la --git"
+alias lt="eza --icons --group-directories-first --tree --level=2"
 {{- end }}
-# Add shortcuts to ls -la
-alias lsa="ls -la"
 # Add shortcuts to nvim
 alias vim="nvim"
 alias vi="nvim"
@@ -146,3 +147,7 @@ if command -v wt &> /dev/null; then
   eval "$(wt config shell init zsh)"
 fi
 {{- end }}
+
+# Source local overrides (not managed by chezmoi)
+# Installers (bun, cargo, etc.) can safely add lines to ~/.zshrc.local
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
