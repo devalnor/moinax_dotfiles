@@ -130,7 +130,8 @@ bind = SUPER CTRL, N, exec, ~/.local/bin/toggle-tailscale.sh # Toggle Tailscale 
 bind = SUPER SHIFT, Q, exit # Exit Hyprland
 bind = SUPER, L, exec, wlogout-wrapper.sh # Power menu (wlogout)
 bind = SUPER ALT, L, exec, loginctl lock-session # Lock screen
-bind = SUPER CTRL, L, exec, ~/.local/bin/compositor-logout.sh # Logout
+bind = SUPER CTRL, L, exec, systemctl suspend # Suspend
+bind = SUPER SHIFT, L, exec, ~/.local/bin/compositor-logout.sh # Logout
 bind = SUPER, H, exec, rofi-keybindings # Keybinding help (rofi)
 
 # ── 15. Mouse & Scroll ───────────────────────────────────────────

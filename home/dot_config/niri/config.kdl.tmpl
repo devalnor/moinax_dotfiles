@@ -319,7 +319,8 @@ binds {
     Ctrl+Alt+Delete { quit; }
     Mod+L hotkey-overlay-title="Power Menu: wlogout" { spawn "wlogout-wrapper.sh"; }
     Mod+Alt+L hotkey-overlay-title="Lock Screen" { spawn-sh "loginctl lock-session"; }
-    Mod+Ctrl+L hotkey-overlay-title="Logout" { spawn-sh "~/.local/bin/compositor-logout.sh"; }
+    Mod+Ctrl+L hotkey-overlay-title="Suspend" { spawn-sh "systemctl suspend"; }
+    Mod+Shift+L hotkey-overlay-title="Logout" { spawn-sh "~/.local/bin/compositor-logout.sh"; }
     Mod+Alt+P { power-off-monitors; }
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
     Mod+H hotkey-overlay-title="Keybinding Help: rofi" { spawn "rofi-keybindings"; }

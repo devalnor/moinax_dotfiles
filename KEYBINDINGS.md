@@ -213,7 +213,8 @@
 |---|---|---|---|
 | Power menu (wlogout) | `Mod+L` | `Mod+L` | Centered vertical list with keybind hints |
 | Lock screen | `Mod+Alt+L` | `Mod+Alt+L` | `loginctl lock-session` |
-| Logout | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `compositor-logout.sh` |
+| Suspend | `Mod+Ctrl+L` | `Mod+Ctrl+L` | `systemctl suspend` |
+| Logout | `Mod+Shift+L` | `Mod+Shift+L` | `compositor-logout.sh` |
 | Toggle dark/light mode | `Mod+N` | `Mod+N` | Switches Catppuccin Mocha/Latte + portal |
 | Toggle caffeine mode | `Mod+Alt+N` | `Mod+Alt+N` | Inhibits idle (prevents lock/sleep) |
 | Toggle Tailscale VPN | `Mod+Ctrl+N` | `Mod+Ctrl+N` | Connect/disconnect Tailscale |
