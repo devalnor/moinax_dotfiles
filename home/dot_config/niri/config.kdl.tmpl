@@ -170,7 +170,8 @@ binds {
     // ── 1. Application Shortcuts ──────────────────────────────────────
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+Space hotkey-overlay-title="Unified Launcher: rofi" { spawn-sh "rofi -show combi"; }
-    Mod+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable" "--password-store=basic"; }
+    Mod+B hotkey-overlay-title="Open Browser: zen" { spawn "zen-browser"; }
+    Mod+Alt+B hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable" "--password-store=basic"; }
     Mod+E hotkey-overlay-title="Open File Manager: dolphin" { spawn "dolphin"; }
     Mod+I hotkey-overlay-title="Emoji Selector: rofimoji" { spawn-sh "rofimoji --action clipboard --clipboarder wl-copy --typer wtype"; }
     Mod+A hotkey-overlay-title="Switch Audio Output" { spawn-sh "~/.local/bin/toggle-audio-switch.sh"; }

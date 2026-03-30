@@ -13,6 +13,10 @@
 {{- if not (lookPath "okular") -}}
 {{-   $pdfViewer = "org.gnome.Evince.desktop" -}}
 {{- end -}}
+{{- $browser := "google-chrome.desktop" -}}
+{{- if lookPath "zen-browser" -}}
+{{-   $browser = "zen.desktop" -}}
+{{- end -}}
 [Default Applications]
 # Images
 image/bmp={{ $imageViewer }}
@@ -64,12 +68,12 @@ application/x-yaml={{ $textEditor }}
 application/toml={{ $textEditor }}
 
 # Web
-text/html=google-chrome.desktop
-x-scheme-handler/http=google-chrome.desktop
-x-scheme-handler/https=google-chrome.desktop
-x-scheme-handler/about=google-chrome.desktop
-x-scheme-handler/unknown=google-chrome.desktop
-x-scheme-handler/mailto=google-chrome.desktop
+text/html={{ $browser }}
+x-scheme-handler/http={{ $browser }}
+x-scheme-handler/https={{ $browser }}
+x-scheme-handler/about={{ $browser }}
+x-scheme-handler/unknown={{ $browser }}
+x-scheme-handler/mailto={{ $browser }}
 
 # Other schemes
 x-scheme-handler/jetbrains=jetbrainsd.desktop

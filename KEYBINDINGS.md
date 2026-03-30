@@ -19,7 +19,8 @@
 |---|---|---|---|
 | Open terminal (kitty) | `Mod+Return` | `Mod+Return` | |
 | Unified launcher (rofi) | `Mod+Space` | `Mod+Space` | combi mode: apps, windows, calc, files, clipboard, emoji, actions |
-| Open browser (Chrome) | `Mod+B` | `Mod+B` | |
+| Open browser (Zen) | `Mod+B` | `Mod+B` | |
+| Open browser (Chrome) | `Mod+Alt+B` | `Mod+Alt+B` | |
 | File manager (Dolphin) | `Mod+E` | `Mod+E` | |
 | Emoji selector | `Mod+I` | `Mod+I` | rofimoji (clipboard paste) |
 | Switch audio output | `Mod+A` | `Mod+A` | |
