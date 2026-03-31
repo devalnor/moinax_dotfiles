@@ -1,0 +1,41 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      { "id": "1", "type": "model", "color": "hex:1E1E2E", "backgroundColor": "hex:F38BA8" },
+      { "id": "2", "type": "context-percentage", "color": "hex:1E1E2E", "backgroundColor": "hex:FAB387" },
+      { "id": "3", "type": "session-cost", "color": "hex:1E1E2E", "backgroundColor": "hex:F9E2AF" },
+      { "id": "4", "type": "session-clock", "color": "hex:1E1E2E", "backgroundColor": "hex:A6E3A1" },
+      { "id": "5", "type": "thinking-effort", "color": "hex:1E1E2E", "backgroundColor": "hex:89B4FA" }
+    ],
+    [
+      { "id": "t1", "type": "tokens-input", "color": "hex:BAC2DE", "backgroundColor": "hex:313244" },
+      { "id": "t2", "type": "tokens-output", "color": "hex:BAC2DE", "backgroundColor": "hex:3B3D50" },
+      { "id": "t3", "type": "output-speed", "color": "hex:BAC2DE", "backgroundColor": "hex:45475A" },
+      { "id": "u1", "type": "block-timer", "color": "hex:BAC2DE", "backgroundColor": "hex:3B3D50" },
+      { "id": "u2", "type": "session-usage", "color": "hex:BAC2DE", "backgroundColor": "hex:313244" },
+      { "id": "u3", "type": "weekly-usage", "color": "hex:BAC2DE", "backgroundColor": "hex:3B3D50" }
+    ],
+    [
+      { "id": "6", "type": "git-root-dir", "color": "hex:1E1E2E", "backgroundColor": "hex:F38BA8" },
+      { "id": "7", "type": "git-worktree", "color": "hex:1E1E2E", "backgroundColor": "hex:FAB387" },
+      { "id": "8", "type": "git-branch", "color": "hex:1E1E2E", "backgroundColor": "hex:F9E2AF" },
+      { "id": "9", "type": "git-changes", "color": "hex:1E1E2E", "backgroundColor": "hex:A6E3A1" }
+    ]
+  ],
+  "flexMode": "full-minus-40",
+  "compactThreshold": 60,
+  "colorLevel": 3,
+  "defaultPadding": " ",
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": true,
+    "separators": ["\ue0b4"],
+    "separatorInvertBackground": [false],
+    "startCaps": ["\ue0b6"],
+    "endCaps": ["\ue0b4"],
+    "theme": "custom",
+    "autoAlign": false
+  }
+}

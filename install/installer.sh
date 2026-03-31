@@ -1870,6 +1870,8 @@ show_completion() {
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
         steps+=("  $next_step. Install WorkTrunk + Claude Code plugin: claude plugin marketplace add max-sixty/worktrunk && claude plugin install worktrunk@worktrunk")
         next_step=$((next_step + 1))
+        steps+=("  $next_step. ccstatusline is configured — restart Claude Code to see the Catppuccin status line")
+        next_step=$((next_step + 1))
     fi
 
     if [ "$PLYMOUTH_CONFIGURED" = true ]; then

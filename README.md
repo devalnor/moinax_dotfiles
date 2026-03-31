@@ -41,7 +41,7 @@ The interactive installer will:
 |-------|-------------|
 | **Hyprland** | Hyprland compositor with `hypridle`, `hyprlock`, `hyprpaper`, `hyprshot`, `waybar`, `rofi`, `mako`, `wlogout`, clipboard tooling (`cliphist`, `wl-clipboard`) and Wayland helpers |
 | **Niri** | Niri scrollable tiling compositor with Wayland desktop tools (`waybar`, `rofi`, `mako`, `wlogout`, `sddm`, clipboard, screenshots) |
-| **Development** | `neovim`, Cursor, Git tooling (`gh`, `lazygit`, `delta`), containers (`docker`, `docker-compose`, `lazydocker`), and build/task tools (`cmake`, `gcc`/`base-devel`, `just`) |
+| **Development** | `neovim`, Cursor, Git tooling (`gh`, `lazygit`, `delta`), containers (`docker`, `docker-compose`, `lazydocker`), build/task tools (`cmake`, `gcc`/`base-devel`, `just`), and Claude Code with [`ccstatusline`](https://github.com/sirmalloc/ccstatusline) |
 | **Gaming** | Steam + Discord with performance helpers (`mangohud`, `gamemode`) |
 | **Multimedia** | Media and creation tools (`mpv`, `obs-studio`, `ffmpeg`, ImageMagick, GIMP, Inkscape) |
 | **Productivity** | File managers (Dolphin + Yazi), thumbnail support (`ffmpegthumbnailer`, `kdegraphics-thumbnailers`), BTRFS snapshots (`snapper`, `snap-pac`/`python3-dnf-plugin-snapper`, `grub-btrfs`), communication/browser apps (Slack, Chrome), archive tools, and themes/icons |
@@ -238,6 +238,7 @@ After running the installer:
 - **Hyprland**: hypridle, hyprlock, hyprpaper, hyprshot, waybar, rofi, mako, wlogout
 - **Niri**: niri with waybar, rofi, mako, wlogout (scrollable tiling Wayland compositor)
 - **AI**: hyprvoice dictation with local Whisper speech recognition
+- **Claude Code**: [`ccstatusline`](https://github.com/sirmalloc/ccstatusline) status bar (Catppuccin Powerline theme), WorkTrunk worktree plugin
 - **AppImage support**: Desktop installs set up AppImage support per distro family; terminal installs skip it
 
 ## Credits

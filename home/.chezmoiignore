@@ -63,6 +63,8 @@ LICENSE
 .config/gh-dash/**
 .config/worktrunk
 .config/worktrunk/**
+.config/ccstatusline
+.config/ccstatusline/**
 {{- end }}
 
 # Neovim lazy-lock.json — managed via 'manage.sh lazy-lock' instead of chezmoi apply

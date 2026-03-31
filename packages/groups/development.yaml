@@ -11,6 +11,7 @@ dotfiles:
   - dot_config/delta
   - dot_config/gh-dash
   - dot_config/worktrunk
+  - dot_config/ccstatusline
   - dot_gitconfig
 
 # Services to enable
@@ -41,6 +42,7 @@ descriptions:
   worktrunk-bin: Git worktree manager for AI workflows (Arch AUR)
   worktrunk: Git worktree manager for AI workflows
   claude-code: AI-powered coding assistant CLI
+  ccstatusline: Claude Code status line with Catppuccin Powerline theme
 
 desktop_only:
   - cursor-bin
