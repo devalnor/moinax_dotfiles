@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# rofi-kdev — fuzzy directory picker that launches kitty dev layout
+# Uses dmenu mode so rofi closes immediately after selection.
+
+# Detect fd binary (Arch/Fedora: fd, Debian: fdfind)
+if command -v fd &>/dev/null; then
+    FD_CMD="fd"
+elif command -v fdfind &>/dev/null; then
+    FD_CMD="fdfind"
+else
+    notify-send -u critical "rofi-kdev" "fd not found"
+    exit 1
+fi
+
+selection=$($FD_CMD --type d --max-depth 2 \
+    --base-directory "$HOME/Projects" \
+    --strip-cwd-prefix 2>/dev/null | rofi -dmenu -i -p "Dev")
+
+if [ -n "$selection" ]; then
+    kitty --session ~/.config/kitty/dev-layout.session --directory "$HOME/Projects/$selection" & disown
+fi

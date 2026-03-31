@@ -18,7 +18,7 @@
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Open terminal (kitty) | `Mod+Return` | `Mod+Return` | |
-| Dev terminal (kitty splits) | `Mod+Alt+Return` | `Mod+Alt+Return` | 1 top + 2 bottom split layout |
+| Dev terminal (kitty splits) | `Mod+Alt+Return` | `Mod+Alt+Return` | Rofi directory picker, then 1 top + 2 bottom split layout |
 | Unified launcher (rofi) | `Mod+Space` | `Mod+Space` | combi mode: apps, windows, calc, files, clipboard, emoji, actions |
 | Open browser (Zen) | `Mod+B` | `Mod+B` | |
 | Open browser (Chrome) | `Mod+Alt+B` | `Mod+Alt+B` | |
