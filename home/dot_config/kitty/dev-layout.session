@@ -1,0 +1,4 @@
+layout splits
+launch
+launch --location=hsplit
+launch --location=vsplit

@@ -139,6 +139,13 @@ if command -v keychain &> /dev/null; then
   eval "$(keychain --eval id_ed25519)"
 fi
 
+# Launch kitty with a splits layout: 1 large top, 2 small bottom
+function kdev() {
+	local dir="${1:-.}"
+	dir="$(cd "$dir" && pwd)"
+	kitty --session ~/.config/kitty/dev-layout.session --directory "$dir" & disown
+}
+
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	yazi "$@" --cwd-file="$tmp"
