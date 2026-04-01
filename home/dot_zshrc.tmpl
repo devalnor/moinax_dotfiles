@@ -139,11 +139,22 @@ if command -v keychain &> /dev/null; then
   eval "$(keychain --eval id_ed25519)"
 fi
 
-# Launch kitty with a splits layout: 1 large top, 2 small bottom
+# Launch kitty dev environment: Claude (splits) + Neovim tabs
 function kdev() {
 	local dir="${1:-.}"
 	dir="$(cd "$dir" && pwd)"
-	kitty --session ~/.config/kitty/dev-layout.session --directory "$dir" &>/dev/null & disown
+	local name="$(basename "$dir")"
+	kitty --title "$name" --directory "$dir" --session <(cat <<EOF
+new_tab Claude
+layout splits
+launch claude
+launch --location=hsplit
+launch --location=vsplit
+
+new_tab Neovim
+launch nvim
+EOF
+	) &>/dev/null & disown
 }
 
 function y() {
@@ -169,6 +180,44 @@ fi
 if command -v wt &> /dev/null; then
   eval "$(wt config shell init zsh)"
 fi
+
+# Start work on a Linear ticket: create/switch worktree + launch kitty dev environment
+function wstart() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: wstart <ticket-id>" >&2
+    return 1
+  fi
+
+  local ticket="$1"
+  local is_new=false
+
+  # Create new worktree, or switch to existing one
+  if wt switch --create "$ticket" 2>/dev/null; then
+    is_new=true
+  elif ! wt switch "$ticket"; then
+    echo "error: failed to create or switch to worktree for '$ticket'" >&2
+    return 1
+  fi
+
+  # Copy gitignored files (e.g. .env.development.local) for new worktrees only
+  if $is_new; then
+    wt step copy-ignored
+  fi
+
+  local dir="$PWD"
+
+  kitty --title "$ticket" --directory "$dir" --session <(cat <<EOF
+new_tab Claude
+layout splits
+launch claude -n "$ticket"
+launch --location=hsplit
+launch --location=vsplit
+
+new_tab Neovim
+launch nvim
+EOF
+  ) &>/dev/null & disown
+}
 {{- end }}
 
 # Source local overrides (not managed by chezmoi)

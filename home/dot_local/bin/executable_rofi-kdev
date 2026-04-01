@@ -17,5 +17,17 @@ selection=$($FD_CMD --type d --max-depth 2 \
     --strip-cwd-prefix 2>/dev/null | rofi -dmenu -i -p "Dev")
 
 if [ -n "$selection" ]; then
-    kitty --session ~/.config/kitty/dev-layout.session --directory "$HOME/Projects/$selection" & disown
+    dir="$HOME/Projects/$selection"
+    name="$(basename "$dir")"
+    kitty --title "$name" --directory "$dir" --session <(cat <<EOF
+new_tab Claude
+layout splits
+launch claude
+launch --location=hsplit
+launch --location=vsplit
+
+new_tab Neovim
+launch nvim
+EOF
+    ) &>/dev/null & disown
 fi
