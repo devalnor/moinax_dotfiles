@@ -1,4 +1,4 @@
 layout splits
-launch claude
+launch
 launch --location=hsplit
 launch --location=vsplit

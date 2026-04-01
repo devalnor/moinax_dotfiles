@@ -143,7 +143,7 @@ fi
 function kdev() {
 	local dir="${1:-.}"
 	dir="$(cd "$dir" && pwd)"
-	kitty --session ~/.config/kitty/dev-layout.session --directory "$dir" & disown
+	kitty --session ~/.config/kitty/dev-layout.session --directory "$dir" &>/dev/null & disown
 }
 
 function y() {
