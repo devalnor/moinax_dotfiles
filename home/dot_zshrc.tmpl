@@ -181,35 +181,39 @@ if command -v wt &> /dev/null; then
   eval "$(wt config shell init zsh)"
 fi
 
-# Start work on a Linear ticket: create/switch worktree + launch kitty dev environment
-function wstart() {
-  if [[ -z "$1" ]]; then
-    echo "Usage: wstart <ticket-id>" >&2
-    return 1
-  fi
-
-  local ticket="$1"
+# Create/switch worktree + launch kitty dev environment
+function wtstart() {
+  local branch="$1"
   local is_new=false
+  local orig_dir="$PWD"
 
-  # Create new worktree, or switch to existing one
-  if wt switch --create "$ticket" 2>/dev/null; then
-    is_new=true
-  elif ! wt switch "$ticket"; then
-    echo "error: failed to create or switch to worktree for '$ticket'" >&2
-    return 1
+  if [[ -z "$branch" ]]; then
+    # No branch name: open interactive worktree picker
+    wt switch || return 1
+    # If the user escaped without picking, PWD hasn't changed
+    [[ "$PWD" == "$orig_dir" ]] && return 0
+  else
+    # Create new worktree, or switch to existing one
+    if wt switch --create "$branch" 2>/dev/null; then
+      is_new=true
+    elif ! wt switch "$branch"; then
+      echo "error: failed to create or switch to worktree for '$branch'" >&2
+      return 1
+    fi
+
+    # Copy gitignored files (e.g. .env.development.local) for new worktrees only
+    if $is_new; then
+      wt step copy-ignored
+    fi
   fi
 
-  # Copy gitignored files (e.g. .env.development.local) for new worktrees only
-  if $is_new; then
-    wt step copy-ignored
-  fi
-
+  local name="${branch:-$(git branch --show-current)}"
   local dir="$PWD"
 
-  kitty --title "$ticket" --directory "$dir" --session <(cat <<EOF
+  kitty --title "$name" --directory "$dir" --session <(cat <<EOF
 new_tab Claude
 layout splits
-launch claude -n "$ticket"
+launch claude -n "$name"
 launch --location=hsplit
 launch --location=vsplit
 
@@ -217,7 +221,36 @@ new_tab Neovim
 launch nvim
 EOF
   ) &>/dev/null & disown
+
+  builtin cd -- "$orig_dir"
 }
+
+# Remove all worktrees whose branches are already merged into main
+function wtclean() {
+  local branches
+  branches=$(wt list --format=json 2>/dev/null | python3 -c "
+import sys, json
+for wt in json.load(sys.stdin):
+    if wt.get('main_state') in ('integrated', 'empty') and not wt.get('is_main'):
+        print(wt['branch'])
+" 2>/dev/null)
+
+  if [[ -z "$branches" ]]; then
+    echo "No merged worktrees to clean up."
+    return 0
+  fi
+
+  echo "Worktrees to remove:"
+  echo "$branches" | sed 's/^/  - /'
+  echo
+  read -q "?Remove all? [y/N] " || { echo; return 0; }
+  echo
+
+  echo "$branches" | xargs wt remove -f
+}
+
+alias wts=wtstart
+alias wtc=wtclean
 {{- end }}
 
 # Source local overrides (not managed by chezmoi)
