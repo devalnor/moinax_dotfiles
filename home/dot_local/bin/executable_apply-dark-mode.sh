@@ -115,7 +115,7 @@ if [ -f "$WAYBAR_CSS_SRC" ]; then
 fi
 
 # 12. Compositor borders
-if pgrep -x Hyprland &>/dev/null; then
+if pgrep -xi hyprland &>/dev/null; then
     if [ "$MODE" = "dark" ]; then
         hyprctl keyword general:col.active_border "rgba(ff64ff80) rgba(9696ffff) 45deg" 2>/dev/null || true
         hyprctl keyword general:col.inactive_border "rgba(6464ff4d)" 2>/dev/null || true
@@ -123,7 +123,7 @@ if pgrep -x Hyprland &>/dev/null; then
         hyprctl keyword general:col.active_border "rgba(8839efcc) rgba(1e66f5cc) 45deg" 2>/dev/null || true
         hyprctl keyword general:col.inactive_border "rgba(7287fd4d)" 2>/dev/null || true
     fi
-elif pgrep -x niri &>/dev/null; then
+elif pgrep -xi niri &>/dev/null; then
     NIRI_CONF="$HOME/.config/niri/config.kdl"
     if [ -f "$NIRI_CONF" ]; then
         if [ "$MODE" = "dark" ]; then

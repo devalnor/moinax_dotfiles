@@ -3,9 +3,9 @@
 # Waybar custom module: caffeine status (JSON output)
 # Icons match the existing idle_inhibitor module
 
-if pgrep -x Hyprland &>/dev/null; then
+if pgrep -xi hyprland &>/dev/null; then
     DAEMON="hypridle"
-elif pgrep -x niri &>/dev/null; then
+elif pgrep -xi niri &>/dev/null; then
     DAEMON="swayidle"
 else
     printf '{"text": "%s", "class": "deactivated", "tooltip": "Unknown compositor"}\n' "$(printf '\U000f04b2')"

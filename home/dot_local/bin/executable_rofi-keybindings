@@ -8,7 +8,7 @@ set -euo pipefail
 
 if [ "${XDG_CURRENT_DESKTOP:-}" = "Hyprland" ] || [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
     COMPOSITOR="hyprland"
-elif [ "${XDG_CURRENT_DESKTOP:-}" = "niri" ] || pgrep -x niri &>/dev/null; then
+elif [ "${XDG_CURRENT_DESKTOP:-}" = "niri" ] || pgrep -xi niri &>/dev/null; then
     COMPOSITOR="niri"
 else
     notify-send -u critical "rofi-keybindings" "No supported compositor detected"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # rofi-killwindow — list open windows via rofi, kill the selected one
-# Used as rofi script mode: rofi -show kill -modi "kill:rofi-killwindow" -p "Kill Window"
+# Used as rofi script mode: rofi -show "Select App to Kill" -modi "Select App to Kill:rofi-killwindow"
 set -euo pipefail
 
 if [ -z "${1:-}" ]; then
@@ -19,5 +19,6 @@ else
     pid="${ROFI_INFO:-}"
     if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
         kill -9 "$pid"
+        notify-send -u low "Kill Window" "Process $pid killed"
     fi
 fi

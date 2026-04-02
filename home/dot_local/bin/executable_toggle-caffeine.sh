@@ -4,9 +4,9 @@ set -e
 # Toggle caffeine mode: kill or restart the idle daemon
 # Works with both Hyprland (hypridle) and Niri (swayidle)
 
-if pgrep -x Hyprland &>/dev/null; then
+if pgrep -xi hyprland &>/dev/null; then
     DAEMON="hypridle"
-elif pgrep -x niri &>/dev/null; then
+elif pgrep -xi niri &>/dev/null; then
     DAEMON="swayidle"
 else
     notify-send -u critical "Caffeine" "Unknown compositor"
