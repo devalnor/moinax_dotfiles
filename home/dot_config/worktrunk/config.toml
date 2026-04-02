@@ -5,3 +5,7 @@
 # Used by: wt merge, wt step commit, wt step squash
 [commit.generation]
 command = "CLAUDECODE= MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --disable-slash-commands --setting-sources='' --system-prompt=''"
+
+# Exclude node_modules from copy-ignored (permissions break when copied, yarn install is more reliable)
+[step.copy-ignored]
+exclude = ["node_modules/"]
