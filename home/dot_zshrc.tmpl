@@ -170,10 +170,15 @@ if command -v starship &> /dev/null; then
   eval "$(starship init zsh)"
 fi
 
+# Initialize zoxide (--cmd cd replaces cd/cdi with smart zoxide versions)
+if command -v zoxide &> /dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
 {{- if .install_development }}
 # Initialize WorkTrunk shell integration (directory switching for worktrees)
 if command -v wt &> /dev/null; then
-  eval "$(wt config shell init zsh)"
+  eval "$(command wt config shell init zsh)"
 fi
 
 # Create/switch worktree + launch kitty dev environment
@@ -246,13 +251,56 @@ for wt in json.load(sys.stdin):
 
 alias wts=wtstart
 alias wtc=wtclean
-{{- end }}
 
-# Initialize zoxide (--cmd cd replaces cd/cdi with smart zoxide versions)
-# Must be last to avoid conflicts with other tools that hook into cd
-if command -v zoxide &> /dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
-fi
+# Rebase worktree(s) onto latest main and push
+function wtupdate() {
+  local branch="$1"
+
+  echo "Fetching origin..."
+  /usr/bin/git fetch origin
+
+  local worktrees
+  worktrees=$(wt list --format=json 2>/dev/null | python3 -c "
+import sys, json
+target = '$branch'
+for wt in json.load(sys.stdin):
+    if wt.get('is_main') or wt.get('kind') != 'worktree':
+        continue
+    if target and wt['branch'] != target:
+        continue
+    print(wt['branch'] + '\t' + wt['path'])
+" 2>/dev/null)
+
+  if [[ -z "$worktrees" ]]; then
+    if [[ -n "$branch" ]]; then
+      echo "error: worktree '$branch' not found" >&2
+      return 1
+    fi
+    echo "No worktrees to update."
+    return 0
+  fi
+
+  local failed=()
+  while IFS=$'\t' read -r name path; do
+    echo "Updating $name..."
+    if /usr/bin/git -C "$path" rebase origin/main; then
+      /usr/bin/git -C "$path" push --force-with-lease
+    else
+      echo "  Rebase conflict — aborting rebase for $name" >&2
+      /usr/bin/git -C "$path" rebase --abort
+      failed+=("$name")
+    fi
+  done <<< "$worktrees"
+
+  if (( ${#failed[@]} > 0 )); then
+    echo
+    echo "Failed to update: ${failed[*]}"
+    return 1
+  fi
+}
+
+alias wtu=wtupdate
+{{- end }}
 
 # Source local overrides (not managed by chezmoi)
 # Installers (bun, cargo, etc.) can safely add lines to ~/.zshrc.local
