@@ -10,16 +10,12 @@
 
 ## 1. Application Shortcuts
 
-> **Unified Launcher** (`Mod+Space`): search across all sources. Filter by prefix:
-> `!drun` apps, `!window` windows, `!calc` calculator, `!clipboard` clipboard,
-> `!files` file search, `!emoji` emoji, `!actions` quick actions.
-> Dedicated shortcuts below remain as fast-access overrides.
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Open terminal (kitty) | `Mod+Return` | `Mod+Return` | |
 | Dev terminal (kitty splits) | `Mod+Alt+Return` | `Mod+Alt+Return` | Rofi directory picker, then 1 top + 2 bottom split layout |
-| Unified launcher (rofi) | `Mod+Space` | `Mod+Space` | combi mode: apps, windows, calc, files, clipboard, emoji, actions |
+| App launcher (rofi) | `Mod+Space` | `Mod+Space` | |
 | Open browser (Zen) | `Mod+B` | `Mod+B` | |
 | Open browser (Chrome) | `Mod+Alt+B` | `Mod+Alt+B` | |
 | File manager (Dolphin) | `Mod+E` | `Mod+E` | |
@@ -27,6 +23,7 @@
 | Switch audio output | `Mod+A` | `Mod+A` | |
 | Switch keyboard layout | `Mod+K` | `Mod+K` | |
 | Window switcher (rofi) | `Mod+Tab` | `Mod+Tab` | |
+| Kill window (rofi) | `Mod+Escape` | `Mod+Escape` | Picks window like switcher, then `kill -9` |
 | Clipboard (cliphist) | `Mod+V` | `Mod+V` | |
 | Color picker (hyprpicker) | `Mod+Shift+P` | `Mod+Shift+P` | |
 | Calculator (rofi-calc) | `Mod+C` | `Mod+C` | Quick inline calculator |
@@ -222,7 +219,6 @@
 | Quit compositor | `Mod+Shift+Q` | `Mod+Shift+Q` | |
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |
-| Keyboard shortcut inhibit | — | `Mod+Escape` | Niri only (toggle-keyboard-shortcuts-inhibit) |
 | Keybinding help (rofi) | `Mod+H` | `Mod+H` | rofi-keybindings |
 
 ## 15. Mouse & Scroll
