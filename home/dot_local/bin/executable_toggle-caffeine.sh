@@ -6,17 +6,16 @@ set -e
 # loginctl lock-session always works, even with caffeine ON.
 
 INHIBITOR="wayland-idle-inhibitor.py"
-
-if ! command -v "$INHIBITOR" &>/dev/null; then
+INHIBITOR_PATH=$(command -v "$INHIBITOR" 2>/dev/null) || {
     notify-send -u critical "Caffeine" "$INHIBITOR not found — install wayland-idle-inhibitor-git (AUR)"
     exit 1
-fi
+}
 
-if pgrep -f "$INHIBITOR" &>/dev/null; then
-    pkill -f "$INHIBITOR"
+if pgrep -f "$INHIBITOR_PATH" &>/dev/null; then
+    pkill -f "$INHIBITOR_PATH" || true
     notify-send -u low "Caffeine" "OFF — idle resumed"
 else
-    nohup "$INHIBITOR" &>/dev/null & disown
+    nohup "$INHIBITOR_PATH" &>/dev/null & disown
     notify-send -u low "Caffeine" "ON — idle inhibited"
 fi
 
