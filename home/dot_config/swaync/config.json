@@ -17,7 +17,7 @@
   "scripts": {
     "copy-notification": {
       "exec": "~/.local/bin/swaync-copy.sh \"$SWAYNC_BODY\"",
-      "app-name": ".*",
+      "app-name": "^(?!swaync-copy).*$",
       "run-on": "action"
     }
   },
