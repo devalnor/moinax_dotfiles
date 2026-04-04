@@ -27,6 +27,7 @@ descriptions:
   hyprpicker: Color picker for Hyprland
   hyprpolkitagent: Polkit authentication agent
   hyprshot: Screenshot tool for Hyprland
+  wayland-idle-inhibitor: Wayland idle inhibitor for caffeine mode
   waybar: Highly customizable status bar
   rofi-wayland: Application launcher (Wayland fork)
   rofi-calc: Calculator plugin for rofi
@@ -87,6 +88,9 @@ packages:
     # X compatibility
     - xorg-xhost
     
+    # Idle inhibitor (caffeine mode)
+    - wayland-idle-inhibitor-git
+
     # Other Wayland tools
     - inotify-tools
     - cmatrix

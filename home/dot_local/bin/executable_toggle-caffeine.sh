@@ -1,24 +1,23 @@
 #!/bin/bash
 set -e
 
-# Toggle caffeine mode: kill or restart the idle daemon
-# Works with both Hyprland (hypridle) and Niri (swayidle)
+# Toggle caffeine mode: start/stop a Wayland idle inhibitor
+# The idle daemon (hypridle/swayidle) stays running so that
+# loginctl lock-session always works, even with caffeine ON.
 
-if pgrep -xi hyprland &>/dev/null; then
-    DAEMON="hypridle"
-elif pgrep -xi niri &>/dev/null; then
-    DAEMON="swayidle"
-else
-    notify-send -u critical "Caffeine" "Unknown compositor"
+INHIBITOR="wayland-idle-inhibitor.py"
+
+if ! command -v "$INHIBITOR" &>/dev/null; then
+    notify-send -u critical "Caffeine" "$INHIBITOR not found — install wayland-idle-inhibitor-git (AUR)"
     exit 1
 fi
 
-if pgrep -x "$DAEMON" &>/dev/null; then
-    killall "$DAEMON"
-    notify-send -u low "Caffeine" "ON — idle inhibited"
-else
-    nohup "$DAEMON" &>/dev/null & disown
+if pgrep -f "$INHIBITOR" &>/dev/null; then
+    pkill -f "$INHIBITOR"
     notify-send -u low "Caffeine" "OFF — idle resumed"
+else
+    nohup "$INHIBITOR" &>/dev/null & disown
+    notify-send -u low "Caffeine" "ON — idle inhibited"
 fi
 
 pkill -RTMIN+10 waybar || true
