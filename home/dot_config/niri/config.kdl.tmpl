@@ -131,6 +131,14 @@ environment {
     // For Wayland input methods, these should be unset (use native Wayland protocol)
     // GTK_IM_MODULE and QT_IM_MODULE intentionally not set
     // XMODIFIERS intentionally not set
+{{- if .has_nvidia }}
+
+    // NVIDIA https://wiki.hyprland.org/Nvidia/
+    LIBVA_DRIVER_NAME "nvidia"
+    GBM_BACKEND "nvidia-drm"
+    __GLX_VENDOR_LIBRARY_NAME "nvidia"
+    __GL_VRR_ALLOWED "1"
+{{- end }}
 }
 
 spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.config/waybar/launch-waybar.sh"

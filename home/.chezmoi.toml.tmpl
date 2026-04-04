@@ -64,6 +64,13 @@
 {{-   $hyprvoice_model = promptString "Whisper model for dictation (tiny/small/medium)" "small" -}}
 {{- end -}}
 
+{{- $has_nvidia := false -}}
+{{- if hasKey . "has_nvidia" -}}
+{{-   $has_nvidia = .has_nvidia -}}
+{{- else -}}
+{{-   $has_nvidia = eq (output "bash" "-c" "lspci 2>/dev/null | grep -qi nvidia && echo true || echo false" | trim) "true" -}}
+{{- end -}}
+
 {{- $install_purpose := "desktop" -}}
 {{- if hasKey . "install_purpose" -}}
 {{-   $install_purpose = .install_purpose -}}
@@ -93,5 +100,6 @@ sourceDir = {{ $source_dir | quote }}
     install_productivity = {{ $install_productivity }}
     install_ai = {{ $install_ai }}
     hyprvoice_model = {{ $hyprvoice_model | quote }}
+    has_nvidia = {{ $has_nvidia }}
     install_purpose = {{ $install_purpose | quote }}
     dark_mode = {{ $dark_mode | quote }}

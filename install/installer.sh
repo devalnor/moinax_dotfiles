@@ -1145,6 +1145,7 @@ sourceDir = "$source_dir"
     install_multimedia = $install_multimedia
     install_productivity = $install_productivity
     install_ai = $install_ai
+    has_nvidia = $HAS_NVIDIA
     hyprvoice_model = "$HYPRVOICE_MODEL"
     install_purpose = "$INSTALL_PURPOSE"
     dark_mode = "dark"
@@ -1270,6 +1271,110 @@ apply_dark_mode_defaults() {
     else
         print_info "Dark/light mode already configured, skipping"
     fi
+}
+
+# Setup NVIDIA GPU suspend/resume services
+setup_nvidia() {
+    if [ "$HAS_NVIDIA" != "true" ]; then
+        return 0
+    fi
+
+    print_header "NVIDIA GPU Setup"
+
+    # Check if NVIDIA driver services are installed
+    if ! has_nvidia_services; then
+        print_warning "NVIDIA GPU detected but driver services not found"
+        print_info "Install NVIDIA drivers first, then re-run setup to enable suspend/resume services"
+        return 0
+    fi
+
+    # Enable NVIDIA suspend/resume/hibernate services for proper GPU memory preservation
+    # Use enable without --now: these are oneshot services meant to run only during actual suspend/resume
+    for svc in nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service; do
+        if systemctl is-enabled "$svc" &>/dev/null; then
+            print_info "Service $svc is already enabled"
+        else
+            print_info "Enabling service: $svc"
+            if sudo systemctl enable "$svc"; then
+                print_success "Service $svc enabled"
+            else
+                print_warning "Failed to enable service $svc"
+            fi
+        fi
+    done
+
+    # Verify modprobe config
+    if ! grep -rqs 'NVreg_PreserveVideoMemoryAllocations=1' /etc/modprobe.d/; then
+        print_warning "NVreg_PreserveVideoMemoryAllocations=1 not found in /etc/modprobe.d/"
+        print_info "Add 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' to your modprobe config"
+    else
+        print_success "NVIDIA PreserveVideoMemoryAllocations is configured"
+    fi
+
+    # Install compositor STOP/CONT services to prevent deadlock during GPU suspend
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+        install_compositor_suspend_services "Hyprland" "hyprland"
+    fi
+
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+        install_compositor_suspend_services "niri" "niri"
+    fi
+
+    print_success "NVIDIA GPU setup complete"
+}
+
+# Install STOP/CONT systemd services for a Wayland compositor
+# $1: process name to signal (e.g. "Hyprland", "niri")
+# $2: service name prefix (e.g. "hyprland", "niri")
+install_compositor_suspend_services() {
+    local process_name="$1"
+    local service_prefix="$2"
+    local suspend_svc="/etc/systemd/system/${service_prefix}-suspend.service"
+    local resume_svc="/etc/systemd/system/${service_prefix}-resume.service"
+
+    if [ -f "$suspend_svc" ] && [ -f "$resume_svc" ]; then
+        print_info "${process_name} suspend/resume services already installed"
+        return 0
+    fi
+
+    print_info "Installing ${process_name} suspend/resume services..."
+
+    sudo tee "$suspend_svc" > /dev/null << EOF
+[Unit]
+Description=Suspend ${process_name} before NVIDIA driver suspends
+Before=nvidia-suspend.service
+Before=nvidia-hibernate.service
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/bin/pkill -STOP -x ${process_name}
+
+[Install]
+WantedBy=systemd-suspend.service
+WantedBy=systemd-hibernate.service
+WantedBy=systemd-suspend-then-hibernate.service
+EOF
+
+    sudo tee "$resume_svc" > /dev/null << EOF
+[Unit]
+Description=Resume ${process_name} after NVIDIA driver resumes
+After=nvidia-resume.service
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/bin/pkill -CONT -x ${process_name}
+
+[Install]
+WantedBy=systemd-suspend.service
+WantedBy=systemd-hibernate.service
+WantedBy=systemd-suspend-then-hibernate.service
+EOF
+
+    # Use enable without --now: these are oneshot services that should only run during actual suspend/resume
+    sudo systemctl daemon-reload
+    sudo systemctl enable "${service_prefix}-suspend.service" 2>/dev/null
+    sudo systemctl enable "${service_prefix}-resume.service" 2>/dev/null
+    print_success "${process_name} suspend/resume services installed"
 }
 
 # Enable services
@@ -1984,7 +2089,14 @@ main() {
     unset GROUP_PACKAGE_MODE GROUP_CUSTOM_PACKAGE_LIST
     declare -gA GROUP_PACKAGE_MODE=()
     declare -gA GROUP_CUSTOM_PACKAGE_LIST=()
-    
+
+    # Detect NVIDIA GPU
+    HAS_NVIDIA=false
+    if has_nvidia_gpu; then
+        HAS_NVIDIA=true
+        print_info "NVIDIA GPU detected"
+    fi
+
     # Check for gum
     check_gum
     
@@ -2033,6 +2145,7 @@ main() {
     setup_grub_theme
     setup_btrfs_snapshots
     if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        setup_nvidia
         setup_sddm
         setup_plymouth
     fi

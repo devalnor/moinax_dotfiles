@@ -61,3 +61,16 @@ get_distro_family() {
 get_supported_distros() {
     echo "arch fedora ubuntu debian linuxmint pop elementary neon zorin kali"
 }
+
+# Check if the system has an NVIDIA GPU
+has_nvidia_gpu() {
+    command -v lspci &>/dev/null || return 1
+    lspci 2>/dev/null | grep -qi 'nvidia' && return 0
+    return 1
+}
+
+# Check if NVIDIA suspend/resume systemd services are installed (i.e. drivers present)
+has_nvidia_services() {
+    systemctl list-unit-files nvidia-suspend.service &>/dev/null &&
+        systemctl list-unit-files nvidia-suspend.service 2>/dev/null | grep -q nvidia-suspend
+}
