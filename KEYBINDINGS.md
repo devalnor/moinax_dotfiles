@@ -179,7 +179,7 @@
 |---|---|---|---|
 | Reload Waybar | `Mod+Shift+B` | `Mod+Shift+B` | |
 | Reload wallpaper | `Mod+Shift+W` | `Mod+Shift+W` | Hyprland: hyprpaper; Niri: swaybg |
-| Reload Mako | `Mod+Shift+M` | `Mod+Shift+M` | |
+| Reload SwayNC | `Mod+Shift+M` | `Mod+Shift+M` | `swaync-client -R && swaync-client -rs` |
 | Reload compositor | `Mod+Shift+R` | `Mod+Shift+R` | |
 
 ## 12. Screenshots
@@ -220,6 +220,8 @@
 | Quit (alt) | — | `Ctrl+Alt+Delete` | Niri only |
 | Power off monitors | — | `Mod+Alt+P` | Niri only |
 | Keybinding help (rofi) | `Mod+H` | `Mod+H` | rofi-keybindings |
+| Toggle notification center | `Mod+U` | `Mod+U` | `swaync-client -t` |
+| Toggle DND | `Mod+Alt+U` | `Mod+Alt+U` | `swaync-client -d` |
 
 ## 15. Mouse & Scroll
 

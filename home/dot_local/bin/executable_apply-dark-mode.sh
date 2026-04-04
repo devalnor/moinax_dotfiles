@@ -89,11 +89,13 @@ if [ -f "$EZA_THEME_SRC" ]; then
     cp "$EZA_THEME_SRC" "$HOME/.config/eza/theme.yml"
 fi
 
-# 8. Mako
-MAKO_SRC="$HOME/.config/mako/config-${MODE}"
-if [ -f "$MAKO_SRC" ]; then
-    cp "$MAKO_SRC" "$HOME/.config/mako/config"
-    makoctl reload 2>/dev/null || true
+# 8. SwayNC
+SWAYNC_SRC="$HOME/.config/swaync/style-${MODE}.css"
+if [ -f "$SWAYNC_SRC" ]; then
+    cp "$SWAYNC_SRC" "$HOME/.config/swaync/style.css"
+    if pgrep -x swaync &>/dev/null; then
+        swaync-client -rs 2>/dev/null || true
+    fi
 fi
 
 # 9. Rofi

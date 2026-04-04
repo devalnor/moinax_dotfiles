@@ -36,8 +36,8 @@ LICENSE
 .config/waybar/**
 .config/rofi
 .config/rofi/**
-.config/mako
-.config/mako/**
+.config/swaync
+.config/swaync/**
 .config/wlogout
 .config/wlogout/**
 .local/share/rofi
@@ -72,7 +72,7 @@ LICENSE
 
 # Active theme files managed by apply-dark-mode.sh (variants are still tracked)
 .config/kitty/current-theme.conf
-.config/mako/config
+.config/swaync/style.css
 .local/share/rofi/themes/moinax.rasi
 .config/wlogout/style.css
 .config/waybar/style.css

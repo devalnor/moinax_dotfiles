@@ -1,0 +1,448 @@
+:root {
+  --noti-bg: rgba(239, 241, 245, 0.93);
+  --noti-bg-inner: rgba(100, 100, 255, 0.03);
+  --noti-bg-inner-low: rgba(100, 100, 255, 0.01);
+  --noti-bg-inner-critical: rgba(254, 100, 11, 0.06);
+  --noti-border: #1e66f5;
+  --noti-border-low: #6464ff;
+  --noti-border-critical: #fe640b;
+  --noti-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --text-color: #4c4f69;
+  --text-color-body: #6c6f85;
+  --text-color-dim: #8c8fa1;
+  --accent: #1e66f5;
+  --accent-bg: rgba(100, 100, 255, 0.12);
+  --accent-bg-hover: rgba(100, 100, 255, 0.22);
+  --accent-bg-active: rgba(100, 100, 255, 0.32);
+  --close-bg: #d20f39;
+  --close-bg-hover: #e64553;
+  --close-fg: #eff1f5;
+  --critical-accent: #fe640b;
+  --cc-bg: rgba(239, 241, 245, 0.95);
+  --cc-border: rgba(100, 100, 255, 0.1);
+  --dnd-checked: #6464ff;
+  --dnd-slider: rgba(100, 100, 255, 0.2);
+  --dnd-slider-checked: #eff1f5;
+  --notification-icon-size: 64px;
+  --notification-app-icon-size: 24px;
+  --font-size-summary: 13px;
+  --font-size-body: 12px;
+  --border-radius: 12px;
+}
+
+* {
+  all: unset;
+  font-size: 14px;
+  font-family: "FiraCode Nerd Font", "FiraCode Nerd Font Mono", sans-serif;
+  transition: 200ms;
+}
+
+/* ── Popup notifications ─────────────────────────────────── */
+
+.notification-row .notification-background {
+  background: var(--noti-bg);
+  border-radius: var(--border-radius);
+  margin: 6px 12px;
+  padding: 0;
+  color: var(--text-color);
+  box-shadow: var(--noti-shadow);
+}
+
+.notification-row .notification-background .notification {
+  padding: 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--noti-border);
+  background: var(--noti-bg-inner);
+}
+
+.notification-row .notification-background .notification.low {
+  border-color: var(--noti-border-low);
+  background: var(--noti-bg-inner-low);
+}
+
+.notification-row .notification-background .notification.critical {
+  border-color: var(--noti-border-critical);
+  background: var(--noti-bg-inner-critical);
+}
+
+/* Content layout */
+.notification .notification-content {
+  margin: 4px;
+}
+
+.notification-content .image {
+  -gtk-icon-size: var(--notification-icon-size);
+  margin: 4px 14px 4px 4px;
+  border-radius: 8px;
+}
+
+.notification-content .text-box {
+  margin-left: 4px;
+}
+
+.notification-content .app-icon {
+  -gtk-icon-size: var(--notification-app-icon-size);
+  -gtk-icon-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  margin: 4px;
+}
+
+.notification-content .text-box .summary {
+  color: var(--text-color);
+  font-size: var(--font-size-summary);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.notification-content .text-box .time {
+  color: var(--text-color-dim);
+  font-size: 12px;
+}
+
+.notification-content .text-box .body {
+  color: var(--text-color-body);
+  font-size: var(--font-size-body);
+  margin-top: 4px;
+}
+
+.notification-content .body-image {
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.notification > *:last-child > * {
+  min-height: 3.4em;
+}
+
+/* Close button */
+.notification-row .notification-background .close-button {
+  margin: 4px;
+  padding: 1px;
+  border-radius: 100%;
+  min-width: 16px;
+  min-height: 16px;
+  color: var(--text-color-dim);
+  background: rgba(100, 100, 255, 0.08);
+  opacity: 0.4;
+}
+
+.notification-row .notification-background .close-button:hover {
+  color: var(--text-color);
+  background: rgba(100, 100, 255, 0.2);
+  opacity: 1;
+}
+
+/* Action buttons — compact pills, bottom-right */
+.notification .notification-alt-actions {
+  margin: 2px 4px 0 0;
+}
+
+.notification .notification-action {
+  border-radius: 12px;
+  color: var(--text-color-dim);
+  background: transparent;
+  border: 1px solid rgba(100, 100, 255, 0.1);
+  margin: 0 0 0 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  opacity: 0.6;
+  transition: all 0.2s ease-in-out;
+}
+
+.notification .notification-action:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.notification .notification-action:active {
+  background: var(--accent-bg-hover);
+  opacity: 1;
+}
+
+/* Progress bars */
+.notification progress,
+.notification trough,
+.notification progressbar {
+  border-radius: 8px;
+  padding: 3px 0;
+  margin-top: 8px;
+}
+
+trough {
+  background-color: rgba(100, 100, 255, 0.06);
+}
+
+trough highlight {
+  background: var(--accent);
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: var(--accent);
+}
+
+.notification.critical progress {
+  background-color: var(--critical-accent);
+}
+
+/* ── Control center (drawer) ─────────────────────────────── */
+
+.control-center {
+  background-color: var(--cc-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--cc-border);
+  color: var(--text-color);
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Notification cards inside drawer */
+.control-center .notification-row .notification-background {
+  border-radius: var(--border-radius);
+  margin: 3px 0;
+  box-shadow: none;
+  background: rgba(239, 241, 245, 0.95);
+}
+
+.control-center .notification-row .notification-background .notification {
+  border-radius: var(--border-radius);
+}
+
+.control-center .notification-row .notification-background .notification.low {
+  opacity: 0.85;
+}
+
+/* ── Notification groups ─────────────────────────────────── */
+
+.notification-group {
+  margin: 3px 0;
+}
+
+.notification-group .notification-group-headers {
+  margin: 0 8px;
+  color: var(--text-color);
+}
+
+.notification-group .notification-group-headers .notification-group-icon {
+  -gtk-icon-size: 24px;
+}
+
+.notification-group .notification-group-headers .notification-group-header {
+  color: var(--text-color);
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Collapsed: hide content of stacked rows, keep solid card background */
+.notification-group.collapsed .notification-row:not(:last-child) .notification-default-action,
+.notification-group.collapsed .notification-row:not(:last-child) .notification-action {
+  opacity: 0;
+}
+
+.notification-group.collapsed .notification-row:not(:last-child) .notification {
+  background: rgba(230, 232, 238, 0.95);
+  border-color: rgba(100, 100, 255, 0.06);
+}
+
+/* Dim other groups when one is expanded */
+.notification-group.collapsed.not-expanded {
+  opacity: 0.4;
+}
+
+.notification-group .notification-group-close-button .close-button {
+  border-radius: 100%;
+  min-width: 20px;
+  min-height: 20px;
+  margin: 8px 12px;
+  padding: 2px;
+  color: var(--text-color-dim);
+  background: rgba(100, 100, 255, 0.08);
+  opacity: 0.5;
+}
+
+.notification-group .notification-group-close-button .close-button:hover {
+  color: var(--text-color);
+  background: rgba(100, 100, 255, 0.2);
+  opacity: 1;
+}
+
+/* Group expand/collapse buttons */
+.notification-group .notification-group-buttons {
+  margin: 0 8px;
+}
+
+.notification-group .notification-group-buttons button {
+  border-radius: 8px;
+  color: var(--text-color-dim);
+  background: rgba(100, 100, 255, 0.06);
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.notification-group .notification-group-buttons button:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* ── Title widget ───────────────────────────────────────── */
+
+.control-center .widget-title {
+  margin-bottom: 6px;
+}
+
+.control-center .widget-title > label {
+  color: var(--text-color);
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.control-center .widget-title button {
+  border-radius: 8px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  padding: 4px 12px;
+  font-size: 12px;
+  transition: all 0.2s ease-in-out;
+}
+
+.control-center .widget-title button:hover {
+  background: var(--accent-bg-hover);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+
+scrollbar slider {
+  margin: -3px;
+  opacity: 0.6;
+  background: var(--dnd-slider);
+  border-radius: 8px;
+}
+
+scrollbar trough {
+  margin: 2px 0;
+  background: transparent;
+}
+
+/* ── DND widget ──────────────────────────────────────────── */
+
+.widget-dnd {
+  margin: 4px 0 8px 0;
+  padding: 4px 0;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-color-dim);
+}
+
+.widget-dnd > switch {
+  font-size: initial;
+  border-radius: 10px;
+  background: rgba(100, 100, 255, 0.06);
+  box-shadow: none;
+  min-height: 20px;
+}
+
+.widget-dnd > switch:checked {
+  background: var(--dnd-checked);
+}
+
+.widget-dnd > switch slider {
+  background: var(--dnd-slider);
+  border-radius: 10px;
+  min-height: 18px;
+  min-width: 18px;
+}
+
+.widget-dnd > switch:checked slider {
+  background: var(--dnd-slider-checked);
+}
+
+/* ── MPRIS widget ────────────────────────────────────────── */
+
+.widget-mpris {
+  padding: 0;
+  margin-top: 8px;
+}
+
+.widget-mpris .widget-mpris-player {
+  margin: 4px 0;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--cc-border);
+  overflow: hidden;
+}
+
+.widget-mpris .widget-mpris-player .mpris-background {
+  opacity: 0;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay {
+  padding: 12px;
+  background: rgba(239, 241, 245, 0.95);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
+  border-radius: 8px;
+  -gtk-icon-size: 48px;
+  margin-right: 10px;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
+  font-size: 11px;
+  color: var(--text-color-body);
+  margin-top: 2px;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay button {
+  border-radius: 100%;
+  color: var(--accent);
+  margin: 0 2px;
+  padding: 6px;
+  min-width: 28px;
+  min-height: 28px;
+  transition: all 0.2s ease-in-out;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+  background: var(--accent-bg);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay button:disabled {
+  opacity: 0.3;
+}
+
+/* Side buttons (prev/next player) */
+.widget-mpris > box > button {
+  color: var(--text-color-dim);
+  min-width: 24px;
+  padding: 4px;
+}
+
+.widget-mpris > box > button:disabled {
+  opacity: 0.2;
+}
+
+/* Scale (sliders) */
+scale trough {
+  margin: 4px 8px;
+  min-height: 4px;
+  min-width: 60px;
+  border-radius: 4px;
+}
+
+trough slider {
+  margin: -6px;
+  border-radius: 100%;
+  min-width: 12px;
+  min-height: 12px;
+  background-color: var(--accent);
+}
+
+trough slider:hover {
+  box-shadow: 0 0 6px rgba(30, 102, 245, 0.5);
+}

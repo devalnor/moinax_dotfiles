@@ -57,5 +57,5 @@ else
     MESSAGE="Volume: ${CURRENT_VOLUME}%"
 fi
 
-# Send the Mako notification
+# Send notification
 notify-send -a "volume-control" -i "$ICON" "$MESSAGE" -t 1500 -h int:value:"$CURRENT_VOLUME"

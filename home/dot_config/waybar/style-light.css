@@ -71,6 +71,7 @@ tooltip label {
 #custom-tailscale,
 #custom-headset-battery,
 #custom-dark-mode,
+#custom-notification,
 #idle-inhibitor,
 #workspaces button {
   font-size: 17px;
@@ -112,4 +113,23 @@ tooltip label {
   animation-timing-function: steps(12);
   animation-iteration-count: infinite;
   animation-direction: alternate;
+}
+
+/* Notification center */
+#custom-notification.notification {
+  background: rgba(255, 100, 255, 0.5);
+  color: white;
+  border-radius: 10px;
+  padding: 0 8px;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+#custom-notification.none {
+  font-size: 17px;
+}
+
+#custom-notification.dnd-notification,
+#custom-notification.dnd-none {
+  opacity: 0.5;
 }

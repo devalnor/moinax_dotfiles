@@ -112,7 +112,7 @@ bind = SUPER CTRL, S, movetoworkspacesilent, special # Move to scratchpad (silen
 # ── 11. Reload Configs ───────────────────────────────────────────
 bind = SUPER SHIFT, B, exec, ~/.config/hypr/scripts/reload-waybar.sh # Reload Waybar
 bind = SUPER SHIFT, W, exec, ~/.config/hypr/scripts/reload-hyprpaper.sh # Reload hyprpaper
-bind = SUPER SHIFT, M, exec, ~/.config/hypr/scripts/reload-mako.sh # Reload notifications
+bind = SUPER SHIFT, M, exec, swaync-client -R && swaync-client -rs # Reload SwayNC
 bind = SUPER SHIFT, R, exec, ~/.config/hypr/scripts/reload-hyprland.sh # Reload hyprland
 
 # ── 12. Screenshots ──────────────────────────────────────────────
@@ -135,6 +135,8 @@ bind = SUPER ALT, L, exec, loginctl lock-session # Lock screen
 bind = SUPER CTRL, L, exec, systemctl suspend # Suspend
 bind = SUPER SHIFT, L, exec, ~/.local/bin/compositor-logout.sh # Logout
 bind = SUPER, H, exec, rofi-keybindings # Keybinding help (rofi)
+bind = SUPER, U, exec, swaync-client -t # Toggle notification center
+bind = SUPER ALT, U, exec, swaync-client -d # Toggle DND
 
 # ── 15. Mouse & Scroll ───────────────────────────────────────────
 bindm = SUPER, mouse:272, movewindow # Move window

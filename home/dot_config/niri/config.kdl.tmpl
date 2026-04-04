@@ -136,11 +136,7 @@ environment {
 spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.config/waybar/launch-waybar.sh"
 spawn-at-startup "swayidle" "-w"
 spawn-at-startup "swaybg" "-m" "fill" "-i" "{{ .chezmoi.homeDir }}/Wallpapers/colorful.jpg"
-{{ if or (eq .distro "debian") (eq .distro "ubuntu") (eq .distro "linuxmint") (eq .distro "pop") (eq .distro "elementary") (eq .distro "neon") (eq .distro "zorin") (eq .distro "kali") -}}
-spawn-at-startup "dunst"
-{{ else -}}
-spawn-at-startup "mako"
-{{ end -}}
+spawn-at-startup "swaync"
 {{ if eq .chezmoi.osRelease.id "fedora" -}}
 spawn-at-startup "/usr/libexec/polkit-kde-authentication-agent-1"
 {{ else -}}
@@ -289,11 +285,7 @@ binds {
     // ── 11. Reload Configs ───────────────────────────────────────────
     Mod+Shift+B hotkey-overlay-title="Reload Waybar" { spawn-sh "killall -9 waybar; ~/.config/waybar/launch-waybar.sh &"; }
     Mod+Shift+W hotkey-overlay-title="Reload Wallpaper" { spawn-sh "killall swaybg; swaybg -m fill -i ~/Wallpapers/colorful.jpg &"; }
-{{ if or (eq .distro "debian") (eq .distro "ubuntu") (eq .distro "linuxmint") (eq .distro "pop") (eq .distro "elementary") (eq .distro "neon") (eq .distro "zorin") (eq .distro "kali") -}}
-    Mod+Shift+M hotkey-overlay-title="Reload Notifications: dunst" { spawn-sh "killall dunst; dunst &"; }
-{{ else -}}
-    Mod+Shift+M hotkey-overlay-title="Reload Notifications: mako" { spawn-sh "killall mako; mako &"; }
-{{ end -}}
+    Mod+Shift+M hotkey-overlay-title="Reload SwayNC" { spawn-sh "swaync-client -R && swaync-client -rs"; }
     Mod+Shift+R hotkey-overlay-title="Reload Niri Config" { spawn-sh "niri msg action load-config-file && notify-send -u low 'Niri' 'Config reloaded'"; }
 
     // ── 12. Screenshots ──────────────────────────────────────────────
@@ -325,6 +317,8 @@ binds {
     Mod+Shift+L hotkey-overlay-title="Logout" { spawn-sh "~/.local/bin/compositor-logout.sh"; }
     Mod+Alt+P { power-off-monitors; }
     Mod+H hotkey-overlay-title="Keybinding Help: rofi" { spawn "rofi-keybindings"; }
+    Mod+U hotkey-overlay-title="Toggle Notification Center" { spawn-sh "swaync-client -t"; }
+    Mod+Alt+U hotkey-overlay-title="Toggle Do Not Disturb" { spawn-sh "swaync-client -d"; }
 
     // ── 15. Mouse & Scroll ───────────────────────────────────────────
     Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }

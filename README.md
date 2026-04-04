@@ -39,8 +39,8 @@ The interactive installer will:
 
 | Group | Description |
 |-------|-------------|
-| **Hyprland** | Hyprland compositor with `hypridle`, `hyprlock`, `hyprpaper`, `hyprshot`, `waybar`, `rofi`, `mako`, `wlogout`, clipboard tooling (`cliphist`, `wl-clipboard`) and Wayland helpers |
-| **Niri** | Niri scrollable tiling compositor with Wayland desktop tools (`waybar`, `rofi`, `mako`, `wlogout`, `sddm`, clipboard, screenshots) |
+| **Hyprland** | Hyprland compositor with `hypridle`, `hyprlock`, `hyprpaper`, `hyprshot`, `waybar`, `rofi`, `swaync`, `wlogout`, clipboard tooling (`cliphist`, `wl-clipboard`) and Wayland helpers |
+| **Niri** | Niri scrollable tiling compositor with Wayland desktop tools (`waybar`, `rofi`, `swaync`, `wlogout`, `sddm`, clipboard, screenshots) |
 | **Development** | `neovim`, Cursor, Git tooling (`gh`, `lazygit`, `delta`), containers (`docker`, `docker-compose`, `lazydocker`), build/task tools (`cmake`, `gcc`/`base-devel`, `just`), and Claude Code with [`ccstatusline`](https://github.com/sirmalloc/ccstatusline) |
 | **Gaming** | Steam + Discord with performance helpers (`mangohud`, `gamemode`) |
 | **Multimedia** | Media and creation tools (`mpv`, `obs-studio`, `ffmpeg`, ImageMagick, GIMP, Inkscape) |
@@ -235,8 +235,8 @@ After running the installer:
 - **Git**: delta for diffs, lazygit
 - **Multiplexer**: tmux with TPM
 - **File Manager**: yazi, dolphin
-- **Hyprland**: hypridle, hyprlock, hyprpaper, hyprshot, waybar, rofi, mako, wlogout
-- **Niri**: niri with waybar, rofi, mako, wlogout (scrollable tiling Wayland compositor)
+- **Hyprland**: hypridle, hyprlock, hyprpaper, hyprshot, waybar, rofi, swaync, wlogout
+- **Niri**: niri with waybar, rofi, swaync, wlogout (scrollable tiling Wayland compositor)
 - **AI**: hyprvoice dictation with local Whisper speech recognition
 - **Claude Code**: [`ccstatusline`](https://github.com/sirmalloc/ccstatusline) status bar (Catppuccin Powerline theme), WorkTrunk worktree plugin
 - **AppImage support**: Desktop installs set up AppImage support per distro family; terminal installs skip it

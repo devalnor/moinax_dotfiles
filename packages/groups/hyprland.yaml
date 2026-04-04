@@ -1,6 +1,6 @@
 # Hyprland - Wayland compositor and related tools
 name: Hyprland
-description: Hyprland compositor with Wayland tools (waybar, rofi, mako)
+description: Hyprland compositor with Wayland tools (waybar, rofi, swaync)
 icon: 🪟
 environment: desktop
 
@@ -9,7 +9,7 @@ dotfiles:
   - dot_config/hypr
   - dot_config/waybar
   - dot_config/rofi
-  - dot_config/mako
+  - dot_config/swaync
   - dot_config/wlogout
   - dot_local/share/rofi
 
@@ -31,7 +31,7 @@ descriptions:
   rofi-wayland: Application launcher (Wayland fork)
   rofi-calc: Calculator plugin for rofi
   rofimoji: Emoji picker for rofi
-  mako: Lightweight notification daemon
+  swaync: Notification center with drawer and DND
   wlogout: Logout menu for Wayland
   cliphist: Clipboard history manager
   wl-clipboard: Wayland clipboard utilities
@@ -67,7 +67,7 @@ packages:
     - rofi-calc
     - rofimoji
     # Notifications
-    - mako
+    - swaync
     # Logout screen
     - wlogout
 
@@ -109,7 +109,7 @@ packages:
     - rofi-calc
     - rofimoji
     # Notifications
-    - mako
+    - SwayNotificationCenter
     # Logout screen
     - wlogout
 
@@ -154,9 +154,7 @@ packages:
     - rofimoji
 
     # Notifications
-    # Note: dotfiles ship mako configs; dunst is installed as apt alternative.
-    # Manual config adaptation needed for dunst on Debian/Ubuntu.
-    - dunst            # mako is not in apt; dunst is the apt equivalent
+    - sway-notification-center
 
     # Clipboard
     - wl-clipboard
@@ -179,3 +177,4 @@ packages:
 
   fedora_copr:
     - solopasha/hyprland  # For latest Hyprland packages
+    - erikreider/SwayNotificationCenter  # Notification center

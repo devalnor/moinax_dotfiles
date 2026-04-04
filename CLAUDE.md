@@ -57,7 +57,7 @@ The `home/` directory is the Chezmoi source. Files use Chezmoi naming convention
 - `home/.chezmoiignore` — conditionally excludes configs based on template variables like `.install_hyprland`, `.install_niri`, `.install_development`, `.install_productivity`
 
 ### Managed configs (`home/dot_config/`)
-Hypr, Niri, Waybar, Rofi, Mako, Wlogout (Wayland compositors/desktop), Kitty (terminal), Neovim (AstroNvim-based), Delta (git diffs), Starship (prompt), Yazi (file manager), Cursor (editor).
+Hypr, Niri, Waybar, Rofi, SwayNC, Wlogout (Wayland compositors/desktop), Kitty (terminal), Neovim (AstroNvim-based), Delta (git diffs), Starship (prompt), Yazi (file manager), Cursor (editor).
 
 ## Adding a new distribution
 
@@ -70,5 +70,5 @@ Hypr, Niri, Waybar, Rofi, Mako, Wlogout (Wayland compositors/desktop), Kitty (te
 
 - Shell scripts use `set -e` and consistent color-coded output helpers (`print_info`, `print_success`, `print_error`, `print_warning`)
 - Base package YAML supports `core`, `desktop`, and distro-specific extras such as `aur`, `desktop_aur`, `copr`, and `ppa`
-- Wayland desktop components (waybar, rofi, mako) are shared between Hyprland and Niri
+- Wayland desktop components (waybar, rofi, swaync) are shared between Hyprland and Niri
 - **Keybinding changes**: When modifying keybindings in Hyprland (`home/dot_config/hypr/conf/binds.conf`) or Niri (`home/dot_config/niri/config.kdl.tmpl`), always update `KEYBINDINGS.md` at the repo root to keep the side-by-side reference in sync
