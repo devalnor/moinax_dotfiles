@@ -27,7 +27,7 @@ descriptions:
   hyprpicker: Color picker for Hyprland
   hyprpolkitagent: Polkit authentication agent
   hyprshot: Screenshot tool for Hyprland
-  wayland-idle-inhibitor: Wayland idle inhibitor for caffeine mode
+  python-pywayland: Python Wayland bindings (idle inhibitor for caffeine mode)
   waybar: Highly customizable status bar
   rofi-wayland: Application launcher (Wayland fork)
   rofi-calc: Calculator plugin for rofi
@@ -89,7 +89,7 @@ packages:
     - xorg-xhost
     
     # Idle inhibitor (caffeine mode)
-    - wayland-idle-inhibitor-git
+    - python-pywayland
 
     # Other Wayland tools
     - inotify-tools
@@ -133,6 +133,9 @@ packages:
     # X compatibility
     - xorg-x11-server-utils
     
+    # Idle inhibitor (caffeine mode)
+    - python3-pywayland
+
     # Other tools
     - inotify-tools
     - cmatrix
@@ -171,6 +174,9 @@ packages:
 
     # X compatibility
     - x11-xserver-utils
+
+    # Idle inhibitor (caffeine mode)
+    - python3-pywayland
 
     # Other tools
     - inotify-tools

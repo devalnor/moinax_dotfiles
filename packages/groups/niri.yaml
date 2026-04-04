@@ -34,7 +34,7 @@ descriptions:
   wtype: Wayland keyboard input simulator
   hyprlock: Screen locker
   swayidle: Idle management daemon
-  wayland-idle-inhibitor: Wayland idle inhibitor for caffeine mode
+  python-pywayland: Python Wayland bindings (idle inhibitor for caffeine mode)
   swaybg: Wallpaper setter for Wayland
   nwg-look: GTK theme configurator
   polkit-kde-agent: Polkit authentication agent
@@ -96,7 +96,7 @@ packages:
     - bluez-utils
 
     # Idle inhibitor (caffeine mode)
-    - wayland-idle-inhibitor-git
+    - python-pywayland
 
     # Other Wayland tools
     - inotify-tools
@@ -152,6 +152,9 @@ packages:
     - blueman
     - bluez
 
+    # Idle inhibitor (caffeine mode)
+    - python3-pywayland
+
     # Other Wayland tools
     - inotify-tools
     - cmatrix
@@ -193,6 +196,9 @@ packages:
     - pavucontrol
     - blueman
     - bluez
+
+    # Idle inhibitor (caffeine mode)
+    - python3-pywayland
 
     # Other tools
     - inotify-tools
