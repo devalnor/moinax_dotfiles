@@ -43,7 +43,9 @@ refresh() {
 watch_with_inotify() {
     inotifywait -r -m -q -e close_write,create,delete,move \
         --exclude '(/\.git/|/node_modules/)' . 2>/dev/null |
-    while read -r _; do
+    while true; do
+        # Wait for inotify event or poll every 5s (catches git commits/rebases)
+        read -r -t 5 _ || (( $? > 128 )) || break
         while read -r -t 0.3 _; do :; done
         refresh
     done
