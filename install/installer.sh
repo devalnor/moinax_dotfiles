@@ -1363,14 +1363,16 @@ setup_nvidia() {
                 fi
             fi
         done
+    fi
 
-        # Install compositor STOP/CONT services to prevent deadlock during GPU suspend
-        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
-            install_compositor_suspend_services "Hyprland" "hyprland"
-        fi
-        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
-            install_compositor_suspend_services "niri" "niri"
-        fi
+    # Install compositor STOP/CONT services to prevent GPU command race during suspend/resume.
+    # This is needed for ALL driver versions: kernel suspend notifiers (595+) handle VRAM
+    # preservation, but the compositor can still issue GPU commands during the transition window.
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+        install_compositor_suspend_services "Hyprland" "hyprland"
+    fi
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+        install_compositor_suspend_services "niri" "niri"
     fi
 
     # --- Common configuration (required regardless of driver version) ---
@@ -1378,7 +1380,7 @@ setup_nvidia() {
     # Configure modprobe to preserve VRAM across suspend/resume
     local modprobe_conf="/etc/modprobe.d/nvidia.conf"
     if ! grep -rqs 'NVreg_PreserveVideoMemoryAllocations=1' /etc/modprobe.d/; then
-        print_info "Configuring NVIDIA PreserveVideoMemoryAllocations..."
+        print_info "Configuring NVIDIA modprobe options..."
         printf '%s\n' \
             "options nvidia NVreg_PreserveVideoMemoryAllocations=1" \
             "options nvidia-drm modeset=1" \
@@ -1386,7 +1388,14 @@ setup_nvidia() {
             | sudo tee "$modprobe_conf" > /dev/null
         print_success "NVIDIA modprobe config written to $modprobe_conf"
     else
-        print_success "NVIDIA PreserveVideoMemoryAllocations is configured"
+        print_success "NVIDIA modprobe options already configured"
+    fi
+
+    # Disable vblank semaphore control to prevent GPU-accelerated app hangs after suspend
+    if ! grep -rqs 'vblank_sem_control=0' /etc/modprobe.d/; then
+        print_info "Adding vblank_sem_control=0 to prevent post-suspend rendering hangs..."
+        echo "options nvidia_modeset vblank_sem_control=0" | sudo tee -a "$modprobe_conf" > /dev/null
+        print_success "vblank_sem_control=0 added to $modprobe_conf"
     fi
 
     # Configure GRUB kernel parameters for NVIDIA + proper suspend
