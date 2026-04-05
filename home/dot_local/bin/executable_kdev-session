@@ -1,0 +1,14 @@
+#!/bin/bash
+# Emit kitty session config for the kdev/wts dev layout.
+# Usage: kdev-session [extra-claude-args...]
+cat <<EOF
+new_tab Claude
+layout splits
+launch --title Claude claude $@
+launch --title Diff --location=vsplit $HOME/.local/bin/kdev-watch-diff.sh
+focus_matching_window title:Claude
+launch --title Terminal --location=hsplit
+
+new_tab Neovim
+launch nvim
+EOF

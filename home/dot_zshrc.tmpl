@@ -144,17 +144,7 @@ function kdev() {
 	local dir="${1:-.}"
 	dir="$(cd "$dir" && pwd)"
 	local name="$(basename "$dir")"
-	kitty --title "$name" --directory "$dir" --session <(cat <<EOF
-new_tab Claude
-layout splits
-launch claude
-launch --location=hsplit
-launch --location=vsplit
-
-new_tab Neovim
-launch nvim
-EOF
-	) &>/dev/null & disown
+	kitty --title "$name" --directory "$dir" --session <(kdev-session) &>/dev/null & disown
 }
 
 function y() {
@@ -210,17 +200,7 @@ function wtstart() {
   local name="${branch:-$(git branch --show-current)}"
   local dir="$PWD"
 
-  kitty --title "$name" --directory "$dir" --session <(cat <<EOF
-new_tab Claude
-layout splits
-launch claude -n "$name"
-launch --location=hsplit
-launch --location=vsplit
-
-new_tab Neovim
-launch nvim
-EOF
-  ) &>/dev/null & disown
+  kitty --title "$name" --directory "$dir" --session <(kdev-session -n "$name") &>/dev/null & disown
 
   builtin cd -- "$orig_dir"
 }

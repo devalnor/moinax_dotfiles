@@ -19,15 +19,5 @@ selection=$($FD_CMD --type d --max-depth 2 \
 if [ -n "$selection" ]; then
     dir="$HOME/Projects/$selection"
     name="$(basename "$dir")"
-    kitty --title "$name" --directory "$dir" --session <(cat <<EOF
-new_tab Claude
-layout splits
-launch claude
-launch --location=hsplit
-launch --location=vsplit
-
-new_tab Neovim
-launch nvim
-EOF
-    ) &>/dev/null & disown
+    kitty --title "$name" --directory "$dir" --session <(kdev-session) &>/dev/null & disown
 fi
