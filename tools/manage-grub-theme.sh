@@ -720,6 +720,14 @@ do_setup() {
         return 0
     fi
 
+    # Skip if a theme is already configured and its file exists
+    local current_theme
+    current_theme=$(get_current_theme_path)
+    if [ -n "$current_theme" ] && [ -f "$current_theme" ]; then
+        print_info "GRUB theme already configured ($(basename "$(dirname "$current_theme")"))"
+        return 0
+    fi
+
     print_header "GRUB Theme"
 
     # Build theme + variant options for a single selection

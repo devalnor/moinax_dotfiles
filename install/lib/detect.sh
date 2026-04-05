@@ -71,6 +71,41 @@ has_nvidia_gpu() {
 
 # Check if NVIDIA suspend/resume systemd services are installed (i.e. drivers present)
 has_nvidia_services() {
-    systemctl list-unit-files nvidia-suspend.service &>/dev/null &&
-        systemctl list-unit-files nvidia-suspend.service 2>/dev/null | grep -q nvidia-suspend
+    systemctl list-unit-files nvidia-suspend.service 2>/dev/null | grep -q nvidia-suspend
+}
+
+# Get the installed NVIDIA driver major version number (e.g. "595").
+# Prints the major version to stdout and returns 0, or returns 1 if not detectable.
+get_nvidia_driver_version() {
+    local version=""
+
+    # Method 1: nvidia-smi (most reliable, works across all distros)
+    if command -v nvidia-smi &>/dev/null; then
+        version=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1)
+    fi
+
+    # Method 2: modinfo (works even without nvidia-smi)
+    if [ -z "$version" ] && command -v modinfo &>/dev/null; then
+        version=$(modinfo -F version nvidia 2>/dev/null | head -1)
+    fi
+
+    # Method 3: /proc/driver/nvidia/version (works if driver is loaded)
+    if [ -z "$version" ] && [ -f /proc/driver/nvidia/version ]; then
+        version=$(grep -oP 'Kernel Module\s+\K[0-9]+\.[0-9.]+' /proc/driver/nvidia/version 2>/dev/null | head -1)
+    fi
+
+    if [ -z "$version" ]; then
+        return 1
+    fi
+
+    # Extract major version number (e.g. "595.58.03" -> "595")
+    echo "${version%%.*}"
+}
+
+# Check if the NVIDIA driver supports kernel suspend notifiers (driver 595+).
+# Returns 0 if supported, 1 otherwise (including when version is undetectable — safe fallback).
+nvidia_has_kernel_suspend_notifiers() {
+    local major
+    major=$(get_nvidia_driver_version) || return 1
+    [ "$major" -ge 595 ] 2>/dev/null
 }

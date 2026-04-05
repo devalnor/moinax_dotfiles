@@ -58,6 +58,16 @@ canonicalize_dir() {
     fi
 }
 
+# Regenerate GRUB config (distro-aware: grub-mkconfig vs grub2-mkconfig)
+regenerate_grub_config() {
+    print_info "Regenerating GRUB config..."
+    if [ "$DISTRO_FAMILY" = "fedora" ]; then
+        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+    else
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    fi
+}
+
 # Check if root filesystem is BTRFS
 is_root_btrfs() {
     local fstype
@@ -1273,6 +1283,42 @@ apply_dark_mode_defaults() {
     fi
 }
 
+# Remove legacy NVIDIA systemd suspend services that conflict with kernel suspend notifiers (driver 595+).
+# Idempotent: safe to call even when the services were never installed.
+cleanup_legacy_nvidia_suspend_services() {
+    # Disable the NVIDIA oneshot services (do NOT use --now; they are oneshot/not running)
+    # Only disable, do NOT delete — these unit files are owned by the NVIDIA driver package
+    for svc in nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service; do
+        if systemctl is-enabled "$svc" &>/dev/null; then
+            print_info "Disabling legacy service: $svc (kernel notifiers replace it)"
+            sudo systemctl disable "$svc" 2>/dev/null || true
+        fi
+    done
+
+    # Disable and remove installer-created compositor STOP/CONT services
+    local needs_reload=false
+    for prefix in hyprland niri; do
+        for suffix in suspend resume; do
+            local svc="${prefix}-${suffix}.service"
+            local unit_file="/etc/systemd/system/${svc}"
+            if systemctl is-enabled "$svc" &>/dev/null; then
+                print_info "Disabling legacy service: $svc"
+                sudo systemctl disable "$svc" 2>/dev/null || true
+            fi
+            if [ -f "$unit_file" ]; then
+                print_info "Removing legacy unit file: $unit_file"
+                sudo rm -f "$unit_file"
+                needs_reload=true
+            fi
+        done
+    done
+
+    if [ "$needs_reload" = true ]; then
+        sudo systemctl daemon-reload
+    fi
+    print_success "Legacy NVIDIA suspend services cleaned up"
+}
+
 # Setup NVIDIA GPU suspend/resume services
 setup_nvidia() {
     if [ "$HAS_NVIDIA" != "true" ]; then
@@ -1288,39 +1334,117 @@ setup_nvidia() {
         return 0
     fi
 
-    # Enable NVIDIA suspend/resume/hibernate services for proper GPU memory preservation
-    # Use enable without --now: these are oneshot services meant to run only during actual suspend/resume
-    for svc in nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service; do
-        if systemctl is-enabled "$svc" &>/dev/null; then
-            print_info "Service $svc is already enabled"
-        else
-            print_info "Enabling service: $svc"
-            if sudo systemctl enable "$svc"; then
-                print_success "Service $svc enabled"
-            else
-                print_warning "Failed to enable service $svc"
-            fi
-        fi
-    done
+    # Detect driver version for version-specific suspend behavior
+    local nvidia_major
+    nvidia_major=$(get_nvidia_driver_version) || nvidia_major="unknown"
+    print_info "NVIDIA driver version detected: ${nvidia_major}"
 
-    # Verify modprobe config
+    # --- Version-dependent suspend mechanism ---
+    if [ "$nvidia_major" != "unknown" ] && [ "$nvidia_major" -ge 595 ] 2>/dev/null; then
+        # Driver 595+: kernel suspend notifiers handle suspend/resume natively.
+        # The old systemd service approach conflicts and must be disabled.
+        print_info "Driver ${nvidia_major}+ uses kernel suspend notifiers — skipping systemd services"
+        cleanup_legacy_nvidia_suspend_services
+    else
+        # Driver <595: use the classic systemd service approach
+        print_info "Driver ${nvidia_major} requires systemd suspend services"
+
+        # Enable NVIDIA suspend/resume/hibernate services for GPU memory preservation
+        # Use enable without --now: these are oneshot services meant to run only during actual suspend/resume
+        for svc in nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service; do
+            if systemctl is-enabled "$svc" &>/dev/null; then
+                print_info "Service $svc is already enabled"
+            else
+                print_info "Enabling service: $svc"
+                if sudo systemctl enable "$svc"; then
+                    print_success "Service $svc enabled"
+                else
+                    print_warning "Failed to enable service $svc"
+                fi
+            fi
+        done
+
+        # Install compositor STOP/CONT services to prevent deadlock during GPU suspend
+        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+            install_compositor_suspend_services "Hyprland" "hyprland"
+        fi
+        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+            install_compositor_suspend_services "niri" "niri"
+        fi
+    fi
+
+    # --- Common configuration (required regardless of driver version) ---
+
+    # Configure modprobe to preserve VRAM across suspend/resume
+    local modprobe_conf="/etc/modprobe.d/nvidia.conf"
     if ! grep -rqs 'NVreg_PreserveVideoMemoryAllocations=1' /etc/modprobe.d/; then
-        print_warning "NVreg_PreserveVideoMemoryAllocations=1 not found in /etc/modprobe.d/"
-        print_info "Add 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' to your modprobe config"
+        print_info "Configuring NVIDIA PreserveVideoMemoryAllocations..."
+        printf '%s\n' \
+            "options nvidia NVreg_PreserveVideoMemoryAllocations=1" \
+            "options nvidia-drm modeset=1" \
+            "options nvidia-drm fbdev=1" \
+            | sudo tee "$modprobe_conf" > /dev/null
+        print_success "NVIDIA modprobe config written to $modprobe_conf"
     else
         print_success "NVIDIA PreserveVideoMemoryAllocations is configured"
     fi
 
-    # Install compositor STOP/CONT services to prevent deadlock during GPU suspend
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
-        install_compositor_suspend_services "Hyprland" "hyprland"
-    fi
-
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
-        install_compositor_suspend_services "niri" "niri"
-    fi
+    # Configure GRUB kernel parameters for NVIDIA + proper suspend
+    configure_nvidia_kernel_params
 
     print_success "NVIDIA GPU setup complete"
+}
+
+# Configure kernel parameters in GRUB for NVIDIA suspend/resume support
+# Ensures: nvidia-drm.modeset=1, nvidia-drm.fbdev=1,
+#          nvidia.NVreg_PreserveVideoMemoryAllocations=1, mem_sleep_default=deep
+# Idempotent: only modifies GRUB and regenerates config when changes are needed
+configure_nvidia_kernel_params() {
+    local grub_default="/etc/default/grub"
+    [ -f "$grub_default" ] || return 0
+
+    local current_cmdline
+    current_cmdline=$(grep -E '^GRUB_CMDLINE_LINUX_DEFAULT=' "$grub_default" \
+        | head -1 | sed 's/^GRUB_CMDLINE_LINUX_DEFAULT="//;s/"$//')
+
+    local updated=false
+
+    # ensure_kparam adds a kernel parameter if not already present.
+    # Uses -F for fixed-string matching (dots in param names are literal, not regex wildcards).
+    # Modifies outer current_cmdline and updated via bash dynamic scoping.
+    ensure_kparam() {
+        local param="$1"
+        if ! echo "$current_cmdline" | grep -qwF "$param"; then
+            current_cmdline="$current_cmdline $param"
+            updated=true
+        fi
+    }
+
+    # Replace s2idle with deep for proper S3 suspend (desktop hardware)
+    if echo "$current_cmdline" | grep -q 'mem_sleep_default=s2idle'; then
+        # Remove all occurrences of mem_sleep_default=s2idle
+        current_cmdline=$(echo "$current_cmdline" | sed 's/mem_sleep_default=s2idle//g')
+        updated=true
+    fi
+
+    ensure_kparam "nvidia-drm.modeset=1"
+    ensure_kparam "nvidia-drm.fbdev=1"
+    ensure_kparam "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    ensure_kparam "mem_sleep_default=deep"
+
+    if [ "$updated" = true ]; then
+        # Collapse multiple spaces and trim
+        current_cmdline=$(echo "$current_cmdline" | tr -s ' ' | sed 's/^ *//;s/ *$//')
+        print_info "Updating GRUB kernel parameters for NVIDIA + suspend..."
+        sudo sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"$current_cmdline\"|" "$grub_default"
+        regenerate_grub_config || {
+            track_warning "Failed to regenerate GRUB config"
+            return
+        }
+        print_success "GRUB kernel parameters updated (reboot required)"
+    else
+        print_success "GRUB kernel parameters already configured"
+    fi
 }
 
 # Install STOP/CONT systemd services for a Wayland compositor
@@ -1731,9 +1855,8 @@ setup_plymouth() {
             # Trim leading/trailing whitespace
             current_cmdline=$(echo "$current_cmdline" | sed 's/^ *//;s/ *$//')
             print_info "Updating GRUB command line: $current_cmdline"
-            sudo sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=\"$current_cmdline\"/" "$grub_default"
-            print_info "Regenerating GRUB config..."
-            sudo grub-mkconfig -o /boot/grub/grub.cfg
+            sudo sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"$current_cmdline\"|" "$grub_default"
+            regenerate_grub_config
         else
             print_info "GRUB already has 'quiet splash'"
         fi
@@ -1806,16 +1929,7 @@ configure_grub_saved_default() {
     ensure_grub_var GRUB_DISABLE_SUBMENU y
 
     if [ "$updated" = true ]; then
-        print_info "Regenerating GRUB config..."
-        if [ "$DISTRO_FAMILY" = "fedora" ]; then
-            sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
-                track_warning "Failed to regenerate GRUB config"
-            }
-        else
-            sudo grub-mkconfig -o /boot/grub/grub.cfg || {
-                track_warning "Failed to regenerate GRUB config"
-            }
-        fi
+        regenerate_grub_config || track_warning "Failed to regenerate GRUB config"
     fi
 }
 
@@ -1983,16 +2097,7 @@ SVCEOF
             print_warning "Failed to enable grub-btrfsd service"
         }
         # Regenerate grub config to include snapshot entries
-        print_info "Regenerating GRUB config with snapshot entries..."
-        if [ "$DISTRO_FAMILY" = "fedora" ]; then
-            sudo grub2-mkconfig -o /boot/grub2/grub.cfg || {
-                track_warning "Failed to regenerate GRUB config for grub-btrfs"
-            }
-        else
-            sudo grub-mkconfig -o /boot/grub/grub.cfg || {
-                track_warning "Failed to regenerate GRUB config for grub-btrfs"
-            }
-        fi
+        regenerate_grub_config || track_warning "Failed to regenerate GRUB config for grub-btrfs"
     fi
 
     # Create initial snapshot only when config was freshly created
