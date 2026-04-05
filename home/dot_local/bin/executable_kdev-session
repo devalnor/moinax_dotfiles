@@ -8,6 +8,7 @@ launch --title kdev-claude claude $@
 launch --title kdev-diff --location=vsplit $HOME/.local/bin/kdev-watch-diff.sh
 focus_matching_window title:kdev-claude
 launch --title kdev-term --location=hsplit
+focus_matching_window title:kdev-claude
 
 new_tab Neovim
 launch nvim

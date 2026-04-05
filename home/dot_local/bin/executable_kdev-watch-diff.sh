@@ -4,7 +4,11 @@
 
 refresh() {
     clear
-    git diff HEAD
+    if git diff --quiet HEAD 2>/dev/null; then
+        echo -e "\033[2m-- No uncommitted changes --\033[0m"
+    else
+        git diff HEAD
+    fi
 }
 
 watch_with_inotify() {
