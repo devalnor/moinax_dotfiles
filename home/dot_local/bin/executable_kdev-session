@@ -8,7 +8,10 @@ launch --title Claude claude $@
 launch --title Diff --location=vsplit $HOME/.local/bin/kdev-watch-diff.sh
 focus_matching_window title:Claude
 launch --title Terminal --location=hsplit
+focus_matching_window title:Claude
 
 new_tab Neovim
 launch nvim
+
+focus_tab 0
 EOF
