@@ -14,19 +14,7 @@
   "hide-on-clear": true,
   "hide-on-action": true,
   "notification-grouping": true,
-  "scripts": {
-    "copy-notification": {
-      "exec": "~/.local/bin/swaync-copy.sh \"$SWAYNC_BODY\"",
-      "app-name": "^(?!swaync-copy).*$",
-      "run-on": "action"
-    }
-  },
-  "notification-visibility": {
-    "volume-control": {
-      "state": "transient",
-      "app-name": "volume-control"
-    }
-  },
+  "notification-visibility": {},
   "widgets": [
     "title",
     "dnd",
