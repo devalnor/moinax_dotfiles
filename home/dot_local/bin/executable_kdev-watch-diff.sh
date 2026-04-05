@@ -9,7 +9,7 @@ refresh() {
 
 watch_with_inotify() {
     inotifywait -r -m -q -e close_write,create,delete,move \
-        --exclude '(\.git|node_modules)' . 2>/dev/null |
+        --exclude '(\.git/(objects|logs)|node_modules)' . 2>/dev/null |
     while read -t 0.3 _; do
         while read -t 0.3 _; do :; done
         refresh
