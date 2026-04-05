@@ -10,7 +10,8 @@ refresh() {
 watch_with_inotify() {
     inotifywait -r -m -q -e close_write,create,delete,move \
         --exclude '(\.git/(objects|logs)|node_modules)' . 2>/dev/null |
-    while read -t 0.3 _; do
+    while read _; do
+        # Debounce: drain remaining events within 300ms
         while read -t 0.3 _; do :; done
         refresh
     done

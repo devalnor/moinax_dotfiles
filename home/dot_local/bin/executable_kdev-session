@@ -4,14 +4,11 @@
 cat <<EOF
 new_tab Claude
 layout splits
-launch --title Claude claude $@
-launch --title Diff --location=vsplit $HOME/.local/bin/kdev-watch-diff.sh
-focus_matching_window title:Claude
-launch --title Terminal --location=hsplit
-focus_matching_window title:Claude
+launch --title kdev-claude claude $@
+launch --title kdev-diff --location=vsplit $HOME/.local/bin/kdev-watch-diff.sh
+focus_matching_window title:kdev-claude
+launch --title kdev-term --location=hsplit
 
 new_tab Neovim
 launch nvim
-
-focus_tab 0
 EOF
