@@ -14,7 +14,44 @@
   "hide-on-clear": true,
   "hide-on-action": true,
   "notification-grouping": true,
-  "notification-visibility": {},
+  "notification-visibility": {
+    "caffeine-toggle": {
+      "state": "transient",
+      "summary": "^Caffeine$"
+    },
+    "audio-switch": {
+      "state": "transient",
+      "summary": "^Audio Output Changed$"
+    },
+    "keyboard-layout": {
+      "state": "transient",
+      "summary": "^Keyboard Layout$"
+    },
+    "hyprland-status": {
+      "state": "transient",
+      "summary": "^Hyprland$"
+    },
+    "waybar-reload": {
+      "state": "transient",
+      "summary": "^Waybar$"
+    },
+    "hyprpaper-reload": {
+      "state": "transient",
+      "summary": "^Hyprpaper$"
+    },
+    "niri-status": {
+      "state": "transient",
+      "summary": "^Niri$"
+    },
+    "rofi-info": {
+      "state": "transient",
+      "summary": "^Rofi$"
+    },
+    "idle-warning": {
+      "state": "transient",
+      "summary": "Your computer will be locked"
+    }
+  },
   "widgets": [
     "title",
     "dnd",

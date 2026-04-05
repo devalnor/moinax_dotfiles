@@ -159,15 +159,9 @@ if command -v git &>/dev/null; then
     git config --global delta.features "$NEW_FEATURES" 2>/dev/null || true
 fi
 
-# 15. Waybar restart + 16. Notification (skipped when called from installer)
+# 15. Waybar restart (skipped when called from installer)
 if [ "$APPLY_DARK_MODE_NO_RESTART" != "1" ]; then
     if [ -x "$HOME/.config/hypr/scripts/reload-waybar.sh" ]; then
         "$HOME/.config/hypr/scripts/reload-waybar.sh"
-    fi
-
-    if [ "$MODE" = "dark" ]; then
-        notify-send -u low "Dark Mode" "Switched to Catppuccin Mocha (dark)" 2>/dev/null || true
-    else
-        notify-send -u low "Light Mode" "Switched to Catppuccin Latte (light)" 2>/dev/null || true
     fi
 fi
