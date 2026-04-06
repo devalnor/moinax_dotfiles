@@ -1,3 +1,7 @@
+git:
+  paging:
+    colorArg: always
+    pager: delta --paging=never
 os:
   editPreset: "nvim-remote"
   open: 'if [ -n "$NVIM" ]; then nvim --server "$NVIM" --remote {{filename}}; else xdg-open {{filename}}; fi'
