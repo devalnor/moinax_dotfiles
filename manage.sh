@@ -45,107 +45,212 @@ do_setup() {
     exec "$SCRIPT_DIR/tools/setup.sh"
 }
 
+SECRETS_CONF="$HOME/.config/environment.d/secrets.conf"
+
+# Read a string value from chezmoi.toml [data] section
+get_chezmoi_data() {
+    local key="$1"
+    if [ -f "$CHEZMOI_CONF" ]; then
+        grep "$key" "$CHEZMOI_CONF" 2>/dev/null | sed 's/.*= *"\?\([^"]*\)"\?/\1/' || true
+    fi
+}
+
+# Set a string value in chezmoi.toml [data] section (upsert)
+set_chezmoi_data() {
+    local key="$1" value="$2"
+    if [ ! -f "$CHEZMOI_CONF" ]; then
+        print_warning "chezmoi.toml not found, skipping $key update"
+        return
+    fi
+    if grep -q "${key} = " "$CHEZMOI_CONF"; then
+        sed -i 's/'"${key}"' = .*/'"${key}"' = "'"${value}"'"/' "$CHEZMOI_CONF"
+    else
+        sed -i '/^\[data\]/a\    '"${key}"' = "'"${value}"'"' "$CHEZMOI_CONF"
+    fi
+}
+
+# Write a key=value pair to the secrets file (upsert)
+set_secret() {
+    local key="$1" value="$2"
+    mkdir -p "$(dirname "$SECRETS_CONF")"
+    if [ -f "$SECRETS_CONF" ] && grep -q "^${key}=" "$SECRETS_CONF"; then
+        sed -i 's/^'"${key}"'=.*/'"${key}"'='"${value}"'/' "$SECRETS_CONF"
+    else
+        echo "${key}=${value}" >> "$SECRETS_CONF"
+    fi
+}
+
 do_whisper() {
     if ! command_exists hyprvoice; then
         print_error "hyprvoice is not installed"
         exit 1
     fi
 
-    # Get current model from chezmoi config
-    local current_model=""
-    if [ -f "$CHEZMOI_CONF" ]; then
-        current_model=$(grep 'hyprvoice_model' "$CHEZMOI_CONF" 2>/dev/null | sed 's/.*= *"\?\([^"]*\)"\?/\1/' || true)
-    fi
+    local current_provider current_model
+    current_provider=$(get_chezmoi_data 'hyprvoice_provider')
+    current_model=$(get_chezmoi_data 'hyprvoice_model')
+    : "${current_provider:=whisper-cpp}"
 
-    # Parse available models from hyprvoice output (whisper-cpp section)
-    local model_list
-    model_list=$(hyprvoice model list 2>/dev/null)
-    local models=()
-    local model_names=()
-    while IFS= read -r line; do
-        # Match lines like "  [x] small - Free/offline; ..." or "  [ ] medium - Free/offline; ..."
-        if [[ "$line" =~ ^[[:space:]]*\[.\][[:space:]]+(.+)$ ]]; then
-            local entry="${BASH_REMATCH[1]}"
-            local name="${entry%% -*}"
-            name="${name%% *}"
-            if [ "$name" = "$current_model" ]; then
-                models+=("$entry (current)")
-            else
-                models+=("$entry")
-            fi
-            model_names+=("$name")
-        fi
-    done <<< "$model_list"
-
-    if [ ${#models[@]} -eq 0 ]; then
-        print_error "No whisper models found"
-        exit 1
-    fi
-
-    # Let user choose a model, pre-selecting the current one
-    local cursor_arg=""
-    if [ -n "$current_model" ]; then
-        for i in "${!model_names[@]}"; do
-            if [ "${model_names[$i]}" = "$current_model" ]; then
-                cursor_arg="$((i + 1))"
-                break
-            fi
-        done
-    fi
-
-    local chosen
-    chosen=$(printf '%s\n' "${models[@]}" | gum choose --cursor.foreground="212" \
-        ${cursor_arg:+--cursor-prefix="> " --selected-prefix="> "} \
-        --header "Select whisper model:") || {
+    # Choose provider
+    local provider
+    provider=$(printf '%s\n' "whisper-cpp (local)" "groq (cloud, free tier)" | \
+        gum choose --cursor.foreground="212" \
+        --header "Select transcription provider (current: $current_provider):") || {
         echo "Cancelled."
         return
     }
+    provider="${provider%% (*}"
 
-    # Strip " (current)" suffix and description to get model name
-    chosen="${chosen% (current)}"
-    chosen="${chosen%% -*}"
-    chosen="${chosen%% *}"
+    local chosen=""
+    if [ "$provider" = "whisper-cpp" ]; then
+        # Parse available local models from hyprvoice output (whisper-cpp section)
+        local model_list
+        model_list=$(hyprvoice model list 2>/dev/null)
+        local models=()
+        local model_names=()
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[[:space:]]*\[.\][[:space:]]+(.+)$ ]]; then
+                local entry="${BASH_REMATCH[1]}"
+                local name="${entry%% -*}"
+                name="${name%% *}"
+                if [ "$name" = "$current_model" ] && [ "$provider" = "$current_provider" ]; then
+                    models+=("$entry (current)")
+                else
+                    models+=("$entry")
+                fi
+                model_names+=("$name")
+            fi
+        done <<< "$model_list"
 
-    if [ "$chosen" = "$current_model" ]; then
-        print_info "Model '$chosen' is already the current model"
+        if [ ${#models[@]} -eq 0 ]; then
+            print_error "No whisper models found"
+            exit 1
+        fi
+
+        local cursor_arg=""
+        if [ -n "$current_model" ] && [ "$provider" = "$current_provider" ]; then
+            for i in "${!model_names[@]}"; do
+                if [ "${model_names[$i]}" = "$current_model" ]; then
+                    cursor_arg="$((i + 1))"
+                    break
+                fi
+            done
+        fi
+
+        chosen=$(printf '%s\n' "${models[@]}" | gum choose --cursor.foreground="212" \
+            ${cursor_arg:+--cursor-prefix="> " --selected-prefix="> "} \
+            --header "Select whisper model:") || {
+            echo "Cancelled."
+            return
+        }
+
+        # Strip " (current)" suffix and description to get model name
+        chosen="${chosen% (current)}"
+        chosen="${chosen%% -*}"
+        chosen="${chosen%% *}"
+
+        print_info "Downloading whisper model: $chosen"
+        if hyprvoice model download "$chosen"; then
+            print_success "Model '$chosen' downloaded"
+        else
+            print_error "Failed to download model '$chosen'"
+            return 1
+        fi
+    elif [ "$provider" = "groq" ]; then
+        local groq_models=("whisper-large-v3-turbo - Faster with slight accuracy tradeoff" "whisper-large-v3 - Best accuracy; generous free tier")
+        chosen=$(printf '%s\n' "${groq_models[@]}" | gum choose --cursor.foreground="212" \
+            --header "Select Groq model:") || {
+            echo "Cancelled."
+            return
+        }
+        chosen="${chosen%% -*}"
+        chosen="${chosen%% *}"
+
+        setup_groq_api_key
+    fi
+
+    if [ "$chosen" = "$current_model" ] && [ "$provider" = "$current_provider" ]; then
+        print_info "Provider '$provider' with model '$chosen' is already the current configuration"
         return
     fi
 
-    print_info "Downloading whisper model: $chosen"
-    if hyprvoice model download "$chosen"; then
-        print_success "Model '$chosen' downloaded"
-    else
-        print_error "Failed to download model '$chosen'"
-        return 1
-    fi
+    set_chezmoi_data "hyprvoice_provider" "$provider"
+    set_chezmoi_data "hyprvoice_model" "$chosen"
+    print_success "Updated hyprvoice config in chezmoi.toml (provider=$provider, model=$chosen)"
 
-    # Update chezmoi.toml
-    if [ -f "$CHEZMOI_CONF" ]; then
-        if grep -q 'hyprvoice_model = ' "$CHEZMOI_CONF"; then
-            sed -i 's/hyprvoice_model = .*/hyprvoice_model = "'"$chosen"'"/' "$CHEZMOI_CONF"
-        else
-            sed -i '/^\[data\]/a\    hyprvoice_model = "'"$chosen"'"' "$CHEZMOI_CONF"
-        fi
-        print_success "Updated hyprvoice_model in chezmoi.toml"
-    fi
-
-    # Re-apply hyprvoice config
     print_info "Re-applying hyprvoice config..."
     chezmoi apply --force ~/.config/hyprvoice
 
-    # Restart daemon if running
-    if hyprvoice status 2>/dev/null | grep -q "status="; then
-        print_info "Restarting hyprvoice daemon..."
-        hyprvoice stop &>/dev/null || true
-        hyprvoice serve &>/dev/null &
-        disown
-        # Wait up to 5s for daemon to be ready
-        for _ in $(seq 1 10); do
-            sleep 0.5
-            hyprvoice status 2>/dev/null | grep -q "status=" && break
-        done
-        print_success "Hyprvoice daemon restarted"
+    # Offer to clean up local models when switching to a cloud provider
+    if [ "$provider" != "whisper-cpp" ]; then
+        local model_dir="$HOME/.local/share/hyprvoice/models/whisper"
+        local model_size
+        model_size=$(du -sh "$model_dir" 2>/dev/null | cut -f1) || true
+        if [ -n "$model_size" ]; then
+            if gum confirm "Remove local whisper models to free up ${model_size}?"; then
+                rm -f "$model_dir"/*.bin
+                print_success "Local whisper models removed (freed ${model_size})"
+            fi
+        fi
     fi
+
+    whisper_restart_daemon
+}
+
+setup_groq_api_key() {
+    local existing_key="${GROQ_API_KEY:-}"
+    if [ -z "$existing_key" ] && [ -f "$SECRETS_CONF" ]; then
+        existing_key=$(grep '^GROQ_API_KEY=' "$SECRETS_CONF" 2>/dev/null | cut -d= -f2- || true)
+    fi
+
+    if [ -n "$existing_key" ]; then
+        local masked="${existing_key:0:8}...${existing_key: -4}"
+        print_success "Groq API key found: $masked"
+        if ! gum confirm "Keep current API key?"; then
+            existing_key=""
+        fi
+    fi
+
+    if [ -z "$existing_key" ]; then
+        echo ""
+        print_info "Get a free Groq API key at: https://console.groq.com/keys"
+        print_info "Sign up (no credit card required), then create a new API key."
+        echo ""
+        local api_key
+        api_key=$(gum input --placeholder "Paste your Groq API key (gsk_...)" --password --header "Groq API Key:") || {
+            echo "Cancelled."
+            return 1
+        }
+
+        if [ -z "$api_key" ]; then
+            print_error "No API key provided"
+            return 1
+        fi
+
+        set_secret "GROQ_API_KEY" "$api_key"
+        print_success "API key saved to $SECRETS_CONF"
+
+        export GROQ_API_KEY="$api_key"
+        systemctl --user import-environment GROQ_API_KEY 2>/dev/null || true
+        print_success "API key loaded into current session"
+    fi
+}
+
+whisper_restart_daemon() {
+    local action="Starting"
+    if hyprvoice status 2>/dev/null | grep -q "status="; then
+        action="Restarting"
+        hyprvoice stop &>/dev/null || true
+        sleep 1
+    fi
+    print_info "$action hyprvoice daemon..."
+    hyprvoice serve &>/dev/null &
+    disown
+    for _ in $(seq 1 10); do
+        sleep 0.5
+        hyprvoice status 2>/dev/null | grep -q "status=" && break
+    done
+    print_success "Hyprvoice daemon ${action,,}ed"
 }
 
 do_reconfig() {

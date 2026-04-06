@@ -3,7 +3,7 @@
 #
 # First-time setup: run `hyprvoice onboarding`
 # Edit interactively: run `hyprvoice configure`
-# Download a model: `hyprvoice model download small` (multilingual EN+FR, ~500MB)
+# Download a local model: `hyprvoice model download large-v3-turbo`
 #
 # Config hot-reloads automatically when saved.
 
@@ -19,20 +19,26 @@ timeout = "5m"                   # Maximum recording duration per toggle
 
 # ── Transcription ───────────────────────────────────────────────
 [transcription]
-provider = "whisper-cpp"
-model = {{ .hyprvoice_model | quote }}    # Multilingual model (EN+FR). Use "medium" for better accuracy (~1.5GB).
+provider = {{ .hyprvoice_provider | quote }}
+model = {{ .hyprvoice_model | quote }}    # Multilingual model (EN+FR).
 language = ""                    # Empty = auto-detect. Set "en" or "fr" to force a language.
 streaming = false
+{{- if eq .hyprvoice_provider "whisper-cpp" }}
 threads = 0                      # 0 = auto (NumCPU - 1)
+{{- end }}
+
+# ── Providers ───────────────────────────────────────────────────
+{{- if eq .hyprvoice_provider "groq" }}
+[providers.groq]
+api_key = ""                     # Set GROQ_API_KEY env var instead (recommended)
+{{- else }}
+# [providers.groq]
+# api_key = ""                   # Or set GROQ_API_KEY env var
+{{- end }}
 
 # ── LLM Post-Processing (requires API key) ─────────────────────
 [llm]
 enabled = false                  # Set to true + configure a provider below for text cleanup
-
-# [providers.openai]
-# api_key = ""                   # Or set OPENAI_API_KEY env var
-# [providers.groq]
-# api_key = ""                   # Or set GROQ_API_KEY env var
 
 # ── Text Injection ──────────────────────────────────────────────
 [injection]
