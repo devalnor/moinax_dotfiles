@@ -4,9 +4,9 @@
 pkill -x wlogout && exit 0
 
 if [ "$XDG_CURRENT_DESKTOP" = "Hyprland" ] || [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    read -r W H < <(hyprctl monitors -j | jq -r '.[] | select(.focused) | "\(.width) \(.height)"')
+    read -r W H < <(hyprctl monitors -j | jq -r '.[] | select(.focused) | "\(.width / .scale | floor) \(.height / .scale | floor)"')
 elif [ "$XDG_CURRENT_DESKTOP" = "niri" ] || pgrep -x "niri" > /dev/null; then
-    read -r W H < <(niri msg -j outputs 2>/dev/null | jq -r 'to_entries[] | select(.value.currentMode and .value.focused) | "\(.value.currentMode.width) \(.value.currentMode.height)"')
+    read -r W H < <(niri msg -j focused-output 2>/dev/null | jq -r '"\(.logical.width | floor) \(.logical.height | floor)"')
 fi
 
 W=${W:-2560}
