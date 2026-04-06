@@ -59,17 +59,27 @@ canonicalize_dir() {
 }
 
 # Regenerate GRUB config (distro-aware: grub-mkconfig vs grub2-mkconfig)
+# Patch a grub-btrfs config file to use Fedora's grub2 paths.
+# $1: path to the config file (e.g. /etc/default/grub-btrfs/config or a clone's config)
+_patch_grub_btrfs_fedora_paths() {
+    local config="$1"
+    local maybe_sudo=""
+    # Use sudo only for system files, not temp clones
+    [[ "$config" == /etc/* || "$config" == /boot/* ]] && maybe_sudo="sudo"
+    $maybe_sudo sed -i \
+        -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
+        -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
+        -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
+        -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
+        -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
+        "$config"
+}
+
 regenerate_grub_config() {
     # Fedora: fix grub-btrfs config paths before regeneration
     # (41_snapshots-btrfs defaults to /boot/grub when GRUB_BTRFS_GRUB_DIRNAME is unset)
     if [ "$DISTRO_FAMILY" = "fedora" ] && [ -f /etc/default/grub-btrfs/config ]; then
-        sudo sed -i \
-            -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
-            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
-            -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
-            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
-            -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
-            /etc/default/grub-btrfs/config
+        _patch_grub_btrfs_fedora_paths /etc/default/grub-btrfs/config
     fi
 
     print_info "Regenerating GRUB config..."
@@ -1334,14 +1344,10 @@ cleanup_legacy_nvidia_suspend_services() {
 # Install NVIDIA driver packages (Arch: open-dkms)
 _install_nvidia_drivers_arch() {
     local gaming_selected="$1"
-    local pkgs=(
-        nvidia-open-dkms    # open-source kernel module (DKMS for kernel compat)
-        nvidia-utils        # userspace utilities
-        nvidia-settings     # GUI settings panel
-    )
+    local pkgs=(nvidia-open-dkms nvidia-utils nvidia-settings)
 
     if [ "$gaming_selected" = "true" ]; then
-        pkgs+=(lib32-nvidia-utils)  # 32-bit support for Steam
+        pkgs+=(lib32-nvidia-utils)
     fi
 
     print_info "Installing NVIDIA open-dkms driver packages: ${pkgs[*]}"
@@ -1350,24 +1356,16 @@ _install_nvidia_drivers_arch() {
 
 # Install NVIDIA driver packages (Fedora: akmod via RPM Fusion)
 _install_nvidia_drivers_fedora() {
-    # RPM Fusion non-free is required for akmod-nvidia
     enable_rpmfusion
-
-    local pkgs=(
-        akmod-nvidia          # auto-builds kernel module on updates
-        nvidia-vaapi-driver   # VA-API video acceleration
-    )
-
+    local pkgs=(akmod-nvidia nvidia-vaapi-driver)
     print_info "Installing NVIDIA driver packages: ${pkgs[*]}"
     install_packages "${pkgs[@]}" || track_warning "Some NVIDIA driver packages failed to install"
 }
 
-# Enable non-free/restricted repos for NVIDIA on Debian/Ubuntu
-_enable_nvidia_repos_debian() {
-    local distro_id
-    distro_id=$(. /etc/os-release && echo "$ID")
-
-    case "$distro_id" in
+# Install NVIDIA driver packages (Debian/Ubuntu)
+_install_nvidia_drivers_debian() {
+    # Enable non-free/restricted repos needed for NVIDIA drivers
+    case "$DISTRO" in
         ubuntu|pop|linuxmint|elementary|neon|zorin)
             if command_exists add-apt-repository; then
                 sudo add-apt-repository -y restricted 2>/dev/null || true
@@ -1375,7 +1373,6 @@ _enable_nvidia_repos_debian() {
             fi
             ;;
         *)
-            # Pure Debian: enable contrib and non-free components
             if ! grep -rq 'non-free' /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null; then
                 print_info "Enabling contrib and non-free repositories..."
                 if command_exists add-apt-repository; then
@@ -1388,16 +1385,9 @@ _enable_nvidia_repos_debian() {
             fi
             ;;
     esac
-}
 
-# Install NVIDIA driver packages (Debian/Ubuntu)
-_install_nvidia_drivers_debian() {
-    _enable_nvidia_repos_debian
-
-    local distro_id
-    distro_id=$(. /etc/os-release && echo "$ID")
-
-    case "$distro_id" in
+    # Install drivers
+    case "$DISTRO" in
         ubuntu|pop|linuxmint|elementary|neon|zorin)
             print_info "Installing NVIDIA drivers via ubuntu-drivers..."
             install_packages ubuntu-drivers-common
@@ -1418,9 +1408,9 @@ install_nvidia_drivers() {
 
     print_header "NVIDIA Driver Installation"
 
-    # Idempotency: skip if drivers are already installed
-    if has_nvidia_services; then
-        print_info "NVIDIA driver services already present — skipping driver installation"
+    # Skip if drivers are already installed (covers both loaded and freshly-installed-pre-reboot)
+    if get_nvidia_driver_version &>/dev/null; then
+        print_info "NVIDIA drivers already installed — skipping driver installation"
         return 0
     fi
 
@@ -1434,10 +1424,10 @@ install_nvidia_drivers() {
             _install_nvidia_drivers_arch "$gaming_selected"
             ;;
         fedora)
-            _install_nvidia_drivers_fedora "$gaming_selected"
+            _install_nvidia_drivers_fedora
             ;;
         debian)
-            _install_nvidia_drivers_debian "$gaming_selected"
+            _install_nvidia_drivers_debian
             ;;
         *)
             print_warning "NVIDIA driver auto-install not supported on $DISTRO_FAMILY — install manually"
@@ -2205,12 +2195,7 @@ APTEOF
         if git clone --depth 1 https://github.com/Antynea/grub-btrfs.git "$tmp_dir"; then
             # Fedora uses grub2 paths instead of grub — patch clone before install
             if [ "$DISTRO_FAMILY" = "fedora" ]; then
-                sed -i \
-                    -e 's|^#\?GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
-                    -e 's|^#\?GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
-                    -e 's|^#\?GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
-                    -e 's|^#\?GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
-                    "$tmp_dir/config"
+                _patch_grub_btrfs_fedora_paths "$tmp_dir/config"
             fi
             if ! (cd "$tmp_dir" && sudo make install); then
                 track_warning "Failed to install grub-btrfs from source"
