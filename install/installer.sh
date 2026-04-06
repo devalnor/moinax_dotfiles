@@ -63,15 +63,13 @@ regenerate_grub_config() {
     # Fedora: fix grub-btrfs config paths before regeneration
     # (41_snapshots-btrfs defaults to /boot/grub when GRUB_BTRFS_GRUB_DIRNAME is unset)
     if [ "$DISTRO_FAMILY" = "fedora" ] && [ -f /etc/default/grub-btrfs/config ]; then
-        if ! grep -q '^GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"' /etc/default/grub-btrfs/config; then
-            sudo sed -i \
-                -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
-                -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
-                -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
-                -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
-                -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
-                /etc/default/grub-btrfs/config
-        fi
+        sudo sed -i \
+            -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
+            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
+            -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
+            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
+            -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
+            /etc/default/grub-btrfs/config
     fi
 
     print_info "Regenerating GRUB config..."
