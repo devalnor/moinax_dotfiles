@@ -209,5 +209,4 @@ packages:
     - network-manager-gnome
     - nm-connection-editor
 
-  fedora_copr:
-    - erikreider/SwayNotificationCenter  # Notification center
+  # Note: SwayNotificationCenter is in official Fedora repos — no COPR needed

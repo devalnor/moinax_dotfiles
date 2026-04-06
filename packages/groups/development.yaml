@@ -109,15 +109,15 @@ packages:
     # Containers
     - docker
     - docker-compose
-    - lazydocker
-    
+    # Note: lazydocker is not in dnf — installed via binary in common tools
+
     # Build tools
     - cmake
     - cpio
     - make
     - gcc
     - gcc-c++
-    
+
     # Networking
     - tailscale
 
@@ -155,5 +155,3 @@ packages:
     # Note: lazygit is not in apt — installed via binary (install_lazygit in debian.sh)
     # Note: lazydocker is not in apt — install manually after setup
 
-  fedora_copr:
-    - zeno/scrcpy  # For lazydocker if not in main repos

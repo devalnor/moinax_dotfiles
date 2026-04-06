@@ -5,6 +5,7 @@ Personal dotfiles for Arch Linux, Fedora, and Debian/Ubuntu with optional Hyprla
 ## Features
 
 - **Multi-distro support**: Works on Arch Linux, Fedora, and Debian/Ubuntu (extensible to other distros)
+- **KDE base assumed**: Desktop installs expect a KDE Plasma base (e.g. Fedora KDE Spin, Kubuntu). Polkit, file manager, and theming packages rely on KDE components already being present.
 - **Desktop or terminal mode**: Choose a full desktop setup or a lightweight terminal-only install
 - **Interactive installer**: Beautiful TUI prompts using [gum](https://github.com/charmbracelet/gum)
 - **Modular packages**: Choose what to install (Hyprland, Niri, Development, Gaming, AI, etc.)

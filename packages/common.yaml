@@ -12,6 +12,18 @@ tools:
     post_install:
       - volta install node npm yarn@1 pnpm
 
+  - name: eza
+    description: Modern replacement for ls
+    install: |
+      arch=$(uname -m); case $arch in aarch64) arch=aarch64;; armv7l) arch=armv7;; esac
+      curl -fsSL "https://github.com/eza-community/eza/releases/latest/download/eza_${arch}-unknown-linux-gnu.tar.gz" \
+        | sudo tar xz -C /usr/local/bin
+      sudo chmod +x /usr/local/bin/eza
+
+  - name: lazydocker
+    description: Terminal UI for Docker
+    install: curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
   - name: television
     description: Terminal fuzzy finder (file picker, history search)
     install: curl -fsSL https://alexpasmantier.github.io/television/install.sh | bash

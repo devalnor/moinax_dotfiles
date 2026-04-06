@@ -705,7 +705,6 @@ install_base_packages() {
 
     # Install binary packages not available in apt (Debian/Ubuntu family only)
     if [ "$DISTRO_FAMILY" = "debian" ]; then
-        install_eza || track_warning "Failed to install eza"
         install_lazygit || track_warning "Failed to install lazygit"
         install_starship || track_warning "Failed to install starship"
         install_fastfetch || track_warning "Failed to install fastfetch"
@@ -900,8 +899,29 @@ install_common_tools() {
         print_info "Volta is already installed"
     fi
     
-    # Install television (Arch has it in extra repo, others use install script)
+    # Tools below are packaged for Arch; install from upstream on other distros.
     if [ "$DISTRO_FAMILY" != "arch" ]; then
+        if ! command_exists eza; then
+            local eza_arch
+            case "$(uname -m)" in
+                x86_64)  eza_arch="x86_64" ;;
+                aarch64) eza_arch="aarch64" ;;
+                armv7l)  eza_arch="armv7" ;;
+                *)       eza_arch="$(uname -m)" ;;
+            esac
+            install_curl_tool "eza" \
+                "curl -fsSL https://github.com/eza-community/eza/releases/latest/download/eza_${eza_arch}-unknown-linux-gnu.tar.gz | sudo tar xz -C /usr/local/bin && sudo chmod +x /usr/local/bin/eza"
+        else
+            print_info "eza is already installed"
+        fi
+
+        if ! command_exists lazydocker; then
+            install_curl_tool "lazydocker" \
+                "curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash"
+        else
+            print_info "lazydocker is already installed"
+        fi
+
         if ! command_exists tv; then
             install_curl_tool "television" \
                 "curl -fsSL https://alexpasmantier.github.io/television/install.sh | bash"

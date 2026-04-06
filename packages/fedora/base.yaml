@@ -22,7 +22,6 @@ packages:
     - keychain
     - jq
     - yq
-    - lazygit
     - rsync
     - unzip
     - fontconfig
@@ -50,10 +49,5 @@ packages:
     - fontawesome-fonts
     - google-noto-fonts-common
 
-  copr:
-    # COPR repositories to enable (processed before package installation)
-    # Note: Only include COPRs that exist and support current Fedora version
-    repositories:
-      - atim/starship      # Starship prompt
-      - atim/lazygit       # Git TUI
-      - lihaohong/yazi     # Terminal file manager
+  # Note: starship, lazygit, and yazi are in official Fedora repos — no COPRs needed
+  # Note: eza is not packaged for Fedora — installed via binary in common tools

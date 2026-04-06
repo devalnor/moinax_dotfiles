@@ -236,27 +236,6 @@ install_yq() {
     print_success "yq installed"
 }
 
-# Install eza (not in apt on older Ubuntu — binary from GitHub releases)
-install_eza() {
-    if command_exists eza; then
-        print_info "eza is already installed"
-        return 0
-    fi
-
-    print_info "Installing eza (binary)..."
-    local goarch
-    case "$(uname -m)" in
-        x86_64)  goarch="x86_64" ;;
-        aarch64) goarch="aarch64" ;;
-        armv7l)  goarch="armv7" ;;
-        *)       goarch="$(uname -m)" ;;
-    esac
-    curl -sL "https://github.com/eza-community/eza/releases/latest/download/eza_${goarch}-unknown-linux-gnu.tar.gz" \
-        | sudo tar -xz -C /usr/local/bin
-    sudo chmod +x /usr/local/bin/eza
-    print_success "eza installed"
-}
-
 # Install lazygit (not in apt — binary from GitHub releases)
 install_lazygit() {
     if command_exists lazygit; then
