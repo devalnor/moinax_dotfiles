@@ -50,6 +50,10 @@
     "idle-warning": {
       "state": "transient",
       "summary": "Your computer will be locked"
+    },
+    "hyprvoice": {
+      "state": "transient",
+      "app-name": "Hyprvoice"
     }
   },
   "widgets": [
