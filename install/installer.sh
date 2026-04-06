@@ -1319,6 +1319,124 @@ cleanup_legacy_nvidia_suspend_services() {
     print_success "Legacy NVIDIA suspend services cleaned up"
 }
 
+# Install NVIDIA driver packages (Arch: open-dkms)
+_install_nvidia_drivers_arch() {
+    local gaming_selected="$1"
+    local pkgs=(
+        nvidia-open-dkms    # open-source kernel module (DKMS for kernel compat)
+        nvidia-utils        # userspace utilities
+        nvidia-settings     # GUI settings panel
+    )
+
+    if [ "$gaming_selected" = "true" ]; then
+        pkgs+=(lib32-nvidia-utils)  # 32-bit support for Steam
+    fi
+
+    print_info "Installing NVIDIA open-dkms driver packages: ${pkgs[*]}"
+    install_packages "${pkgs[@]}" || track_warning "Some NVIDIA driver packages failed to install"
+}
+
+# Install NVIDIA driver packages (Fedora: akmod via RPM Fusion)
+_install_nvidia_drivers_fedora() {
+    # RPM Fusion non-free is required for akmod-nvidia
+    enable_rpmfusion
+
+    local pkgs=(
+        akmod-nvidia          # auto-builds kernel module on updates
+        nvidia-vaapi-driver   # VA-API video acceleration
+    )
+
+    print_info "Installing NVIDIA driver packages: ${pkgs[*]}"
+    install_packages "${pkgs[@]}" || track_warning "Some NVIDIA driver packages failed to install"
+}
+
+# Enable non-free/restricted repos for NVIDIA on Debian/Ubuntu
+_enable_nvidia_repos_debian() {
+    local distro_id
+    distro_id=$(. /etc/os-release && echo "$ID")
+
+    case "$distro_id" in
+        ubuntu|pop|linuxmint|elementary|neon|zorin)
+            if command_exists add-apt-repository; then
+                sudo add-apt-repository -y restricted 2>/dev/null || true
+                sudo apt update
+            fi
+            ;;
+        *)
+            # Pure Debian: enable contrib and non-free components
+            if ! grep -rq 'non-free' /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null; then
+                print_info "Enabling contrib and non-free repositories..."
+                if command_exists add-apt-repository; then
+                    sudo add-apt-repository -y contrib 2>/dev/null || true
+                    sudo add-apt-repository -y non-free 2>/dev/null || true
+                else
+                    sudo sed -i 's/^\(deb.*main\)$/\1 contrib non-free non-free-firmware/' /etc/apt/sources.list
+                fi
+                sudo apt update
+            fi
+            ;;
+    esac
+}
+
+# Install NVIDIA driver packages (Debian/Ubuntu)
+_install_nvidia_drivers_debian() {
+    _enable_nvidia_repos_debian
+
+    local distro_id
+    distro_id=$(. /etc/os-release && echo "$ID")
+
+    case "$distro_id" in
+        ubuntu|pop|linuxmint|elementary|neon|zorin)
+            print_info "Installing NVIDIA drivers via ubuntu-drivers..."
+            install_packages ubuntu-drivers-common
+            sudo ubuntu-drivers autoinstall || track_warning "ubuntu-drivers autoinstall failed"
+            ;;
+        *)
+            print_info "Installing NVIDIA driver packages for Debian..."
+            install_packages nvidia-driver || track_warning "nvidia-driver package failed to install"
+            ;;
+    esac
+}
+
+# Install NVIDIA driver packages per distro (called before setup_nvidia)
+install_nvidia_drivers() {
+    if [ "$HAS_NVIDIA" != "true" ] || [ "$INSTALL_PURPOSE" != "desktop" ]; then
+        return 0
+    fi
+
+    print_header "NVIDIA Driver Installation"
+
+    # Idempotency: skip if drivers are already installed
+    if has_nvidia_services; then
+        print_info "NVIDIA driver services already present — skipping driver installation"
+        return 0
+    fi
+
+    local gaming_selected=false
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " gaming " ]]; then
+        gaming_selected=true
+    fi
+
+    case "$DISTRO_FAMILY" in
+        arch)
+            _install_nvidia_drivers_arch "$gaming_selected"
+            ;;
+        fedora)
+            _install_nvidia_drivers_fedora "$gaming_selected"
+            ;;
+        debian)
+            _install_nvidia_drivers_debian "$gaming_selected"
+            ;;
+        *)
+            print_warning "NVIDIA driver auto-install not supported on $DISTRO_FAMILY — install manually"
+            return 0
+            ;;
+    esac
+
+    print_success "NVIDIA driver packages installed"
+    print_info "A reboot may be required before drivers are fully active"
+}
+
 # Setup NVIDIA GPU suspend/resume services
 setup_nvidia() {
     if [ "$HAS_NVIDIA" != "true" ]; then
@@ -1329,8 +1447,8 @@ setup_nvidia() {
 
     # Check if NVIDIA driver services are installed
     if ! has_nvidia_services; then
-        print_warning "NVIDIA GPU detected but driver services not found"
-        print_info "Install NVIDIA drivers first, then re-run setup to enable suspend/resume services"
+        print_warning "NVIDIA GPU detected but driver services not found (reboot may be required)"
+        print_info "Re-run setup after reboot to configure suspend/resume services"
         return 0
     fi
 
@@ -2273,6 +2391,7 @@ main() {
     setup_grub_theme
     setup_btrfs_snapshots
     if [ "$INSTALL_PURPOSE" = "desktop" ]; then
+        install_nvidia_drivers
         setup_nvidia
         setup_sddm
         setup_plymouth
