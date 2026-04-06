@@ -60,6 +60,20 @@ canonicalize_dir() {
 
 # Regenerate GRUB config (distro-aware: grub-mkconfig vs grub2-mkconfig)
 regenerate_grub_config() {
+    # Fedora: fix grub-btrfs config paths before regeneration
+    # (41_snapshots-btrfs defaults to /boot/grub when GRUB_BTRFS_GRUB_DIRNAME is unset)
+    if [ "$DISTRO_FAMILY" = "fedora" ] && [ -f /etc/default/grub-btrfs/config ]; then
+        if ! grep -q '^GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"' /etc/default/grub-btrfs/config; then
+            sudo sed -i \
+                -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
+                -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
+                -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
+                -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub2/grub-mkconfig_lib|' \
+                -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
+                /etc/default/grub-btrfs/config
+        fi
+    fi
+
     print_info "Regenerating GRUB config..."
     if [ "$DISTRO_FAMILY" = "fedora" ]; then
         sudo grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -2207,19 +2221,6 @@ APTEOF
             track_warning "Failed to clone grub-btrfs repository"
         fi
         rm -rf "$tmp_dir"
-    fi
-
-    # Fedora: ensure installed grub-btrfs config uses grub2 paths
-    # (make install may preserve an existing config with commented-out defaults)
-    if [ "$DISTRO_FAMILY" = "fedora" ] && [ -f /etc/default/grub-btrfs/config ]; then
-        local grub_btrfs_conf="/etc/default/grub-btrfs/config"
-        sudo sed -i \
-            -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
-            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
-            -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
-            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub2/grub-mkconfig_lib|' \
-            -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
-            "$grub_btrfs_conf"
     fi
 
     # Enable grub-btrfsd service if available
