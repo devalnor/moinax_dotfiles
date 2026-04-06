@@ -27,7 +27,7 @@
 | Clipboard (cliphist) | `Mod+V` | `Mod+V` | |
 | Color picker (hyprpicker) | `Mod+Shift+P` | `Mod+Shift+P` | |
 | Calculator (rofi-calc) | `Mod+C` | `Mod+C` | Quick inline calculator |
-| Calculator (gnome) | `Mod+Alt+C` | `Mod+Alt+C` | Full calculator app |
+| Calculator (kcalc) | `Mod+Alt+C` | `Mod+Ctrl+Alt+C` | Full calculator app |
 | Theme selector | `Mod+R` | `Mod+R` | rofi-theme-selector |
 | Toggle monitor layout | `Mod+M` | `Mod+M` | |
 | Toggle dictation (speech-to-text) | `Mod+D` | `Mod+D` | hyprvoice toggle (AI group only) |

@@ -184,8 +184,10 @@ binds {
     Mod+Tab hotkey-overlay-title="Switch Window: rofi" { spawn-sh "rofi -show window -window-thumbnail"; }
     Mod+Escape hotkey-overlay-title="Kill Window: rofi" { spawn-sh "rofi -show 'Select App to Kill' -modi 'Select App to Kill:rofi-killwindow'"; }
     Mod+V hotkey-overlay-title="Clipboard: cliphist" { spawn-sh "cliphist list | rofi -dmenu -p 'Clipboard' | cliphist decode | wtype -"; }
+{{ if ne .chezmoi.osRelease.id "fedora" -}}
     Mod+C hotkey-overlay-title="Calculator: rofi-calc" { spawn-sh "rofi -show calc"; }
-    Mod+Alt+C hotkey-overlay-title="Calculator: gnome-calculator" { spawn "gnome-calculator"; }
+{{ end -}}
+    Mod+Ctrl+Alt+C hotkey-overlay-title="Calculator: kcalc" { spawn "kcalc"; }
     Mod+Shift+P hotkey-overlay-title="Color Picker: hyprpicker" { spawn "hyprpicker"; }
     Mod+R hotkey-overlay-title="Theme Selector: rofi" { spawn "rofi-theme-selector"; }
     Mod+M hotkey-overlay-title="Toggle Monitor Layout" { spawn-sh "~/.config/hypr/scripts/toggle-monitor-layout.sh"; }

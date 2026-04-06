@@ -31,6 +31,7 @@ descriptions:
   waybar: Highly customizable status bar
   rofi-wayland: Application launcher (Wayland fork)
   rofi-calc: Calculator plugin for rofi
+  kcalc: KDE calculator application
   rofimoji: Emoji picker for rofi
   swaync: Notification center with drawer and DND
   wlogout: Logout menu for Wayland
@@ -67,6 +68,7 @@ packages:
     - rofi-wayland
     - rofi-calc
     - rofimoji
+    - kcalc
     # Notifications
     - swaync
     # Logout screen
@@ -112,8 +114,9 @@ packages:
     # Status bar and menus
     - waybar
     - rofi-wayland
-    - rofi-calc
+    # rofi-calc is not available in Fedora repos
     - rofimoji
+    - kcalc
     # Notifications
     - SwayNotificationCenter
     # Logout screen
@@ -126,15 +129,15 @@ packages:
 
     # GTK theming
     - nwg-look
-    
+
     # Audio control
     - pavucontrol
     - blueman
     - bluez
-    
+
     # X compatibility
     - xorg-x11-server-utils
-    
+
     # Idle inhibitor (caffeine mode)
     - python3-pywayland
 
@@ -161,6 +164,7 @@ packages:
     - rofi-wayland
     - rofi-calc
     - rofimoji
+    - kcalc
 
     # Notifications
     - sway-notification-center
