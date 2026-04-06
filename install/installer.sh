@@ -2073,12 +2073,13 @@ APTEOF
         local tmp_dir
         tmp_dir=$(mktemp -d)
         if git clone --depth 1 https://github.com/Antynea/grub-btrfs.git "$tmp_dir"; then
-            # Fedora uses grub2 paths instead of grub
+            # Fedora uses grub2 paths instead of grub — patch clone before install
             if [ "$DISTRO_FAMILY" = "fedora" ]; then
                 sed -i \
                     -e 's|^#\?GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
                     -e 's|^#\?GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
                     -e 's|^#\?GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
+                    -e 's|^#\?GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub2/grub-mkconfig_lib|' \
                     "$tmp_dir/config"
             fi
             if ! (cd "$tmp_dir" && sudo make install); then
@@ -2088,6 +2089,19 @@ APTEOF
             track_warning "Failed to clone grub-btrfs repository"
         fi
         rm -rf "$tmp_dir"
+    fi
+
+    # Fedora: ensure installed grub-btrfs config uses grub2 paths
+    # (make install may preserve an existing config with commented-out defaults)
+    if [ "$DISTRO_FAMILY" = "fedora" ] && [ -f /etc/default/grub-btrfs/config ]; then
+        local grub_btrfs_conf="/etc/default/grub-btrfs/config"
+        sudo sed -i \
+            -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
+            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
+            -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
+            -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub2/grub-mkconfig_lib|' \
+            -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
+            "$grub_btrfs_conf"
     fi
 
     # Enable grub-btrfsd service if available
