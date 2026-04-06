@@ -94,6 +94,17 @@ get_nvidia_driver_version() {
         version=$(grep -oP 'Kernel Module\s+\K[0-9]+\.[0-9.]+' /proc/driver/nvidia/version 2>/dev/null | head -1)
     fi
 
+    # Method 4: package manager query (works after install, before reboot)
+    if [ -z "$version" ] && command -v rpm &>/dev/null; then
+        version=$(rpm -q --qf '%{VERSION}\n' akmod-nvidia 2>/dev/null | grep -v 'not installed' | head -1)
+    fi
+    if [ -z "$version" ] && command -v dpkg-query &>/dev/null; then
+        version=$(dpkg-query -W -f='${Version}\n' nvidia-driver 2>/dev/null | grep -oP '^[0-9]+\.[0-9.]+' | head -1)
+    fi
+    if [ -z "$version" ] && command -v pacman &>/dev/null; then
+        version=$(pacman -Q nvidia-utils 2>/dev/null | awk '{print $2}' | grep -oP '^[0-9]+\.[0-9.]+' | head -1)
+    fi
+
     if [ -z "$version" ]; then
         return 1
     fi

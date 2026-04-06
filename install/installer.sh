@@ -68,7 +68,7 @@ regenerate_grub_config() {
                 -e 's|^#\?\s*GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
                 -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
                 -e 's|^#\?\s*GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
-                -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub2/grub-mkconfig_lib|' \
+                -e 's|^#\?\s*GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
                 -e 's|^#\?\s*GRUB_BTRFS_GBTRFS_DIRNAME=.*|GRUB_BTRFS_GBTRFS_DIRNAME="/boot/grub2"|' \
                 /etc/default/grub-btrfs/config
         fi
@@ -2211,7 +2211,7 @@ APTEOF
                     -e 's|^#\?GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub2"|' \
                     -e 's|^#\?GRUB_BTRFS_MKCONFIG=.*|GRUB_BTRFS_MKCONFIG=/usr/sbin/grub2-mkconfig|' \
                     -e 's|^#\?GRUB_BTRFS_SCRIPT_CHECK=.*|GRUB_BTRFS_SCRIPT_CHECK=grub2-script-check|' \
-                    -e 's|^#\?GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub2/grub-mkconfig_lib|' \
+                    -e 's|^#\?GRUB_BTRFS_MKCONFIG_LIB=.*|GRUB_BTRFS_MKCONFIG_LIB=/usr/share/grub/grub-mkconfig_lib|' \
                     "$tmp_dir/config"
             fi
             if ! (cd "$tmp_dir" && sudo make install); then
