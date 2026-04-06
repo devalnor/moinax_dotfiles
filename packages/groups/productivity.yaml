@@ -27,6 +27,8 @@ descriptions:
   slack-desktop: Team communication app (Arch AUR / Debian/Ubuntu)
   slack: Team communication app (Fedora)
   telegram-desktop: Telegram messaging app
+  zen-browser-bin: Zen Browser (Arch AUR)
+  zen-browser: Zen Browser (Fedora / Debian)
   google-chrome: Google Chrome web browser (Arch AUR)
   google-chrome-stable: Google Chrome web browser (Fedora)
   p7zip: 7-Zip archive tool
@@ -54,9 +56,10 @@ packages:
     - slack-desktop  # AUR
     - telegram-desktop
 
-    # Web browser
+    # Web browsers
+    - zen-browser-bin  # AUR
     - google-chrome  # AUR
-    
+
     # Archive tools
     - p7zip
     - unrar
@@ -82,9 +85,10 @@ packages:
     - slack
     - telegram-desktop
 
-    # Web browser
+    # Web browsers
+    - zen-browser
     - google-chrome-stable
-    
+
     # Archive tools
     - p7zip
     - unrar
@@ -108,7 +112,7 @@ packages:
     - slack-desktop
     - telegram-desktop
 
-    # Web browser (requires Google Chrome repo — added by setup_productivity_repos)
+    # Web browsers (Google Chrome requires repo — added by setup_productivity_repos)
     - google-chrome-stable
 
     # Archive tools
@@ -116,6 +120,19 @@ packages:
     - unrar
     - unzip
 
+  fedora_copr:
+    - sneexy/zen-browser
+
   fedora_repos:
     # Google Chrome repo
     - google-chrome
+
+custom_install:
+  - name: zen-browser
+    check: zen
+    install: |
+      curl -fsSL https://github.com/zen-browser/updates-server/raw/refs/heads/main/install.sh | bash
+      ln -sf "$HOME/.local/bin/zen" "$HOME/.local/bin/zen-browser"
+    distro_skip:
+      - arch
+      - fedora
