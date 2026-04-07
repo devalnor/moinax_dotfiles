@@ -34,6 +34,7 @@ INSTALL_WARNINGS=()
 declare -A GROUP_PACKAGE_MODE=()
 declare -A GROUP_CUSTOM_PACKAGE_LIST=()
 HYPRVOICE_MODEL="small"
+HYPRVOICE_PROVIDER="whisper-cpp"
 INSTALL_PURPOSE="desktop"
 
 # Canonicalize a directory path for safe comparisons.
@@ -994,47 +995,67 @@ install_common_tools() {
             print_info "whisper-cli is already installed"
         fi
 
-        # Download whisper model for local transcription
+        # Configure hyprvoice transcription provider and model
         if command_exists hyprvoice; then
-            local existing_model
-            existing_model=$(hyprvoice model list 2>/dev/null | grep '\[x\]' | head -1 | awk '{print $2}')
+            local existing_provider="" existing_model_cfg=""
+            if command_exists chezmoi; then
+                local chezmoi_json
+                chezmoi_json=$(chezmoi data --format json 2>/dev/null) || true
+                existing_provider=$(grep -m1 -oP '"hyprvoice_provider"\s*:\s*"\K[^"]+' <<< "$chezmoi_json" || true)
+                existing_model_cfg=$(grep -m1 -oP '"hyprvoice_model"\s*:\s*"\K[^"]+' <<< "$chezmoi_json" || true)
+            fi
 
-            if [ -n "$existing_model" ]; then
-                HYPRVOICE_MODEL="$existing_model"
-                print_info "Whisper model '$existing_model' is already downloaded"
+            if [ -n "$existing_provider" ]; then
+                HYPRVOICE_PROVIDER="$existing_provider"
+                [ -n "$existing_model_cfg" ] && HYPRVOICE_MODEL="$existing_model_cfg"
+                print_info "Hyprvoice already configured (provider=$HYPRVOICE_PROVIDER, model=$HYPRVOICE_MODEL)"
             else
-                print_info "Hyprvoice supports local speech-to-text via whisper models"
+                # First-time setup: choose provider
+                local provider_choice
+                provider_choice=$(printf '%s\n' "whisper-cpp (local)" "groq (cloud, free tier)" | \
+                    gum choose --cursor.foreground="212" \
+                    --header "Select transcription provider for dictation:") || provider_choice="whisper-cpp (local)"
+                HYPRVOICE_PROVIDER="${provider_choice%% (*}"
 
-                # Parse available models from hyprvoice (same approach as manage.sh)
-                local models=()
-                while IFS= read -r line; do
-                    if [[ "$line" =~ ^[[:space:]]*\[.\][[:space:]]+(.+)$ ]]; then
-                        models+=("${BASH_REMATCH[1]}")
-                    fi
-                done <<< "$(hyprvoice model list 2>/dev/null)"
+                if [ "$HYPRVOICE_PROVIDER" = "whisper-cpp" ]; then
+                    # Local provider: select and download a whisper model
+                    local models=()
+                    while IFS= read -r line; do
+                        if [[ "$line" =~ ^[[:space:]]*\[.\][[:space:]]+(.+)$ ]]; then
+                            models+=("${BASH_REMATCH[1]}")
+                        fi
+                    done <<< "$(hyprvoice model list 2>/dev/null)"
 
-                if [ ${#models[@]} -gt 0 ]; then
-                    models+=("Skip — download later")
-                    HYPRVOICE_MODEL=$(printf '%s\n' "${models[@]}" | \
-                        gum choose --header "Select a whisper model for dictation:") || HYPRVOICE_MODEL="Skip"
-                    # Extract model name (first word)
-                    HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% -*}"
-                    HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% *}"
-                else
-                    track_warning "Could not fetch model list from hyprvoice"
-                    HYPRVOICE_MODEL="small"
-                fi
-
-                if [ "$HYPRVOICE_MODEL" != "Skip" ]; then
-                    print_info "Downloading whisper model: $HYPRVOICE_MODEL"
-                    if hyprvoice model download "$HYPRVOICE_MODEL"; then
-                        print_success "Whisper model '$HYPRVOICE_MODEL' downloaded"
+                    if [ ${#models[@]} -gt 0 ]; then
+                        models+=("Skip — download later")
+                        HYPRVOICE_MODEL=$(printf '%s\n' "${models[@]}" | \
+                            gum choose --header "Select a whisper model for dictation:") || HYPRVOICE_MODEL="Skip"
+                        HYPRVOICE_MODEL="${HYPRVOICE_MODEL%% *}"
                     else
-                        print_warning "Failed to download model — run 'hyprvoice model download $HYPRVOICE_MODEL' later"
+                        track_warning "Could not fetch model list from hyprvoice"
                         HYPRVOICE_MODEL="small"
                     fi
-                else
-                    HYPRVOICE_MODEL="small"  # Default for config
+
+                    if [ "$HYPRVOICE_MODEL" != "Skip" ]; then
+                        print_info "Downloading whisper model: $HYPRVOICE_MODEL"
+                        if hyprvoice model download "$HYPRVOICE_MODEL"; then
+                            print_success "Whisper model '$HYPRVOICE_MODEL' downloaded"
+                        else
+                            print_warning "Failed to download model — run 'hyprvoice model download $HYPRVOICE_MODEL' later"
+                            HYPRVOICE_MODEL="small"
+                        fi
+                    else
+                        HYPRVOICE_MODEL="small"
+                    fi
+                elif [ "$HYPRVOICE_PROVIDER" = "groq" ]; then
+                    local groq_choice
+                    groq_choice=$(printf '%s\n' "${GROQ_WHISPER_MODELS[@]}" | gum choose --cursor.foreground="212" \
+                        --header "Select Groq model:") || groq_choice="${GROQ_WHISPER_MODELS[0]}"
+                    HYPRVOICE_MODEL="${groq_choice%% *}"
+
+                    if ! setup_groq_api_key; then
+                        track_warning "No Groq API key provided — set GROQ_API_KEY later"
+                    fi
                 fi
             fi
         fi
@@ -1199,6 +1220,7 @@ sourceDir = "$source_dir"
     install_ai = $install_ai
     has_nvidia = $HAS_NVIDIA
     hyprvoice_model = "$HYPRVOICE_MODEL"
+    hyprvoice_provider = "$HYPRVOICE_PROVIDER"
     install_purpose = "$INSTALL_PURPOSE"
     dark_mode = "dark"
 EOF

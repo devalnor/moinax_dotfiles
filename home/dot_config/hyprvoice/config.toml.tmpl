@@ -19,16 +19,20 @@ timeout = "5m"                   # Maximum recording duration per toggle
 
 # ── Transcription ───────────────────────────────────────────────
 [transcription]
-provider = {{ .hyprvoice_provider | quote }}
+{{- $provider := "whisper-cpp" -}}
+{{- if hasKey . "hyprvoice_provider" -}}
+{{-   $provider = .hyprvoice_provider -}}
+{{- end }}
+provider = {{ $provider | quote }}
 model = {{ .hyprvoice_model | quote }}    # Multilingual model (EN+FR).
 language = ""                    # Empty = auto-detect. Set "en" or "fr" to force a language.
 streaming = false
-{{- if eq .hyprvoice_provider "whisper-cpp" }}
+{{- if eq $provider "whisper-cpp" }}
 threads = 0                      # 0 = auto (NumCPU - 1)
 {{- end }}
 
 # ── Providers ───────────────────────────────────────────────────
-{{- if eq .hyprvoice_provider "groq" }}
+{{- if eq $provider "groq" }}
 [providers.groq]
 api_key = ""                     # Set GROQ_API_KEY env var instead (recommended)
 {{- else }}

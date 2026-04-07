@@ -45,8 +45,6 @@ do_setup() {
     exec "$SCRIPT_DIR/tools/setup.sh"
 }
 
-SECRETS_CONF="$HOME/.config/environment.d/secrets.conf"
-
 # Read a string value from chezmoi.toml [data] section
 get_chezmoi_data() {
     local key="$1"
@@ -66,17 +64,6 @@ set_chezmoi_data() {
         sed -i 's/'"${key}"' = .*/'"${key}"' = "'"${value}"'"/' "$CHEZMOI_CONF"
     else
         sed -i '/^\[data\]/a\    '"${key}"' = "'"${value}"'"' "$CHEZMOI_CONF"
-    fi
-}
-
-# Write a key=value pair to the secrets file (upsert)
-set_secret() {
-    local key="$1" value="$2"
-    mkdir -p "$(dirname "$SECRETS_CONF")"
-    if [ -f "$SECRETS_CONF" ] && grep -q "^${key}=" "$SECRETS_CONF"; then
-        sed -i 's/^'"${key}"'=.*/'"${key}"'='"${value}"'/' "$SECRETS_CONF"
-    else
-        echo "${key}=${value}" >> "$SECRETS_CONF"
     fi
 }
 
@@ -157,16 +144,14 @@ do_whisper() {
             return 1
         fi
     elif [ "$provider" = "groq" ]; then
-        local groq_models=("whisper-large-v3-turbo - Faster with slight accuracy tradeoff" "whisper-large-v3 - Best accuracy; generous free tier")
-        chosen=$(printf '%s\n' "${groq_models[@]}" | gum choose --cursor.foreground="212" \
+        chosen=$(printf '%s\n' "${GROQ_WHISPER_MODELS[@]}" | gum choose --cursor.foreground="212" \
             --header "Select Groq model:") || {
             echo "Cancelled."
             return
         }
-        chosen="${chosen%% -*}"
         chosen="${chosen%% *}"
 
-        setup_groq_api_key
+        setup_groq_api_key --allow-change
     fi
 
     if [ "$chosen" = "$current_model" ] && [ "$provider" = "$current_provider" ]; then
@@ -195,45 +180,6 @@ do_whisper() {
     fi
 
     whisper_restart_daemon
-}
-
-setup_groq_api_key() {
-    local existing_key="${GROQ_API_KEY:-}"
-    if [ -z "$existing_key" ] && [ -f "$SECRETS_CONF" ]; then
-        existing_key=$(grep '^GROQ_API_KEY=' "$SECRETS_CONF" 2>/dev/null | cut -d= -f2- || true)
-    fi
-
-    if [ -n "$existing_key" ]; then
-        local masked="${existing_key:0:8}...${existing_key: -4}"
-        print_success "Groq API key found: $masked"
-        if ! gum confirm "Keep current API key?"; then
-            existing_key=""
-        fi
-    fi
-
-    if [ -z "$existing_key" ]; then
-        echo ""
-        print_info "Get a free Groq API key at: https://console.groq.com/keys"
-        print_info "Sign up (no credit card required), then create a new API key."
-        echo ""
-        local api_key
-        api_key=$(gum input --placeholder "Paste your Groq API key (gsk_...)" --password --header "Groq API Key:") || {
-            echo "Cancelled."
-            return 1
-        }
-
-        if [ -z "$api_key" ]; then
-            print_error "No API key provided"
-            return 1
-        fi
-
-        set_secret "GROQ_API_KEY" "$api_key"
-        print_success "API key saved to $SECRETS_CONF"
-
-        export GROQ_API_KEY="$api_key"
-        systemctl --user import-environment GROQ_API_KEY 2>/dev/null || true
-        print_success "API key loaded into current session"
-    fi
 }
 
 whisper_restart_daemon() {
