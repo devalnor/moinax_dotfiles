@@ -208,12 +208,15 @@ function wtstart() {
 # Remove all worktrees whose branches are already merged into main
 function wtclean() {
   local branches
-  branches=$(wt list --format=json 2>/dev/null | python3 -c "
+  branches=$(wt list --format=json 2>/dev/null | /usr/bin/python3 -c "
 import sys, json
-for wt in json.load(sys.stdin):
+raw = sys.stdin.read()
+if not raw.strip():
+    sys.exit(0)
+for wt in json.loads(raw):
     if wt.get('main_state') in ('integrated', 'empty') and not wt.get('is_main'):
         print(wt['branch'])
-" 2>/dev/null)
+")
 
   if [[ -z "$branches" ]]; then
     echo "No merged worktrees to clean up."
@@ -237,19 +240,25 @@ function wtupdate() {
   local branch="$1"
 
   echo "Fetching origin..."
-  /usr/bin/git fetch origin
+  if ! /usr/bin/git fetch origin; then
+    echo "error: failed to fetch from origin" >&2
+    return 1
+  fi
 
   local worktrees
-  worktrees=$(wt list --format=json 2>/dev/null | python3 -c "
-import sys, json
-target = '$branch'
-for wt in json.load(sys.stdin):
+  worktrees=$(wt list --format=json 2>/dev/null | TARGET_BRANCH="$branch" /usr/bin/python3 -c "
+import sys, json, os
+raw = sys.stdin.read()
+if not raw.strip():
+    sys.exit(0)
+target = os.environ.get('TARGET_BRANCH', '')
+for wt in json.loads(raw):
     if wt.get('is_main') or wt.get('kind') != 'worktree':
         continue
     if target and wt['branch'] != target:
         continue
     print(wt['branch'] + '\t' + wt['path'])
-" 2>/dev/null)
+")
 
   if [[ -z "$worktrees" ]]; then
     if [[ -n "$branch" ]]; then
@@ -261,16 +270,16 @@ for wt in json.load(sys.stdin):
   fi
 
   local failed=()
-  while IFS=$'\t' read -r name path; do
+  while IFS=$'\t' read -r name dir <&3; do
     echo "Updating $name..."
-    if /usr/bin/git -C "$path" rebase origin/main; then
-      /usr/bin/git -C "$path" push --force-with-lease
+    if /usr/bin/git -C "$dir" rebase origin/main; then
+      /usr/bin/git -C "$dir" push --force-with-lease
     else
       echo "  Rebase conflict — aborting rebase for $name" >&2
-      /usr/bin/git -C "$path" rebase --abort
+      /usr/bin/git -C "$dir" rebase --abort
       failed+=("$name")
     fi
-  done <<< "$worktrees"
+  done 3<<< "$worktrees"
 
   if (( ${#failed[@]} > 0 )); then
     echo
