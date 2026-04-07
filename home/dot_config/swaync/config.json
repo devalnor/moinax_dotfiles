@@ -54,6 +54,10 @@
     "hyprvoice": {
       "state": "transient",
       "app-name": "Hyprvoice"
+    },
+    "claude-code": {
+      "state": "transient",
+      "app-name": "Claude Code"
     }
   },
   "widgets": [
