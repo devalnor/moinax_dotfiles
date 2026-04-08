@@ -23,6 +23,6 @@
 [include]
 	path = ~/.config/delta/themes.gitconfig
 [delta]
-	features = catppuccin-mocha line-numbers
+	features = catppuccin-{{ if eq .dark_mode "light" }}latte{{ else }}mocha{{ end }} line-numbers
 [push]
 	default = current

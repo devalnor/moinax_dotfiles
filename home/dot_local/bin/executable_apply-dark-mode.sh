@@ -71,17 +71,7 @@ if [ -f "$KITTY_THEME_SRC" ]; then
     pkill -SIGUSR1 -x kitty 2>/dev/null || true
 fi
 
-# 5. Starship (only replace the top-level palette line, not palette definitions)
-STARSHIP_CONF="$HOME/.config/starship.toml"
-if [ -f "$STARSHIP_CONF" ]; then
-    sed -i "s/^palette = 'catppuccin_.*'/palette = 'catppuccin_${FLAVOR}'/" "$STARSHIP_CONF"
-fi
-
-# 6. Yazi
-YAZI_THEME="$HOME/.config/yazi/theme.toml"
-if [ -f "$YAZI_THEME" ]; then
-    sed -i "s/^dark = .*/dark = \"catppuccin-${FLAVOR}\"/" "$YAZI_THEME"
-fi
+# 5-6. Starship & Yazi — handled by chezmoi apply in step 14
 
 # 7. Eza
 EZA_THEME_SRC="$HOME/.config/eza/theme-${MODE}.yml"
@@ -126,17 +116,8 @@ if pgrep -xi hyprland &>/dev/null; then
         hyprctl keyword general:col.inactive_border "rgba(7287fd4d)" 2>/dev/null || true
     fi
 elif pgrep -xi niri &>/dev/null; then
-    NIRI_CONF="$HOME/.config/niri/config.kdl"
-    if [ -f "$NIRI_CONF" ]; then
-        if [ "$MODE" = "dark" ]; then
-            sed -i '/border {/,/}/ s/active-gradient from="[^"]*" to="[^"]*"/active-gradient from="#ff64ff80" to="#9696ffff"/' "$NIRI_CONF"
-            sed -i '/border {/,/}/ s/inactive-color "[^"]*"/inactive-color "#6464ff4d"/' "$NIRI_CONF"
-        else
-            sed -i '/border {/,/}/ s/active-gradient from="[^"]*" to="[^"]*"/active-gradient from="#8839efcc" to="#1e66f5cc"/' "$NIRI_CONF"
-            sed -i '/border {/,/}/ s/inactive-color "[^"]*"/inactive-color "#7287fd4d"/' "$NIRI_CONF"
-        fi
-        niri msg action load-config-file 2>/dev/null || true
-    fi
+    # Niri border colors handled by chezmoi apply in step 14; just reload
+    niri msg action load-config-file 2>/dev/null || true
 fi
 
 # 13. Neovim
@@ -148,15 +129,15 @@ for addr in /run/user/$(id -u)/nvim.*.0 /tmp/nvim.*/0; do
     nvim --server "$addr" --remote-send "<Cmd>lua local c = require('catppuccin'); c.options.flavour = '${FLAVOR}'; c.compile(); vim.cmd.colorscheme('catppuccin')<CR>" 2>/dev/null || true
 done
 
-# 14. Delta (git diff) — swap theme feature while preserving other features
-if command -v git &>/dev/null; then
-    CURRENT_FEATURES=$(git config --global --get delta.features 2>/dev/null || true)
-    if [ "$MODE" = "dark" ]; then
-        NEW_FEATURES=$(echo "$CURRENT_FEATURES" | sed 's/catppuccin-latte/catppuccin-mocha/')
-    else
-        NEW_FEATURES=$(echo "$CURRENT_FEATURES" | sed 's/catppuccin-mocha/catppuccin-latte/')
-    fi
-    git config --global delta.features "$NEW_FEATURES" 2>/dev/null || true
+# 14. Apply chezmoi for all dark_mode-templated config files
+if command -v chezmoi &>/dev/null; then
+    chezmoi apply \
+        ~/.gitconfig \
+        ~/.config/gh-dash/config.yml \
+        ~/.config/starship.toml \
+        ~/.config/yazi/theme.toml \
+        ~/.config/niri/config.kdl \
+        2>/dev/null || true
 fi
 
 # 15. Waybar restart (skipped when called from installer)
