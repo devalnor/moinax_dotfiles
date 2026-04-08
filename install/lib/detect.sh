@@ -114,6 +114,7 @@ get_nvidia_driver_version() {
 }
 
 # Check if the NVIDIA driver supports kernel suspend notifiers (driver 595+).
+# See the version-dependent suspend comment in setup_nvidia() (installer.sh) for implications.
 # Returns 0 if supported, 1 otherwise (including when version is undetectable — safe fallback).
 nvidia_has_kernel_suspend_notifiers() {
     local major

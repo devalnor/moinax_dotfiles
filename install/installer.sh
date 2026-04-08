@@ -1348,6 +1348,7 @@ apply_dark_mode_defaults() {
 }
 
 # Remove legacy NVIDIA systemd suspend services that conflict with kernel suspend notifiers (driver 595+).
+# See the version-dependent suspend comment in setup_nvidia() for why these must be disabled.
 # Idempotent: safe to call even when the services were never installed.
 cleanup_legacy_nvidia_suspend_services() {
     # Disable the NVIDIA oneshot services (do NOT use --now; they are oneshot/not running)
@@ -1502,13 +1503,17 @@ setup_nvidia() {
     print_info "NVIDIA driver version detected: ${nvidia_major}"
 
     # --- Version-dependent suspend mechanism ---
+    # IMPORTANT: Driver 595+ uses kernel suspend notifiers (NVreg_UseKernelSuspendNotifiers=1)
+    # which handle the entire GPU suspend/resume lifecycle natively. The old systemd services
+    # (nvidia-suspend/resume/hibernate) and compositor STOP/CONT services MUST NOT be enabled
+    # on 595+ — they interfere with the kernel notifier mechanism and cause NVIDIA GSP heartbeat
+    # timeouts on resume (black screen, POST code "01"). This was verified empirically: enabling
+    # compositor STOP/CONT services on 595+ causes display loss on second resume cycle.
+    # Driver <595 still needs the systemd service approach and compositor STOP/CONT services.
     if [ "$nvidia_major" != "unknown" ] && [ "$nvidia_major" -ge 595 ] 2>/dev/null; then
-        # Driver 595+: kernel suspend notifiers handle suspend/resume natively.
-        # The old systemd service approach conflicts and must be disabled.
         print_info "Driver ${nvidia_major}+ uses kernel suspend notifiers — skipping systemd services"
         cleanup_legacy_nvidia_suspend_services
     else
-        # Driver <595: use the classic systemd service approach
         print_info "Driver ${nvidia_major} requires systemd suspend services"
 
         # Enable NVIDIA suspend/resume/hibernate services for GPU memory preservation
@@ -1525,16 +1530,15 @@ setup_nvidia() {
                 fi
             fi
         done
-    fi
 
-    # Install compositor STOP/CONT services to prevent GPU command race during suspend/resume.
-    # This is needed for ALL driver versions: kernel suspend notifiers (595+) handle VRAM
-    # preservation, but the compositor can still issue GPU commands during the transition window.
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
-        install_compositor_suspend_services "Hyprland" "hyprland"
-    fi
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
-        install_compositor_suspend_services "niri" "niri"
+        # Install compositor STOP/CONT services to prevent deadlock during GPU suspend.
+        # ONLY for <595 — do NOT move outside the else branch (see comment above).
+        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+            install_compositor_suspend_services "Hyprland" "hyprland"
+        fi
+        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+            install_compositor_suspend_services "niri" "niri"
+        fi
     fi
 
     # --- Common configuration (required regardless of driver version) ---
@@ -1562,6 +1566,18 @@ setup_nvidia() {
 
     # Configure GRUB kernel parameters for NVIDIA + proper suspend
     configure_nvidia_kernel_params
+
+    # Blacklist spd5118 DDR5 temp sensor — causes cascading resume failures.
+    # The module enters a broken state after the first successful resume (error -6 / ENXIO),
+    # then poisons subsequent resume cycles causing NVIDIA GSP heartbeat timeouts (no display).
+    # First resume works, second resume fails. Do NOT remove this blacklist.
+    if ! grep -rqs 'blacklist spd5118' /etc/modprobe.d/; then
+        print_info "Blacklisting spd5118 module (DDR5 temp sensor — causes S3 resume failures)..."
+        echo "blacklist spd5118" | sudo tee /etc/modprobe.d/blacklist-spd5118.conf > /dev/null
+        print_success "spd5118 module blacklisted"
+    else
+        print_success "spd5118 module already blacklisted"
+    fi
 
     print_success "NVIDIA GPU setup complete"
 }
