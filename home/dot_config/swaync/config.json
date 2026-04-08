@@ -57,7 +57,8 @@
     },
     "claude-code": {
       "state": "transient",
-      "app-name": "Claude Code"
+      "app-name": "kitty",
+      "summary": "Claude Code"
     }
   },
   "widgets": [
