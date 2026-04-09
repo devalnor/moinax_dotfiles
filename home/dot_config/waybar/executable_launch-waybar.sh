@@ -15,6 +15,10 @@ else
     fi
 fi
 
+# Ensure kded6 loads the StatusNotifierWatcher module (required for tray on standalone WMs)
+dbus-send --session --print-reply --dest=org.kde.kded6 /kded \
+    org.kde.kded6.loadModule string:statusnotifierwatcher >/dev/null 2>&1 || true
+
 # Launch Waybar with compositor-specific config
 CONFIG_FILE="$HOME/.config/waybar/config-${COMPOSITOR}"
 
