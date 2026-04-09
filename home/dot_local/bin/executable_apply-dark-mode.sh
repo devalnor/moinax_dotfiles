@@ -48,18 +48,39 @@ else
     GNOME_SCHEME='prefer-light'
 fi
 
+# Derive GTK values once
+GTK_DARK_PREF=$( [ "$MODE" = "dark" ] && echo "true" || echo "false" )
+GTK_THEME_NAME=$( [ "$MODE" = "dark" ] && echo "Breeze-Dark" || echo "Breeze" )
+
 # 3a. GTK/GNOME portal backend — monitors dconf
 if command -v gsettings &>/dev/null; then
     gsettings set org.gnome.desktop.interface color-scheme "$GNOME_SCHEME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME_NAME" 2>/dev/null || true
 elif command -v dconf &>/dev/null; then
     dconf write /org/gnome/desktop/interface/color-scheme "'$GNOME_SCHEME'" 2>/dev/null || true
 fi
 
-# 3b. KDE portal backend — monitors kdeglobals
+# 3b. GTK settings.ini — some GTK apps read this directly instead of the portal
+for GTK_DIR in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
+    GTK_INI="$GTK_DIR/settings.ini"
+    if [ -f "$GTK_INI" ]; then
+        sed -i -e "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=$GTK_DARK_PREF/" \
+               -e "s/^gtk-theme-name=.*/gtk-theme-name=$GTK_THEME_NAME/" "$GTK_INI"
+    fi
+done
+
+# 3c. KDE portal backend + GTK color regeneration
+# kded6's gtkconfig module only regenerates ~/.config/gtk-{3,4}.0/colors.css when
+# the scheme actually changes. Bounce to the opposite scheme first so the final
+# apply is always detected as a change, even if the target scheme is already active.
 if command -v plasma-apply-colorscheme &>/dev/null; then
+    gdbus call --session --dest=org.kde.kded6 --object-path /kded \
+        --method org.kde.kded6.loadModule "gtkconfig" 2>/dev/null || true
     if [ "$MODE" = "dark" ]; then
+        plasma-apply-colorscheme BreezeLight 2>/dev/null || true
         plasma-apply-colorscheme BreezeDark 2>/dev/null || true
     else
+        plasma-apply-colorscheme BreezeDark 2>/dev/null || true
         plasma-apply-colorscheme BreezeLight 2>/dev/null || true
     fi
 fi
