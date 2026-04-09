@@ -46,6 +46,10 @@ descriptions:
   xhost: X server access control (Fedora)
   inotify-tools: File system event monitor
   cmatrix: Terminal matrix rain animation
+  xdg-desktop-portal-kde: KDE portal backend (color-scheme, file chooser, etc.)
+  xdg-desktop-portal-hyprland: Hyprland portal backend (screenshot, screencast)
+  kde-gtk-config: KDE GTK sync bridge for GTK/GSettings compatibility
+  kde-config-gtk-style: KDE GTK sync bridge for GTK/GSettings compatibility (Debian)
 
 packages:
   arch:
@@ -88,6 +92,11 @@ packages:
     
     # Idle inhibitor (caffeine mode)
     - python-pywayland
+
+    # XDG Desktop Portal
+    - xdg-desktop-portal-kde
+    - xdg-desktop-portal-hyprland
+    - kde-gtk-config
 
     # Other Wayland tools
     - inotify-tools
@@ -134,6 +143,11 @@ packages:
     # Idle inhibitor (caffeine mode)
     - python3-pywayland
 
+    # XDG Desktop Portal
+    - xdg-desktop-portal-kde
+    - xdg-desktop-portal-hyprland
+    - kde-gtk-config
+
     # Other tools
     - inotify-tools
     - cmatrix
@@ -176,6 +190,11 @@ packages:
 
     # Idle inhibitor (caffeine mode)
     - python3-pywayland
+
+    # XDG Desktop Portal
+    - xdg-desktop-portal-kde
+    - kde-config-gtk-style
+    # xdg-desktop-portal-hyprland may not be in apt — install from source if needed
 
     # Other tools
     - inotify-tools

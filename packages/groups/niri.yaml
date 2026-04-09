@@ -49,6 +49,10 @@ descriptions:
   network-manager-applet: NetworkManager tray applet
   nm-connection-editor: NetworkManager connection editor
   plasma-nm: KDE network management widget
+  xdg-desktop-portal-kde: KDE portal backend (color-scheme, file chooser, etc.)
+  xdg-desktop-portal-hyprland: Hyprland portal backend (screenshot, screencast)
+  kde-gtk-config: KDE GTK sync bridge for GTK/GSettings compatibility
+  kde-config-gtk-style: KDE GTK sync bridge for GTK/GSettings compatibility (Debian)
 
 packages:
   arch:
@@ -99,6 +103,11 @@ packages:
     # Other Wayland tools
     - inotify-tools
     - cmatrix
+
+    # XDG Desktop Portal
+    - xdg-desktop-portal-kde
+    - xdg-desktop-portal-hyprland
+    - kde-gtk-config
 
     # Network management
     - networkmanager
@@ -155,6 +164,11 @@ packages:
     - inotify-tools
     - cmatrix
 
+    # XDG Desktop Portal
+    - xdg-desktop-portal-kde
+    - xdg-desktop-portal-hyprland
+    - kde-gtk-config
+
     # Network management
     - NetworkManager
     - network-manager-applet
@@ -200,6 +214,11 @@ packages:
     # Other tools
     - inotify-tools
     - cmatrix
+
+    # XDG Desktop Portal
+    - xdg-desktop-portal-kde
+    - kde-config-gtk-style
+    # xdg-desktop-portal-hyprland may not be in apt — install from source if needed
 
     # Network management
     # network-manager-gnome provides nm-applet, the only standalone NM tray applet on Debian.

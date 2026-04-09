@@ -27,6 +27,8 @@ LICENSE
 .config/swayidle
 .config/swayidle/**
 .local/bin/swayidle-resume-reset.sh
+{{- end }}
+{{- if and (not .install_hyprland) (not .install_niri) }}
 .config/xdg-desktop-portal
 .config/xdg-desktop-portal/**
 {{- end }}
