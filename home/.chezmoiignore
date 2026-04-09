@@ -26,6 +26,7 @@ LICENSE
 .config/niri/**
 .config/swayidle
 .config/swayidle/**
+.local/bin/swayidle-resume-reset.sh
 .config/xdg-desktop-portal
 .config/xdg-desktop-portal/**
 {{- end }}

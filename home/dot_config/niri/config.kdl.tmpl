@@ -144,6 +144,7 @@ environment {
 
 spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.config/waybar/launch-waybar.sh"
 spawn-at-startup "swayidle" "-w"
+spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.local/bin/swayidle-resume-reset.sh"
 spawn-at-startup "swaybg" "-m" "fill" "-i" "{{ .chezmoi.homeDir }}/Wallpapers/colorful.jpg"
 spawn-at-startup "swaync"
 {{ if eq .chezmoi.osRelease.id "fedora" -}}
