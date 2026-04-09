@@ -38,8 +38,7 @@ descriptions:
   cliphist: Clipboard history manager
   wl-clipboard: Wayland clipboard utilities
   wtype: Wayland keyboard input simulator
-  nwg-look: GTK theme configurator
-  pavucontrol: PulseAudio volume control GUI
+  pavucontrol-qt: PulseAudio volume control GUI (Qt)
   blueman: Bluetooth device manager
   bluez-utils: Bluetooth utilities (Arch)
   bluez: Bluetooth protocol stack (Fedora)
@@ -78,12 +77,9 @@ packages:
     - extra/cliphist
     - extra/wl-clipboard
     - wtype
-    
-    # GTK theming
-    - nwg-look
-    
+
     # Audio control
-    - pavucontrol
+    - pavucontrol-qt
     - blueman
     - bluez-utils
     
@@ -127,11 +123,8 @@ packages:
     - wl-clipboard
     - wtype
 
-    # GTK theming
-    - nwg-look
-
     # Audio control
-    - pavucontrol
+    - pavucontrol-qt
     - blueman
     - bluez
 
@@ -174,7 +167,7 @@ packages:
     - cliphist
 
     # Audio control
-    - pavucontrol
+    - pavucontrol-qt
     - blueman
     - bluez
 
@@ -188,7 +181,7 @@ packages:
     - inotify-tools
     - cmatrix
 
-    # Note: hyprpicker, hyprshot, wlogout, wtype, nwg-look
+    # Note: hyprpicker, hyprshot, wlogout, wtype
     # may not be in apt — install via binary or build from source
 
   fedora_copr:

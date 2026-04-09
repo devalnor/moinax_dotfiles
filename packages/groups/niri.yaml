@@ -37,9 +37,8 @@ descriptions:
   swayidle: Idle management daemon
   python-pywayland: Python Wayland bindings (idle inhibitor for caffeine mode)
   swaybg: Wallpaper setter for Wayland
-  nwg-look: GTK theme configurator
   polkit-kde-agent: Polkit authentication agent
-  pavucontrol: PulseAudio volume control GUI
+  pavucontrol-qt: PulseAudio volume control GUI (Qt)
   blueman: Bluetooth device manager
   bluez-utils: Bluetooth utilities (Arch)
   bluez: Bluetooth protocol stack (Fedora)
@@ -86,14 +85,11 @@ packages:
     # Wallpaper
     - swaybg
 
-    # GTK theming
-    - nwg-look
-
     # Polkit agent
     - polkit-kde-agent
 
     # Audio control
-    - pavucontrol
+    - pavucontrol-qt
     - blueman
     - bluez-utils
 
@@ -144,14 +140,11 @@ packages:
     # Wallpaper
     - swaybg
 
-    # GTK theming
-    - nwg-look
-
     # Polkit agent
     - polkit-kde
 
     # Audio control
-    - pavucontrol
+    - pavucontrol-qt
     - blueman
     - bluez
 
@@ -197,7 +190,7 @@ packages:
     - swaybg
 
     # Audio control
-    - pavucontrol
+    - pavucontrol-qt
     - blueman
     - bluez
 

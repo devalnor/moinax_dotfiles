@@ -45,7 +45,7 @@ packages:
     - imagemagick
     - gimp
     - inkscape
-    - pavucontrol
+    - pavucontrol-qt
 
   fedora_repos:
     # RPM Fusion for codecs
