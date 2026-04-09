@@ -31,6 +31,8 @@ descriptions:
   zen-browser: Zen Browser (Fedora / Debian)
   google-chrome: Google Chrome web browser (Arch AUR)
   google-chrome-stable: Google Chrome web browser (Fedora)
+  dropbox: Dropbox cloud file sync (Arch AUR)
+  nautilus-dropbox: Dropbox cloud file sync (Fedora / Debian/Ubuntu)
   p7zip: 7-Zip archive tool
   unrar: RAR archive extractor
   unzip: ZIP archive extractor
@@ -59,6 +61,9 @@ packages:
     # Web browsers
     - zen-browser-bin  # AUR
     - google-chrome  # AUR
+
+    # Cloud sync
+    - dropbox  # AUR
 
     # Archive tools
     - p7zip
@@ -89,6 +94,9 @@ packages:
     - zen-browser
     - google-chrome-stable
 
+    # Cloud sync
+    - nautilus-dropbox
+
     # Archive tools
     - p7zip
     - unrar
@@ -114,6 +122,9 @@ packages:
 
     # Web browsers (Google Chrome requires repo — added by setup_productivity_repos)
     - google-chrome-stable
+
+    # Cloud sync
+    - nautilus-dropbox
 
     # Archive tools
     - p7zip-full
