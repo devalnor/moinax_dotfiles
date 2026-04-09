@@ -61,7 +61,6 @@ fi
 export EDITOR="nvim"
 export VISUAL="cursor"
 
-{{- if ne .chezmoi.osRelease.id "fedora" }}
 # Replace ls by eza
 if command -v eza &> /dev/null; then
   alias ls="eza --icons --group-directories-first"
@@ -69,7 +68,6 @@ if command -v eza &> /dev/null; then
   alias lsa="eza --icons --group-directories-first -la --git"
   alias lt="eza --icons --group-directories-first --tree --level=2"
 fi
-{{- end }}
 # Add shortcuts to nvim
 alias vim="nvim"
 alias vi="nvim"

@@ -44,7 +44,7 @@ descriptions:
   bluez-utils: Bluetooth utilities (Arch)
   bluez: Bluetooth protocol stack (Fedora)
   xorg-xhost: X server access control (Arch)
-  xorg-x11-server-utils: X server utilities (Fedora)
+  xhost: X server access control (Fedora)
   inotify-tools: File system event monitor
   cmatrix: Terminal matrix rain animation
 
@@ -136,7 +136,7 @@ packages:
     - bluez
 
     # X compatibility
-    - xorg-x11-server-utils
+    - xhost
 
     # Idle inhibitor (caffeine mode)
     - python3-pywayland

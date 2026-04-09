@@ -22,12 +22,14 @@ services:
 descriptions:
   neovim: Hyperextensible text editor
   cursor-bin: AI-powered code editor (Arch AUR)
+  cursor: AI-powered code editor
   git: Distributed version control system
   github-cli: GitHub CLI (Arch)
   gh: GitHub CLI (Fedora)
   lazygit: Terminal UI for git
   git-delta: Syntax-highlighting diff pager
   docker: Container runtime engine
+  moby-engine: Docker engine (Fedora's open-source build of Docker)
   docker-compose: Multi-container orchestration
   lazydocker: Terminal UI for Docker
   cmake: Cross-platform build system generator
@@ -46,6 +48,7 @@ descriptions:
 
 desktop_only:
   - cursor-bin
+  - cursor
 
 # Tools installed via custom commands (not available in package managers).
 # These appear in the package selector alongside distro packages.
@@ -59,8 +62,13 @@ custom_install:
     check: gh extension list 2>/dev/null | grep -q dlvhdr/gh-dash
     install: gh extension install dlvhdr/gh-dash
     requires: gh
+  - name: cursor
+    check: cursor
+    install: bash "$DOTFILES_DIR/tools/install-cursor.sh"
+    distro_skip:
+      - arch
   - name: worktrunk
-    check: wt
+    check: command -v wt || test -f "$HOME/.cargo/bin/wt"
     install: curl -fsSL https://github.com/max-sixty/worktrunk/releases/latest/download/worktrunk-installer.sh | sh
     distro_skip:
       - arch
@@ -99,15 +107,15 @@ packages:
   fedora:
     # Editors
     - neovim
-    
+
     # Git tools
     - git
     - gh
     - lazygit
     - git-delta
-    
+
     # Containers
-    - docker
+    - moby-engine  # Fedora's Docker engine (same codebase as docker-ce)
     - docker-compose
     # Note: lazydocker is not in dnf — installed via binary in common tools
 

@@ -96,15 +96,24 @@ update_chezmoi_flag() {
 # Outputs one package name per line.
 get_group_packages() {
     local file="$1"
-    local all_packages desktop_only_list
+    local all_packages=""
 
-    all_packages=$(parse_packages "$file" "$DISTRO_FAMILY")
+    local distro_pkgs custom_pkgs
+    distro_pkgs=$(parse_packages "$file" "$DISTRO_FAMILY")
+    custom_pkgs=$(parse_custom_install_names "$file" "$DISTRO_FAMILY")
+
+    # Combine distro and custom_install packages
+    [ -n "$distro_pkgs" ] && all_packages+="$distro_pkgs"$'\n'
+    [ -n "$custom_pkgs" ] && all_packages+="$custom_pkgs"$'\n'
+    all_packages=$(echo -n "$all_packages" | grep -v "^$" || true)
+
     if [ -z "$all_packages" ]; then
         return
     fi
 
     # Filter desktop_only packages when in terminal mode
     if is_terminal_install; then
+        local desktop_only_list
         desktop_only_list=$(parse_desktop_only "$file")
         if [ -n "$desktop_only_list" ]; then
             local filtered=""
@@ -113,7 +122,7 @@ get_group_packages() {
                     filtered+="${pkg}"$'\n'
                 fi
             done <<< "$all_packages"
-            echo -n "$filtered" | grep -v "^$"
+            echo "$filtered" | grep -v "^$"
             return
         fi
     fi
@@ -164,9 +173,29 @@ normalize_package_name_for_system() {
     fi
 }
 
+# Check if a custom_install entry is installed using its check command.
+# Returns 0 if installed, 1 otherwise. Returns 1 if not a custom_install package.
+is_custom_install_pkg() {
+    local file="$1" pkg="$2"
+    local names
+    names=$(parse_custom_install_names "$file" "$DISTRO_FAMILY" 2>/dev/null)
+    echo "$names" | grep -qxF "$pkg"
+}
+
+is_custom_install_installed() {
+    local file="$1" pkg="$2"
+    local check_cmd
+    check_cmd=$(parse_custom_install_check "$file" "$pkg")
+    [ -n "$check_cmd" ] && eval "$check_cmd" 2>/dev/null
+}
+
 is_group_package_installed() {
-    local pkg="$1"
-    is_package_installed "$(normalize_package_name_for_system "$pkg")"
+    local pkg="$1" file="${2:-}"
+    if [ -n "$file" ] && is_custom_install_pkg "$file" "$pkg"; then
+        is_custom_install_installed "$file" "$pkg"
+    else
+        is_package_installed "$(normalize_package_name_for_system "$pkg")"
+    fi
 }
 
 # ── Group selection ──────────────────────────────────────────────────────────
@@ -187,7 +216,7 @@ choose_group() {
         while IFS= read -r pkg; do
             [ -z "$pkg" ] && continue
             total=$((total + 1))
-            if is_group_package_installed "$pkg"; then
+            if is_group_package_installed "$pkg" "$file"; then
                 installed=$((installed + 1))
             fi
         done < <(get_group_packages "$file")
@@ -233,7 +262,7 @@ show_add() {
     local pkg
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if ! is_group_package_installed "$pkg"; then
+        if ! is_group_package_installed "$pkg" "$file"; then
             available+=("$(format_package "$pkg")")
         fi
     done < <(get_group_packages "$file")
@@ -272,13 +301,42 @@ show_add() {
 
     setup_group_repos "$file" "$group_id"
 
-    install_packages "${to_install[@]}"
+    # Separate distro packages from custom_install packages
+    local distro_packages=()
+    local custom_packages=()
+    for pkg in "${to_install[@]}"; do
+        if is_custom_install_pkg "$file" "$pkg"; then
+            custom_packages+=("$pkg")
+        else
+            distro_packages+=("$pkg")
+        fi
+    done
+
+    if [ ${#distro_packages[@]} -gt 0 ]; then
+        install_packages "${distro_packages[@]}"
+    fi
+
+    # Install custom_install packages via their own commands
+    for pkg in "${custom_packages[@]}"; do
+        local install_cmd requires_cmd
+        install_cmd=$(parse_custom_install_cmd "$file" "$pkg")
+        requires_cmd=$(parse_custom_install_requires "$file" "$pkg")
+
+        if [ -n "$requires_cmd" ] && ! command_exists "$requires_cmd"; then
+            print_warning "$requires_cmd not found — skipping $pkg"
+            continue
+        fi
+
+        if [ -n "$install_cmd" ]; then
+            install_curl_tool "$pkg" "$install_cmd" || print_warning "Failed to install $pkg"
+        fi
+    done
 
     # Check if all group packages are now installed
     local all_installed=true
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if ! is_group_package_installed "$pkg"; then
+        if ! is_group_package_installed "$pkg" "$file"; then
             all_installed=false
             break
         fi
@@ -340,7 +398,7 @@ show_remove() {
     local pkg
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if is_group_package_installed "$pkg"; then
+        if is_group_package_installed "$pkg" "$file"; then
             removable+=("$(format_package "$pkg")")
         fi
     done < <(get_group_packages "$file")
@@ -370,25 +428,41 @@ show_remove() {
         to_remove+=("$(extract_package_name "$line")")
     done <<< "$selected"
 
-    local remove_args=()
+    # Separate distro packages from custom_install packages
+    local distro_to_remove=()
+    local custom_to_remove=()
     for pkg in "${to_remove[@]}"; do
+        if is_custom_install_pkg "$file" "$pkg"; then
+            custom_to_remove+=("$pkg")
+        else
+            distro_to_remove+=("$pkg")
+        fi
+    done
+
+    local remove_args=()
+    for pkg in "${distro_to_remove[@]}"; do
         remove_args+=("$(normalize_package_name_for_system "$pkg")")
     done
 
     echo ""
     print_warning "Will remove: ${to_remove[*]}"
+    if [ ${#custom_to_remove[@]} -gt 0 ]; then
+        print_warning "Custom packages (${custom_to_remove[*]}) must be removed manually"
+    fi
     if ! gum confirm "Proceed with removal?"; then
         echo "Cancelled."
         return
     fi
 
-    remove_packages "${remove_args[@]}"
+    if [ ${#remove_args[@]} -gt 0 ]; then
+        remove_packages "${remove_args[@]}"
+    fi
 
     # Check if any group packages remain installed
     local any_installed=false
     while IFS= read -r pkg; do
         [ -z "$pkg" ] && continue
-        if is_group_package_installed "$pkg"; then
+        if is_group_package_installed "$pkg" "$file"; then
             any_installed=true
             break
         fi

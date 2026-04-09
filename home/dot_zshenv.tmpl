@@ -17,6 +17,9 @@ esac
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 
+# Cargo (worktrunk, etc.)
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
 # Lazy docker, zoxide, ...
 export PATH="$HOME/.local/bin:$PATH"
 {{- if or .install_hyprland .install_niri }}
