@@ -4,10 +4,9 @@
 # Usage: apply-dark-mode.sh [dark|light]
 # If no argument given, reads from state file (defaults to dark)
 #
-# Design: KDE is the canonical source of truth for dark/light mode.
-# plasma-apply-colorscheme updates KDE state and kded6 gtkconfig keeps GTK
-# compatibility in sync where the distro's KDE stack supports it. This script
-# only manages repo-local theme files in addition to the KDE scheme switch.
+# Design: KDE/Qt is the canonical source of truth for dark/light mode.
+# plasma-apply-colorscheme updates the system appearance, and this script only
+# manages repo-local theme files in addition to that KDE scheme switch.
 
 STATE_FILE="$HOME/.local/share/dark-light-mode"
 
@@ -24,8 +23,6 @@ if [ "$MODE" != "dark" ] && [ "$MODE" != "light" ]; then
 fi
 
 FLAVOR=$( [ "$MODE" = "dark" ] && echo "mocha" || echo "latte" )
-GTK_DARK_PREF=$( [ "$MODE" = "dark" ] && echo "true" || echo "false" )
-GTK_THEME_NAME=$( [ "$MODE" = "dark" ] && echo "Breeze-Dark" || echo "Breeze" )
 # ---------- State ----------
 
 mkdir -p "$(dirname "$STATE_FILE")"
@@ -43,22 +40,8 @@ fi
 # ---------- KDE color scheme ----------
 KDE_SCHEME=$( [ "$MODE" = "dark" ] && echo "BreezeDark" || echo "BreezeLight" )
 if command -v plasma-apply-colorscheme &>/dev/null; then
-    gdbus call --session --dest=org.kde.kded6 --object-path /kded \
-        --method org.kde.kded6.loadModule "gtkconfig" 2>/dev/null || true
     plasma-apply-colorscheme "$KDE_SCHEME" 2>/dev/null || true
 fi
-
-# ---------- GTK/dconf compatibility ----------
-# Managed by kde-gtk-config / kded6 gtkconfig instead of repo-side gsettings.
-
-# ---------- GTK settings.ini ----------
-for GTK_DIR in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
-    GTK_INI="$GTK_DIR/settings.ini"
-    if [ -f "$GTK_INI" ]; then
-        sed -i -e "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=$GTK_DARK_PREF/" \
-               -e "s/^gtk-theme-name=.*/gtk-theme-name=$GTK_THEME_NAME/" "$GTK_INI"
-    fi
-done
 
 # ---------- Kitty ----------
 KITTY_THEME_SRC="$HOME/.config/kitty/themes/${MODE}.conf"

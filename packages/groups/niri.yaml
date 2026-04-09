@@ -51,8 +51,6 @@ descriptions:
   plasma-nm: KDE network management widget
   xdg-desktop-portal-kde: KDE portal backend (color-scheme, file chooser, etc.)
   xdg-desktop-portal-hyprland: Hyprland portal backend (screenshot, screencast)
-  kde-gtk-config: KDE GTK sync bridge for GTK/GSettings compatibility
-  kde-config-gtk-style: KDE GTK sync bridge for GTK/GSettings compatibility (Debian)
 
 packages:
   arch:
@@ -107,7 +105,6 @@ packages:
     # XDG Desktop Portal
     - xdg-desktop-portal-kde
     - xdg-desktop-portal-hyprland
-    - kde-gtk-config
 
     # Network management
     - networkmanager
@@ -167,7 +164,6 @@ packages:
     # XDG Desktop Portal
     - xdg-desktop-portal-kde
     - xdg-desktop-portal-hyprland
-    - kde-gtk-config
 
     # Network management
     - NetworkManager
@@ -217,7 +213,6 @@ packages:
 
     # XDG Desktop Portal
     - xdg-desktop-portal-kde
-    - kde-config-gtk-style
     # xdg-desktop-portal-hyprland may not be in apt — install from source if needed
 
     # Network management

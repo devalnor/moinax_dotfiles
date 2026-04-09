@@ -1,18 +1,18 @@
-# Dark/Light Mode Toggle — Findings, Decision, and Current State
+# Dark/Light Mode Toggle — Findings and Current Direction
 
 ## Problem
 
-After switching the portal default from `gtk` to `kde` (to reduce GNOME dependencies), the dark/light mode toggle broke for Chrome PWAs (WhatsApp, Facebook) and Slack. This document captures all findings from extensive debugging.
+After switching the portal default from `gtk` to `kde` (to reduce GNOME dependencies), the dark/light mode toggle initially looked broken in Chrome PWAs and Slack. Further testing on the current Fedora + Niri + KDE machine showed that Chrome works correctly when its appearance backend is set to `QT`, while Slack remains unreliable. This document captures the findings and the simplified direction.
 
 ## Decision
 
-The repo should treat KDE as the primary source of truth for appearance:
+The repo should now treat KDE/Qt as the only supported source of truth for appearance:
 
 - `plasma-apply-colorscheme` is the canonical dark/light switch
 - `xdg-desktop-portal-kde` is the primary Settings portal backend
-- KDE's GTK integration (`kde-gtk-config`, `kded6` `gtkconfig`) is the compatibility layer for GTK/GSettings consumers
+- Chromium-based apps should use the `QT` appearance setting when available
 
-This is the preferred direction because the portal API is the Linux standard for dark/light preference, while Chromium on Linux still appears to depend partly on GTK/GSettings behavior in practice. The right fix is therefore to keep KDE in charge and ensure the distro ships the KDE GTK sync component, not to keep repo-side `gsettings` writes or permanently route Settings through the GTK portal.
+This is the preferred direction because the KDE/Qt path is the one that actually works cleanly on the current Fedora Niri machine. Chasing GTK/GSettings compatibility made the setup more complex without fixing Slack reliably.
 
 ## Current Setup
 
@@ -32,7 +32,7 @@ org.freedesktop.impl.portal.RemoteDesktop=hyprland
 - Without this, xdg-desktop-portal-kde can't determine dark/light from `QApplication::palette()`
 
 ### Script (`~/.local/bin/apply-dark-mode.sh`)
-Runs `plasma-apply-colorscheme`, updates GTK `settings.ini`, and applies repo-managed theme files. No repo-side `gsettings`/`dconf` writes.
+Runs `plasma-apply-colorscheme` and applies repo-managed theme files. It no longer manages GTK `settings.ini`, `gsettings`, or `dconf`.
 
 ## App Detection Mechanisms (Confirmed by Testing)
 
@@ -40,31 +40,30 @@ Runs `plasma-apply-colorscheme`, updates GTK `settings.ini`, and applies repo-ma
 |-----|------|------------------------|---------------|
 | **Kitty** | Native terminal | Own theme files + SIGUSR1 | Always works, independent |
 | **Zen browser** | Firefox-based | Portal `SettingChanged` D-Bus signal | `org.freedesktop.appearance color-scheme` from portal |
-| **Slack content** | Electron (bundled Chromium) | GtkSettings in-memory | Updated by kded6 gtkconfig from kdeglobals |
+| **Slack content** | Electron (bundled Chromium) | Unreliable in this setup | Not considered a target for system-level theme sync anymore |
 | **Slack top bar** | Electron native frame | Unknown (inverted) | Cosmetic bug — shows opposite of content |
-| **Chrome PWAs** | Google Chrome "Use GTK" | KDE GTK sync / GSettings compatibility path | In practice appears to depend on GTK/GSettings state as much as portal state |
+| **Chrome / Chrome PWAs** | Chromium-based | Chrome Appearance backend | `QT` works correctly on the current Fedora Niri KDE machine |
 
 ### Chrome appearance setting
-Chrome must be set to **"Use GTK"** in `chrome://settings/appearance` for it to follow system theme at all. "Chrome Colors" ignores system theme entirely.
+Chrome should be set to **`QT`** in `chrome://settings/appearance` on KDE-backed tiling sessions. `GTK` was the source of the earlier confusion on this machine. "Chrome Colors" ignores the system theme entirely.
 
-## What kded6 gtkconfig Does and Doesn't Do
+## Historical GTK Findings
 
-When `plasma-apply-colorscheme` changes `~/.config/kdeglobals`:
+Earlier debugging established the following when trying to make GTK-dependent apps behave:
 
-| Action | Does it? |
-|--------|----------|
-| Update GtkSettings in-memory (D-Bus) | **Yes** — Slack content responds |
-| Write dconf `color-scheme` | **Yes** — `'prefer-dark'` / `'prefer-light'` |
-| Write dconf `gtk-theme` | **No** — stays stale at previous value |
-| Regenerate `~/.config/gtk-{3,4}.0/colors.css` | Yes (when it detects a change) |
+- KDE GTK integration could update some runtime GTK state
+- It did not provide a clean, reliable fix for Slack
+- Manual `gsettings` writes created races and regressions
+- None of that complexity was needed once Chrome was switched to `QT`
 
-## The Core Problem
+## Current Supported Model
 
-Chrome PWAs with "Use GTK" read `dconf gtk-theme` to determine dark/light mode. kded6 gtkconfig does NOT update this key. After toggling:
-- `dconf color-scheme` = `'prefer-light'` (correct, updated by kded6)
-- `dconf gtk-theme` = `'Breeze-Dark'` (WRONG, stale from previous state)
-
-Chrome sees `Breeze-Dark` in `gtk-theme` and shows dark mode even when everything else is light.
+The supported setup is now:
+- KDE portal for `org.freedesktop.appearance color-scheme`
+- `plasma-apply-colorscheme` for system theme switching
+- `QT_QPA_PLATFORMTHEME=kde` for KDE-backed services
+- Chrome configured to `QT`
+- No attempt to keep Slack or generic GTK theme consumers perfectly synchronized
 
 ## What We Tried and Results
 
@@ -77,8 +76,8 @@ Chrome sees `Breeze-Dark` in `gtk-theme` and shows dark mode even when everythin
 ### 3. Unloading gtkconfig, writing gsettings ourselves, reloading gtkconfig
 **Result**: Broke Chrome PWAs. Chrome relies on gtkconfig being loaded for GtkSettings change notifications.
 
-### 4. No gsettings writes at all (current state)
-**Result**: Best so far. Everything works EXCEPT Chrome PWAs (stuck on stale `gtk-theme`).
+### 4. No gsettings writes at all
+**Result**: Better baseline than any manual GTK override.
 
 ### 5. The bounce trick (apply opposite scheme then target)
 **Result**: Was the original cause of the race condition. kded6 fires async dconf write for the WRONG (opposite) value. Removed.
@@ -86,21 +85,24 @@ Chrome sees `Breeze-Dark` in `gtk-theme` and shows dark mode even when everythin
 ### 6. kwriteconfig6 to force ColorScheme key in kdeglobals
 **Result**: When placed before `plasma-apply-colorscheme`, it makes the command think the scheme is "already set" and skip the work. When placed after, it triggers a second round of kded6 processing. Neither works well.
 
+### 7. Switching Chrome appearance from `GTK` to `QT`
+**Result**: Solved Chrome theming on the current Fedora + Niri + KDE machine.
+
 ## What Works Right Now
 
-With no repo-side `gsettings` writes:
+With the simplified KDE/Qt setup:
 - Kitty: works (own mechanism)
 - Zen browser: works (portal SettingChanged from portal backend)
-- Slack content: works (kded6 gtkconfig → GtkSettings in-memory)
-- Slack top bar: inverted (Electron cosmetic bug, not fixable from system side)
-- Chrome PWAs: depend on whether the distro's KDE GTK sync updates GSettings correctly
+- Chrome / Chrome PWAs: work when Chrome appearance is set to `QT`
+- Slack: not reliable enough to justify extra theme-sync machinery
 
 ## Current Best Practice Direction
 
 1. Keep KDE portal as the default Settings backend.
-2. Keep `kde-gtk-config` (or Debian's `kde-config-gtk-style`) installed on KDE-backed tiling sessions.
-3. Avoid repo-managed `gsettings` writes for `gtk-theme` or `color-scheme`.
-4. Treat Chromium discrepancies as distro/version-specific KDE GTK sync issues first, not as a reason to move Settings back to the GTK portal.
+2. Keep `QT_QPA_PLATFORMTHEME=kde`.
+3. Avoid repo-managed GTK, `gsettings`, or `dconf` theme synchronization.
+4. Treat Chrome `QT` as the supported browser configuration on KDE-backed tiling sessions.
+5. Do not optimize the system theme model around Slack.
 
 ## Historical Problem Statement
 
