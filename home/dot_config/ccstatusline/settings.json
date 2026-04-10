@@ -13,9 +13,8 @@
     ],
     [
       { "id": "6", "type": "git-root-dir", "color": "hex:1E1E2E", "backgroundColor": "hex:F9E2AF" },
-      { "id": "7", "type": "git-worktree", "color": "hex:1E1E2E", "backgroundColor": "hex:A6E3A1" },
-      { "id": "8", "type": "git-branch", "color": "hex:1E1E2E", "backgroundColor": "hex:74C7EC" },
-      { "id": "9", "type": "git-changes", "color": "hex:1E1E2E", "backgroundColor": "hex:B4BEFE" }
+      { "id": "8", "type": "git-branch", "color": "hex:1E1E2E", "backgroundColor": "hex:A6E3A1" },
+      { "id": "9", "type": "git-changes", "color": "hex:1E1E2E", "backgroundColor": "hex:74C7EC" }
     ]
   ],
   "flexMode": "full-minus-40",
