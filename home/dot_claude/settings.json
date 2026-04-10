@@ -31,8 +31,9 @@
       }
     }
   },
+  "effortLevel": "medium",
+  "skipAutoPermissionPrompt": true,
   "permissions": {
     "defaultMode": "auto"
-  },
-  "effortLevel": "high"
+  }
 }
