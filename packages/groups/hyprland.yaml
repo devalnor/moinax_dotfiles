@@ -10,6 +10,7 @@ dotfiles:
   - dot_config/waybar
   - dot_config/rofi
   - dot_config/swaync
+  - dot_config/swayosd
   - dot_config/wlogout
   - dot_local/share/rofi
 
@@ -27,6 +28,7 @@ descriptions:
   hyprpicker: Color picker for Hyprland
   polkit-kde-agent: Polkit authentication agent (KDE)
   hyprshot: Screenshot tool for Hyprland
+  swayosd: On-screen display for volume, brightness and caps-lock
   python-pywayland: Python Wayland bindings (idle inhibitor for caffeine mode)
   waybar: Highly customizable status bar
   rofi-wayland: Application launcher (Wayland fork)
@@ -84,7 +86,10 @@ packages:
     - pavucontrol-qt
     - blueman
     - bluez-utils
-    
+
+    # On-screen display (volume, brightness, caps-lock)
+    - swayosd
+
     # X compatibility
     - xorg-xhost
     
@@ -134,6 +139,9 @@ packages:
     - blueman
     - bluez
 
+    # On-screen display (volume, brightness, caps-lock)
+    - swayosd
+
     # X compatibility
     - xhost
 
@@ -181,6 +189,9 @@ packages:
     - blueman
     - bluez
 
+    # On-screen display (volume, brightness, caps-lock)
+    - swayosd
+
     # X compatibility
     - x11-xserver-utils
 
@@ -200,3 +211,4 @@ packages:
 
   fedora_copr:
     - solopasha/hyprland  # For hyprshot (not in official repos)
+    - mecattaf/swayosd    # On-screen display for volume, brightness, caps-lock

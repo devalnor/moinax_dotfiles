@@ -123,9 +123,12 @@ bind = SUPER, PRINT, exec, hyprshot -m window # Screenshot a window
 bind = SUPER SHIFT, PRINT, exec, hyprshot -m region # Screenshot a region
 
 # ── 13. Media & Volume ───────────────────────────────────────────
-bind = , XF86AudioRaiseVolume, exec, ~/.local/bin/volume-control.sh up 5%
-bind = , XF86AudioLowerVolume, exec, ~/.local/bin/volume-control.sh down 5%
-bind = , XF86AudioMute, exec, ~/.local/bin/volume-control.sh mute
+bind = , XF86AudioRaiseVolume, exec, swayosd-client --output-volume raise
+bind = , XF86AudioLowerVolume, exec, swayosd-client --output-volume lower
+bind = , XF86AudioMute, exec, swayosd-client --output-volume mute-toggle
+bind = , XF86AudioMicMute, exec, swayosd-client --input-volume mute-toggle
+binde = , XF86MonBrightnessUp, exec, swayosd-client --brightness raise
+binde = , XF86MonBrightnessDown, exec, swayosd-client --brightness lower
 
 # ── 14. Session & System ─────────────────────────────────────────
 bind = SUPER, N, exec, ~/.local/bin/toggle-dark-mode.sh # Toggle dark/light mode

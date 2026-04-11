@@ -1710,6 +1710,11 @@ enable_selected_services() {
         add_user_to_group "docker"
     fi
 
+    # Add user to input group for swayosd caps-lock detection (Hyprland/Niri)
+    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+        add_user_to_group "input"
+    fi
+
     # Set tailscale operator and authenticate if development is selected and tailscale is installed
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]] && command -v tailscale &>/dev/null; then
         print_info "Setting Tailscale operator to $USER"

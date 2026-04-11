@@ -65,6 +65,16 @@ if [ -f "$SWAYNC_SRC" ]; then
     fi
 fi
 
+# ---------- SwayOSD ----------
+SWAYOSD_SRC="$HOME/.config/swayosd/style-${MODE}.css"
+if [ -f "$SWAYOSD_SRC" ]; then
+    cp "$SWAYOSD_SRC" "$HOME/.config/swayosd/style.css"
+    if pgrep -x swayosd-server &>/dev/null; then
+        pkill -x swayosd-server 2>/dev/null || true
+        swayosd-server -s "$HOME/.config/swayosd/style.css" &disown
+    fi
+fi
+
 # ---------- Rofi ----------
 ROFI_SRC="$HOME/.local/share/rofi/themes/moinax-${MODE}.rasi"
 if [ -f "$ROFI_SRC" ]; then

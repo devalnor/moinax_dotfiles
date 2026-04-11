@@ -10,6 +10,7 @@ dotfiles:
   - dot_config/waybar
   - dot_config/rofi
   - dot_config/swaync
+  - dot_config/swayosd
   - dot_config/wlogout
   - dot_local/share/rofi
 
@@ -33,6 +34,7 @@ descriptions:
   cliphist: Clipboard history manager
   wl-clipboard: Wayland clipboard utilities
   wtype: Wayland keyboard input simulator
+  swayosd: On-screen display for volume, brightness and caps-lock
   hyprlock: Screen locker
   swayidle: Idle management daemon
   python-pywayland: Python Wayland bindings (idle inhibitor for caffeine mode)
@@ -95,6 +97,9 @@ packages:
     - blueman
     - bluez-utils
 
+    # On-screen display (volume, brightness, caps-lock)
+    - swayosd
+
     # Idle inhibitor (caffeine mode)
     - python-pywayland
 
@@ -154,6 +159,9 @@ packages:
     - blueman
     - bluez
 
+    # On-screen display (volume, brightness, caps-lock)
+    - swayosd
+
     # Idle inhibitor (caffeine mode)
     - python3-pywayland
 
@@ -204,6 +212,9 @@ packages:
     - blueman
     - bluez
 
+    # On-screen display (volume, brightness, caps-lock)
+    - swayosd
+
     # Idle inhibitor (caffeine mode)
     - python3-pywayland
 
@@ -221,5 +232,8 @@ packages:
     - network-manager
     - network-manager-gnome
     - nm-connection-editor
+
+  fedora_copr:
+    - mecattaf/swayosd    # On-screen display for volume, brightness, caps-lock
 
   # Note: SwayNotificationCenter is in official Fedora repos — no COPR needed

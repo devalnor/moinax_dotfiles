@@ -194,16 +194,16 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Volume up | `XF86AudioRaiseVolume` | `XF86AudioRaiseVolume` | Hyprland: custom script; Niri: wpctl |
-| Volume down | `XF86AudioLowerVolume` | `XF86AudioLowerVolume` | Hyprland: custom script; Niri: wpctl |
-| Mute toggle | `XF86AudioMute` | `XF86AudioMute` | Hyprland: custom script; Niri: wpctl |
-| Mic mute | — | `XF86AudioMicMute` | Niri only |
+| Volume up | `XF86AudioRaiseVolume` | `XF86AudioRaiseVolume` | swayosd-client OSD |
+| Volume down | `XF86AudioLowerVolume` | `XF86AudioLowerVolume` | swayosd-client OSD |
+| Mute toggle | `XF86AudioMute` | `XF86AudioMute` | swayosd-client OSD |
+| Mic mute | `XF86AudioMicMute` | `XF86AudioMicMute` | swayosd-client OSD |
 | Play / Pause | — | `XF86AudioPlay` | Niri only (playerctl) |
 | Stop | — | `XF86AudioStop` | Niri only (playerctl) |
 | Previous track | — | `XF86AudioPrev` | Niri only (playerctl) |
 | Next track | — | `XF86AudioNext` | Niri only (playerctl) |
-| Brightness up | — | `XF86MonBrightnessUp` | Niri only (brightnessctl) |
-| Brightness down | — | `XF86MonBrightnessDown` | Niri only (brightnessctl) |
+| Brightness up | `XF86MonBrightnessUp` | `XF86MonBrightnessUp` | swayosd-client OSD |
+| Brightness down | `XF86MonBrightnessDown` | `XF86MonBrightnessDown` | swayosd-client OSD |
 
 ## 14. Session & System
 
