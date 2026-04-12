@@ -6,11 +6,12 @@ tools:
     description: Smarter cd command
     install: curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 
-  - name: volta
-    description: JavaScript toolchain manager
-    install: curl -fsSL https://get.volta.sh | bash
+  - name: fnm
+    description: Fast Node.js version manager
+    install: curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
     post_install:
-      - volta install node npm yarn@1 pnpm
+      - fnm install --lts
+      - npm install -g yarn@1 pnpm
 
   - name: eza
     description: Modern replacement for ls

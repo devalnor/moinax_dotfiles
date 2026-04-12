@@ -88,10 +88,15 @@ alias dash="gh dash"
 alias big="sudo du -sh *(D) | sort -rh | head -n 10"
 
 # PATH configurations are now in ~/.zshenv (sourced for all shells)
-# This ensures VS Code and other tools can find pnpm, volta, etc.
+# This ensures VS Code and other tools can find pnpm, fnm, etc.
 
 # Pnpm completion (keep in .zshrc as it's interactive-only)
 [[ -f ~/completion-for-pnpm.bash ]] && source ~/completion-for-pnpm.bash
+
+# fnm completion
+if command -v fnm &> /dev/null; then
+  eval "$(fnm completions --shell zsh)"
+fi
 
 
 # Set up television for terminal keybindings (CTRL+T file picker, CTRL+R history search)

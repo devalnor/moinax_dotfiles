@@ -1,11 +1,6 @@
 # This file is sourced for all zsh shells (interactive and non-interactive)
 # Perfect for PATH configuration needed by VS Code and other tools
 
-# AppImages export ARGV0 pointing to the .AppImage path. This leaks into
-# child processes and breaks tools like Volta whose shims use argv[0] to
-# detect which command was invoked.
-[[ -n "$APPIMAGE" ]] && unset ARGV0
-
 # Pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
@@ -13,9 +8,12 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
-# Volta (Node.js version manager)
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
+# fnm (Node.js version manager)
+export FNM_PATH="$HOME/.local/share/fnm"
+if [[ -d "$FNM_PATH" ]]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env --use-on-cd --shell zsh)"
+fi
 
 # Cargo (worktrunk, etc.)
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"

@@ -47,7 +47,7 @@ chezmoi edit ~/.zshrc           # edit a managed file (writes back to source)
 ### Package definitions (`packages/`)
 YAML files define packages per distro. Groups (`packages/groups/`) are selectable during install: `hyprland`, `niri`, `development`, `gaming`, `multimedia`, `productivity`.
 
-- `packages/common.yaml` — cross-distro tools installed via custom methods (zoxide, volta, etc.)
+- `packages/common.yaml` — cross-distro tools installed via custom methods (zoxide, fnm, etc.)
 - `packages/{arch,fedora,debian}/base.yaml` — distro base packages
 
 ### Chezmoi source directory (`home/`)

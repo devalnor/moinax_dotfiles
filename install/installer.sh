@@ -884,20 +884,22 @@ install_common_tools() {
         print_info "zoxide is already installed"
     fi
     
-    # Install Volta
-    if ! command_exists volta; then
-        install_curl_tool "Volta" "curl -fsSL https://get.volta.sh | bash"
-        # Source volta for this session
-        export VOLTA_HOME="$HOME/.volta"
-        export PATH="$VOLTA_HOME/bin:$PATH"
-        
-        # Install Node.js toolchain
-        if command_exists volta; then
-            print_info "Installing Node.js and package managers..."
-            volta install node npm yarn@1 pnpm || track_warning "Failed to install Node.js tools"
+    # Install fnm
+    if ! command_exists fnm; then
+        install_curl_tool "fnm" "curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell"
+        # Source fnm for this session
+        eval "$(fnm env --use-on-cd --shell bash)"
+
+        # Install Node.js LTS and global packages
+        if command_exists fnm; then
+            print_info "Installing Node.js LTS via fnm..."
+            fnm install --lts || track_warning "Failed to install Node.js LTS"
+            fnm default lts-latest
+            print_info "Installing global npm packages..."
+            npm install -g yarn@1 pnpm || track_warning "Failed to install global npm packages"
         fi
     else
-        print_info "Volta is already installed"
+        print_info "fnm is already installed"
     fi
     
     # Tools below are packaged for Arch; install from upstream on other distros.

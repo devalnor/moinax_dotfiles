@@ -68,7 +68,7 @@ dotfiles/
 │       ├── services.sh      # Service management
 │       └── tree_select.py   # Interactive package selector TUI
 ├── packages/
-│   ├── common.yaml          # Cross-distro tools (zoxide, volta, etc.)
+│   ├── common.yaml          # Cross-distro tools (zoxide, fnm, etc.)
 │   ├── arch/
 │   │   └── base.yaml        # Arch base packages
 │   ├── fedora/
