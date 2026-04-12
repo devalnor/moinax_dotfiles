@@ -35,6 +35,9 @@ packages:
     # Terminal emulator
     - kitty
 
+    # GTK theme integration for KDE
+    - breeze-gtk
+
     # Desktop app containers
     - distrobox
     - podman

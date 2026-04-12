@@ -6,13 +6,7 @@
 {{-   $textEditor = "cursor.desktop" -}}
 {{- end -}}
 {{- $imageViewer := "org.kde.gwenview.desktop" -}}
-{{- if not (lookPath "gwenview") -}}
-{{-   $imageViewer = "org.gnome.Loupe.desktop" -}}
-{{- end -}}
 {{- $pdfViewer := "org.kde.okular.desktop" -}}
-{{- if not (lookPath "okular") -}}
-{{-   $pdfViewer = "org.gnome.Evince.desktop" -}}
-{{- end -}}
 {{- $browser := "google-chrome.desktop" -}}
 {{- if lookPath "zen-browser" -}}
 {{-   if stat (joinPath "/usr/share/applications" "zen.desktop") -}}

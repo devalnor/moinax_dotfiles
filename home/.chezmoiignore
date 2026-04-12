@@ -92,9 +92,5 @@ Wallpapers/**
 
 # Ignore Productivity configs if not selected
 {{- if not .install_productivity }}
-.icons
-.icons/**
-.themes
-.themes/**
 .local/share/applications/google-chrome.desktop
 {{- end }}
