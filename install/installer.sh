@@ -1786,11 +1786,12 @@ setup_sddm() {
     fi
 
     if [ -n "$theme" ] && [ -d "/usr/share/sddm/themes/$theme" ] && [ -f "$wallpaper" ]; then
-        print_info "Setting wallpaper on '$theme' theme..."
+        print_info "Setting wallpaper and font on '$theme' theme..."
         sudo cp "$wallpaper" "/usr/share/sddm/themes/$theme/wallpaper.jpg"
         sudo tee "/usr/share/sddm/themes/$theme/theme.conf.user" > /dev/null <<EOF
 [General]
 background=/usr/share/sddm/themes/$theme/wallpaper.jpg
+font="Noto Sans"
 EOF
     fi
 

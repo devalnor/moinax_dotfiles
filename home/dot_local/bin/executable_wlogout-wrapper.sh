@@ -18,7 +18,8 @@ LIST_H=400
 LR=$(( (W - LIST_W) / 2 ))
 TB=$(( (H - LIST_H) / 2 ))
 
-exec wlogout -b 1 -n -s \
+# Force dark GTK theme — Breeze (light) overrides wlogout's dark CSS otherwise
+exec env GTK_THEME=Breeze-Dark wlogout -b 1 -n -s \
     -L "$LR" -R "$LR" \
     -T "$TB" -B "$TB" \
     -r 8
