@@ -164,11 +164,6 @@ if command -v starship &> /dev/null; then
   eval "$(starship init zsh)"
 fi
 
-# Initialize zoxide (--cmd cd replaces cd/cdi with smart zoxide versions)
-if command -v zoxide &> /dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
-fi
-
 {{- if .install_development }}
 # Initialize WorkTrunk shell integration (directory switching for worktrees)
 if command -v wt &> /dev/null; then
@@ -294,6 +289,12 @@ for wt in json.loads(raw):
 
 alias wtu=wtupdate
 {{- end }}
+
+# Initialize zoxide (--cmd cd replaces cd/cdi with smart zoxide versions)
+# Must be last eval to avoid "possible configuration issue" warnings
+if command -v zoxide &> /dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
 
 # Source local overrides (not managed by chezmoi)
 # Installers (bun, cargo, etc.) can safely add lines to ~/.zshrc.local
