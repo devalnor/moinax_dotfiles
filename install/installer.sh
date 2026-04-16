@@ -1788,12 +1788,11 @@ setup_sddm() {
     fi
 
     if [ -n "$theme" ] && [ -d "/usr/share/sddm/themes/$theme" ] && [ -f "$wallpaper" ]; then
-        print_info "Setting wallpaper and font on '$theme' theme..."
+        print_info "Setting wallpaper on '$theme' theme..."
         sudo cp "$wallpaper" "/usr/share/sddm/themes/$theme/wallpaper.jpg"
         sudo tee "/usr/share/sddm/themes/$theme/theme.conf.user" > /dev/null <<EOF
 [General]
 background=/usr/share/sddm/themes/$theme/wallpaper.jpg
-font="Noto Sans"
 EOF
     fi
 
@@ -1811,6 +1810,7 @@ EOF
         sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
+Font="Noto Sans"
 EOF
     elif command_exists kwin_wayland; then
         sddm_compositor="kwin"
@@ -1843,6 +1843,7 @@ EOF
         sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
 Current=${theme:-breeze}
+Font="Noto Sans"
 EOF
     fi
 
