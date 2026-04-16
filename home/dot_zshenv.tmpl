@@ -15,8 +15,12 @@ if [[ -d "$FNM_PATH" ]]; then
   eval "$(fnm env --use-on-cd --shell zsh)"
 fi
 
-# Cargo (worktrunk, etc.)
+# Cargo (worktrunk, vibewatch, etc.)
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+case ":$PATH:" in
+  *":$HOME/.cargo/bin:"*) ;;
+  *) [[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH" ;;
+esac
 
 # Lazy docker, zoxide, ...
 export PATH="$HOME/.local/bin:$PATH"

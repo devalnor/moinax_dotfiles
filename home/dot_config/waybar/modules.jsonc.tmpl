@@ -236,6 +236,17 @@
     "format": "{}",
     "tooltip": true,
   },
+{{ if .install_ai }}
+  // AI agent monitor (vibewatch)
+  "custom/vibewatch": {
+    "exec": "~/.cargo/bin/vibewatch status",
+    "return-type": "json",
+    "interval": 2,
+    "on-click": "~/.cargo/bin/vibewatch toggle-panel",
+    "format": "{}",
+    "tooltip": true,
+  },
+{{ end }}
   // Notification center (SwayNC)
   "custom/notification": {
     "exec": "~/.local/bin/waybar-notification.sh",
