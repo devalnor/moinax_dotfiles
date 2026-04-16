@@ -15,10 +15,13 @@
         "~/.config/waybar/modules.jsonc"
     ],
     "modules-left": [
+        "hyprland/workspaces",
         "hyprland/window"
     ],
    "modules-center": [
-        "hyprland/workspaces"
+{{- if .install_ai }}
+        "custom/vibewatch"
+{{- end }}
     ],
     "modules-right": [
         "group/stats",
@@ -32,9 +35,6 @@
         "custom/tailscale",
         "tray",
         "clock",
-{{- if .install_ai }}
-        "custom/vibewatch",
-{{- end }}
         "custom/notification",
         "custom/exit"
     ]
