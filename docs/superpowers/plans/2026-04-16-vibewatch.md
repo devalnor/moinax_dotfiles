@@ -15,7 +15,7 @@
 ## File Structure
 
 ```
-~/projects/vibewatch/
+~/Projects/labs/vibewatch/
 ├── Cargo.toml
 ├── src/
 │   ├── main.rs                # CLI entry point (clap subcommands)
@@ -53,9 +53,9 @@
 ## Task 1: Project Scaffold + Core Types
 
 **Files:**
-- Create: `~/projects/vibewatch/Cargo.toml`
-- Create: `~/projects/vibewatch/src/main.rs`
-- Create: `~/projects/vibewatch/src/session.rs`
+- Create: `~/Projects/labs/vibewatch/Cargo.toml`
+- Create: `~/Projects/labs/vibewatch/src/main.rs`
+- Create: `~/Projects/labs/vibewatch/src/session.rs`
 
 - [ ] **Step 1: Create project directory and init git**
 
