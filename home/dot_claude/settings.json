@@ -31,8 +31,80 @@
       }
     }
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify session-start --agent claude-code",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify user-prompt-submit --agent claude-code",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify pre-tool-use --agent claude-code",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify post-tool-use --agent claude-code",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify permission-request --agent claude-code"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify stop --agent claude-code",
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
   "effortLevel": "medium",
-  "skipAutoPermissionPrompt": true,
   "permissions": {
     "defaultMode": "auto"
   }
