@@ -66,6 +66,15 @@
             "async": true
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.cargo/bin/vibewatch notify ask-user-question --agent claude-code"
+          }
+        ]
       }
     ],
     "PostToolUse": [
