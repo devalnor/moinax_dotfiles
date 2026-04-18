@@ -100,8 +100,8 @@ New top-level `clap` subcommand next to `daemon` / `status` / `toggle-panel` / `
 
 For each of these, the subcommand prints a copy-pasteable snippet with the destination file path:
 
-- **Hyprland autostart** — `exec-once = vibewatch daemon` (paste into `~/.config/hypr/…`).
-- **Niri autostart** — `spawn-at-startup "sh" "-c" "vibewatch daemon"` (paste into `~/.config/niri/config.kdl`).
+- **Hyprland autostart** — `exec-once = ~/.cargo/bin/vibewatch daemon` (paste into `~/.config/hypr/…`). Absolute path because `exec-once` runs outside the interactive-shell PATH.
+- **Niri autostart** — `spawn-at-startup "sh" "-c" "~/.cargo/bin/vibewatch daemon"` (paste into `~/.config/niri/config.kdl`). Same reason.
 - **Waybar layout** — "Add `\"custom/vibewatch\"` to your `modules-*` array and `@include` `~/.config/vibewatch/waybar-module.jsonc`."
 - **Hyprland click-focus tip (optional)** — recommend `cursor { no_warps = true }` + `input { mouse_refocus = false }` so widget-click-to-focus doesn't warp the cursor.
 
@@ -130,8 +130,8 @@ into `~/.claude/settings.json`.
 You'll still need to do three short steps by hand — `vibewatch install`
 prints copy-paste snippets for each:
 
-1. Add `exec-once = vibewatch daemon` (Hyprland) or the equivalent
-   `spawn-at-startup` line (Niri) to your compositor config.
+1. Add `exec-once = ~/.cargo/bin/vibewatch daemon` (Hyprland) or the
+   equivalent `spawn-at-startup` line (Niri) to your compositor config.
 2. Include `~/.config/vibewatch/waybar-module.jsonc` in your Waybar
    layout and add `"custom/vibewatch"` to your modules.
 3. (Optional) For cleanest widget-click-to-focus on Hyprland, add
@@ -178,8 +178,8 @@ Seeded in `~/.config/chezmoi/chezmoi.toml`. Two places set it:
 | `home/dot_config/waybar/modules.jsonc.tmpl` | Wrap the `"custom/vibewatch": { … }` block in `{{ if .install_vibewatch }} … {{ end }}`. |
 | `home/dot_config/waybar/config-hyprland.tmpl` | Gate the `"custom/vibewatch"` entry in `modules-center`. Watch trailing commas. |
 | `home/dot_config/waybar/config-niri.tmpl` | Same. |
-| `home/dot_config/hypr/conf/autostart.conf.tmpl` | `{{ if .install_vibewatch }}exec-once = vibewatch daemon{{ end }}`. Drop the hard-coded `~/.cargo/bin/` path — rely on PATH, which `dot_zshenv.tmpl` already sets. |
-| `home/dot_config/niri/config.kdl.tmpl` | `{{ if .install_vibewatch }}spawn-at-startup "sh" "-c" "vibewatch daemon"{{ end }}`. Drop the `~/.cargo/bin/` prefix. |
+| `home/dot_config/hypr/conf/autostart.conf.tmpl` | `{{ if .install_vibewatch }}exec-once = ~/.cargo/bin/vibewatch daemon{{ end }}`. Keep the explicit path — Hyprland `exec-once` runs outside the interactive shell's PATH. |
+| `home/dot_config/niri/config.kdl.tmpl` | `{{ if .install_vibewatch }}spawn-at-startup "sh" "-c" "~/.cargo/bin/vibewatch daemon"{{ end }}`. Same reason. |
 | `home/dot_claude/settings.json` | **Remove** the 6 vibewatch hook entries entirely. This file stops being vibewatch-aware; `vibewatch install` owns it. |
 
 ### 4. Templates that stay unconditional (not vibewatch's problem)
