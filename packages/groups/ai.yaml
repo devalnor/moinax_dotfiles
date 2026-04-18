@@ -12,6 +12,17 @@ descriptions:
   hyprvoice-bin: Speech-to-text dictation tool (Arch AUR)
   whisper.cpp: Local speech recognition engine (Arch)
   whisper-cpp: Local speech recognition engine (Fedora)
+  vibewatch: AI agent status bar & overlay for Hyprland/Niri (built from source via cargo)
+
+# Tools installed via custom commands (not available in package managers).
+# These appear in the package selector alongside distro packages.
+# Fields: name (display + selection key), check (command to test if installed),
+#         install (shell command to run), requires (dependency to check), distro_skip (list of distro families to skip)
+custom_install:
+  - name: vibewatch
+    check: command -v vibewatch || test -f "$HOME/.cargo/bin/vibewatch"
+    install: curl -fsSL https://raw.githubusercontent.com/Moinax/vibewatch/main/install.sh | sh
+    requires: cargo
 
 packages:
   arch:
