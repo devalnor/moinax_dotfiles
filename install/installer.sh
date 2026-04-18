@@ -1206,6 +1206,16 @@ setup_dotfiles() {
             ai) install_ai="true" ;;
         esac
     done
+
+    # vibewatch: on by default when the AI group is selected
+    local install_vibewatch="$install_ai"
+    # If the user customised the AI group's package list, check whether vibewatch was kept
+    if [ "${GROUP_PACKAGE_MODE[ai]:-all}" = "custom" ]; then
+        case " ${GROUP_CUSTOM_PACKAGE_LIST[ai]:-} " in
+            *" vibewatch "*) install_vibewatch="true" ;;
+            *) install_vibewatch="false" ;;
+        esac
+    fi
     
     cat > "$chezmoi_config" << EOF
 # Use this repo's home directory as chezmoi source (so 'chezmoi diff' etc. work without -S)
@@ -1220,6 +1230,7 @@ sourceDir = "$source_dir"
     install_multimedia = $install_multimedia
     install_productivity = $install_productivity
     install_ai = $install_ai
+    install_vibewatch = $install_vibewatch
     has_nvidia = $HAS_NVIDIA
     hyprvoice_model = "$HYPRVOICE_MODEL"
     hyprvoice_provider = "$HYPRVOICE_PROVIDER"
