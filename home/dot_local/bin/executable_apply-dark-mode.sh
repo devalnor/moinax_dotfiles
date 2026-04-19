@@ -43,6 +43,14 @@ if command -v plasma-apply-colorscheme &>/dev/null; then
     plasma-apply-colorscheme "$KDE_SCHEME" 2>/dev/null || true
 fi
 
+# ---------- GNOME color-scheme ----------
+# Keep gsettings in sync so GTK/GNOME-aware apps reading
+# org.gnome.desktop.interface color-scheme don't hold a stale value.
+GNOME_SCHEME=$( [ "$MODE" = "dark" ] && echo "prefer-dark" || echo "prefer-light" )
+if command -v gsettings &>/dev/null; then
+    gsettings set org.gnome.desktop.interface color-scheme "$GNOME_SCHEME" 2>/dev/null || true
+fi
+
 # ---------- Kitty ----------
 KITTY_THEME_SRC="$HOME/.config/kitty/themes/${MODE}.conf"
 if [ -f "$KITTY_THEME_SRC" ]; then
