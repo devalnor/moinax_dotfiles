@@ -237,11 +237,10 @@
     "tooltip": true,
   },
 {{ if .install_vibewatch }}
-  // AI agent monitor (vibewatch)
+  // AI agent monitor (vibewatch) — push-based continuous subscriber.
   "custom/vibewatch": {
-    "exec": "~/.cargo/bin/vibewatch status",
+    "exec": "~/.cargo/bin/vibewatch status --watch",
     "return-type": "json",
-    "interval": 2,
     "on-click": "~/.cargo/bin/vibewatch toggle-panel",
     "format": "{}",
     "tooltip": false,

@@ -133,3 +133,22 @@ tooltip label {
 #custom-notification.dnd-none {
   opacity: 0.5;
 }
+
+/* vibewatch — AI agent monitor
+ * Status word is colored inline via Pango markup from the daemon
+ * (Catppuccin Latte palette). Only the `.attention` background is
+ * styled here; idle/active text color inherits default. */
+#custom-vibewatch {
+  transition:
+    color 0.25s ease-in-out,
+    background 0.25s ease-in-out;
+}
+#custom-vibewatch.idle,
+#custom-vibewatch.active {
+  color: #4c4f69;
+}
+/* Attention: peach from Catppuccin Latte (matches panel waiting-approval) */
+#custom-vibewatch.attention {
+  color: #eff1f5;
+  background: rgba(254, 100, 11, 0.85);
+}
