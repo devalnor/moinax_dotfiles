@@ -1397,16 +1397,18 @@ cleanup_legacy_nvidia_suspend_services() {
     print_success "Legacy NVIDIA suspend services cleaned up"
 }
 
-# Install NVIDIA driver packages (Arch: open-dkms)
+# Install NVIDIA driver packages (Arch: prebuilt open modules for mainline + LTS)
+# Uses prebuilt (non-DKMS) modules for fast upgrades, plus linux-lts as a fallback
+# kernel with its matching nvidia-open-lts module package.
 _install_nvidia_drivers_arch() {
     local gaming_selected="$1"
-    local pkgs=(nvidia-open-dkms nvidia-utils nvidia-settings)
+    local pkgs=(linux-lts nvidia-open nvidia-open-lts nvidia-utils nvidia-settings)
 
     if [ "$gaming_selected" = "true" ]; then
         pkgs+=(lib32-nvidia-utils)
     fi
 
-    print_info "Installing NVIDIA open-dkms driver packages: ${pkgs[*]}"
+    print_info "Installing NVIDIA prebuilt driver packages (mainline + LTS): ${pkgs[*]}"
     install_packages "${pkgs[@]}" || track_warning "Some NVIDIA driver packages failed to install"
 }
 
