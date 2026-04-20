@@ -211,4 +211,4 @@ packages:
 
   fedora_copr:
     - solopasha/hyprland  # For hyprshot (not in official repos)
-    - mecattaf/swayosd    # On-screen display for volume, brightness, caps-lock
+    - erikreider/swayosd  # On-screen display for volume, brightness, caps-lock (upstream maintainer)

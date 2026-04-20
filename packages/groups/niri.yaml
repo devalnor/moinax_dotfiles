@@ -234,6 +234,6 @@ packages:
     - nm-connection-editor
 
   fedora_copr:
-    - mecattaf/swayosd    # On-screen display for volume, brightness, caps-lock
+    - erikreider/swayosd  # On-screen display for volume, brightness, caps-lock (upstream maintainer)
 
   # Note: SwayNotificationCenter is in official Fedora repos — no COPR needed

@@ -17,12 +17,22 @@ descriptions:
 # Tools installed via custom commands (not available in package managers).
 # These appear in the package selector alongside distro packages.
 # Fields: name (display + selection key), check (command to test if installed),
-#         install (shell command to run), requires (dependency to check), distro_skip (list of distro families to skip)
+#         install (shell command to run), requires (dependency command to check),
+#         requires_packages (map of distro family -> system packages to
+#         install before running `install`), distro_skip (list of distro
+#         families to skip)
 custom_install:
   - name: vibewatch
     check: command -v vibewatch || test -f "$HOME/.cargo/bin/vibewatch"
     install: curl -fsSL https://raw.githubusercontent.com/Moinax/vibewatch/main/install.sh | sh
     requires: cargo
+    # System prerequisites for `cargo install --git`: Rust toolchain +
+    # native libs for vibewatch's default features (panel=gtk4/libadwaita/
+    # gtk4-layer-shell, sound=alsa via rodio).
+    requires_packages:
+      arch: [rust, pkgconf, gtk4, libadwaita, gtk4-layer-shell, alsa-lib]
+      fedora: [rust, cargo, pkgconf-pkg-config, gtk4-devel, libadwaita-devel, gtk4-layer-shell-devel, alsa-lib-devel]
+      debian: [rustc, cargo, pkg-config, libgtk-4-dev, libadwaita-1-dev, libgtk4-layer-shell-dev, libasound2-dev]
 
 packages:
   arch:

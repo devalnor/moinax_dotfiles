@@ -53,7 +53,10 @@ desktop_only:
 # Tools installed via custom commands (not available in package managers).
 # These appear in the package selector alongside distro packages.
 # Fields: name (display + selection key), check (command to test if installed),
-#         install (shell command to run), distro_skip (list of distro families to skip)
+#         install (shell command to run), requires (dependency command to check),
+#         requires_packages (map of distro family -> system packages to
+#         install before running `install`), distro_skip (list of distro
+#         families to skip)
 custom_install:
   - name: claude-code
     check: claude

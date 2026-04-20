@@ -290,6 +290,74 @@ parse_custom_install_cmd() { _parse_custom_install_field "$1" "$2" "install"; }
 parse_custom_install_check() { _parse_custom_install_field "$1" "$2" "check"; }
 parse_custom_install_requires() { _parse_custom_install_field "$1" "$2" "requires"; }
 
+# Fallback parser for requires_packages (used when yq is unavailable).
+# Emits one package per line for the given distro family. Supports inline
+# list form only (e.g. `fedora: [rust, cargo]`) — which is what the yaml uses.
+_parse_custom_install_requires_packages_fallback() {
+    local file="$1" pkg_name="$2" family="$3"
+    local in_section=false
+    local found=false
+    local in_req_pkgs=false
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^custom_install:[[:space:]]*$ ]]; then
+            in_section=true
+            continue
+        fi
+        if $in_section; then
+            if [[ "$line" =~ ^[a-z] ]]; then
+                break
+            fi
+            if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*${pkg_name}[[:space:]]*$ ]]; then
+                found=true
+                in_req_pkgs=false
+                continue
+            fi
+            if $found && [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name: ]]; then
+                break
+            fi
+            if $found && [[ "$line" =~ ^[[:space:]]*requires_packages:[[:space:]]*$ ]]; then
+                in_req_pkgs=true
+                continue
+            fi
+            if $found && $in_req_pkgs; then
+                # Leaving the map when a line is not further indented under it.
+                if [[ "$line" =~ ^[[:space:]]{0,4}[a-zA-Z_]+: ]] && ! [[ "$line" =~ ^[[:space:]]{6,} ]]; then
+                    in_req_pkgs=false
+                    continue
+                fi
+                if [[ "$line" =~ ^[[:space:]]*${family}:[[:space:]]*\[(.+)\][[:space:]]*$ ]]; then
+                    local list="${BASH_REMATCH[1]}"
+                    # Split on comma, trim whitespace and quotes.
+                    local IFS=','
+                    for item in $list; do
+                        item="${item#"${item%%[![:space:]]*}"}"
+                        item="${item%"${item##*[![:space:]]}"}"
+                        item="${item%\"}"; item="${item#\"}"
+                        item="${item%\'}"; item="${item#\'}"
+                        [ -n "$item" ] && echo "$item"
+                    done
+                    return 0
+                fi
+            fi
+        fi
+    done < "$file"
+}
+
+# Get the packages to auto-install when a custom_install entry's `requires`
+# command is missing. Resolves DISTRO_FAMILY (arch|fedora|debian) and emits
+# one package per line; empty output if nothing is declared for this family.
+parse_custom_install_requires_packages() {
+    local file="$1" pkg_name="$2"
+    local family="${DISTRO_FAMILY:-}"
+    [ -z "$family" ] && return 0
+
+    if command_exists yq; then
+        yq -r "(.custom_install // [])[] | select(.name == \"$pkg_name\") | .requires_packages.$family // [] | .[]" "$file" 2>/dev/null
+    else
+        _parse_custom_install_requires_packages_fallback "$file" "$pkg_name" "$family"
+    fi
+}
+
 # Parse a nested list from the top-level packages: map in YAML.
 # Usage: parse_package_nested_list "file.yaml" "fedora_copr"
 parse_package_nested_list() {

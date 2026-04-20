@@ -805,12 +805,6 @@ install_group_packages() {
             local requires_cmd
             requires_cmd=$(parse_custom_install_requires "$group_file" "$pkg")
 
-            # Skip if a required command is missing
-            if [ -n "$requires_cmd" ] && ! command_exists "$requires_cmd"; then
-                print_info "$requires_cmd not found — skipping $pkg"
-                continue
-            fi
-
             # Check if already installed
             local already_installed=false
             if [ -n "$check_cmd" ]; then
@@ -821,7 +815,30 @@ install_group_packages() {
 
             if $already_installed; then
                 print_info "$pkg is already installed"
-            elif [ -n "$install_cmd" ]; then
+                continue
+            fi
+
+            # Install system prerequisites declared via requires_packages
+            # before running the custom install command.
+            local -a require_deps=()
+            while IFS= read -r dep; do
+                [ -n "$dep" ] && require_deps+=("$dep")
+            done < <(parse_custom_install_requires_packages "$group_file" "$pkg")
+
+            if [ ${#require_deps[@]} -gt 0 ]; then
+                print_info "Installing prerequisites for $pkg (${require_deps[*]})"
+                install_packages "${require_deps[@]}" \
+                    || track_warning "Failed to install prerequisites for $pkg"
+                hash -r 2>/dev/null || true
+            fi
+
+            # Skip if a hard-required command is still missing
+            if [ -n "$requires_cmd" ] && ! command_exists "$requires_cmd"; then
+                track_warning "$requires_cmd still unavailable — skipping $pkg"
+                continue
+            fi
+
+            if [ -n "$install_cmd" ]; then
                 install_curl_tool "$pkg" "$install_cmd" || track_warning "Failed to install $pkg"
             fi
         done
