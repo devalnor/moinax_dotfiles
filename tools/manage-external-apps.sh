@@ -140,12 +140,12 @@ pick_file_from_downloads() {
     local root=""
     root=$(default_picker_root)
 
-    # Build glob pattern based on mode
+    # Build glob pattern based on mode (case-insensitive to match e.g. .AppImage and .appimage)
     local -a patterns=()
     case "$mode" in
-        appimage) patterns=(-name '*.AppImage') ;;
-        package)  patterns=( \( -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar' -o -name '*.pkg.tar.*' \) ) ;;
-        all)      patterns=( \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar' -o -name '*.pkg.tar.*' \) ) ;;
+        appimage) patterns=(-iname '*.AppImage') ;;
+        package)  patterns=( \( -iname '*.deb' -o -iname '*.rpm' -o -iname '*.pkg.tar' -o -iname '*.pkg.tar.*' \) ) ;;
+        all)      patterns=( \( -iname '*.AppImage' -o -iname '*.deb' -o -iname '*.rpm' -o -iname '*.pkg.tar' -o -iname '*.pkg.tar.*' \) ) ;;
         *)        patterns=(-type f) ;;
     esac
 
@@ -181,15 +181,16 @@ pick_file_from_downloads() {
             continue
         fi
 
+        local selection_lower="${selection,,}"
         case "$mode" in
             appimage)
-                if [[ "$selection" != *.AppImage ]]; then
+                if [[ "$selection_lower" != *.appimage ]]; then
                     echo -e "${YELLOW}[WARNING]${NC} Please select a .AppImage file." >&2
                     continue
                 fi
                 ;;
             package)
-                if ! [[ "$selection" == *.deb || "$selection" == *.rpm || "$selection" == *.pkg.tar || "$selection" == *.pkg.tar.* ]]; then
+                if ! [[ "$selection_lower" == *.deb || "$selection_lower" == *.rpm || "$selection_lower" == *.pkg.tar || "$selection_lower" == *.pkg.tar.* ]]; then
                     echo -e "${YELLOW}[WARNING]${NC} Please select a .deb, .rpm, or .pkg.tar.* file." >&2
                     continue
                 fi
@@ -1054,8 +1055,9 @@ interactive_install_app() {
     local file_path=""
     file_path=$(pick_file_from_downloads "Pick an app to install" all) || return 0
 
-    case "$file_path" in
-        *.AppImage)
+    local file_lower="${file_path,,}"
+    case "$file_lower" in
+        *.appimage)
             interactive_import_appimage_with_file "$file_path"
             ;;
         *.deb|*.rpm|*.pkg.tar|*.pkg.tar.*)
