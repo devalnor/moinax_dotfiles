@@ -147,8 +147,10 @@ tooltip label {
 #custom-vibewatch.active {
   color: white;
 }
-/* Attention: peach from Catppuccin Mocha (matches panel waiting-approval) */
+/* Attention: same magenta/white treatment as workspaces.active,
+ * caffeine.activated, notification — state word + dot get their own
+ * Pango-colored accent (Catppuccin yellow) via the daemon. */
 #custom-vibewatch.attention {
-  color: #11111b;
-  background: rgba(250, 179, 135, 0.85);
+  color: white;
+  background: rgba(255, 100, 255, 0.5);
 }
