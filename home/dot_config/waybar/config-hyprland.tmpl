@@ -1,42 +1,57 @@
-{{- /* Waybar config for Hyprland compositor */ -}}
-[{
-    // "layer": "top", // Waybar at top layer
-
-    // "position": "bottom", // Waybar position (top|bottom|left|right)
-
-    //"height": 20, // Waybar height (to be removed for auto height)
-    // "width": 1280, // Waybar width
-
-    "spacing": 4, // Gaps between modules (4px)
-    // Choose the order of the modules
-
-    // Load Modules
+{{- /* Waybar config for Hyprland compositor — two bars: full and minimal */ -}}
+[
+  {
+    "name": "full",
+    "output": [],
+    "spacing": 4,
     "include": [
-        "~/.config/waybar/modules.jsonc"
+      "~/.config/waybar/modules.jsonc"
     ],
     "modules-left": [
-        "hyprland/workspaces",
-        "hyprland/window"
+      "hyprland/workspaces"
     ],
-   "modules-center": [
+    "modules-center": [
 {{- if .install_vibewatch }}
-        "custom/vibewatch"
+      "custom/vibewatch"
 {{- end }}
     ],
     "modules-right": [
-        "group/stats",
-        "mpd",
-        "pulseaudio",
-        "custom/headset-battery",
-        "battery",
-        "custom/keyboard-layout",
-        "custom/dark-mode",
-        "custom/caffeine",
-        "custom/tailscale",
-        "tray",
-        "clock",
-        "custom/notification",
-        "custom/exit"
+      "group/stats",
+      "mpd",
+      "pulseaudio",
+      "custom/headset-battery",
+      "battery",
+      "custom/keyboard-layout",
+      "custom/dark-mode",
+      "custom/caffeine",
+      "custom/tailscale",
+      "tray",
+      "clock",
+      "custom/notification",
+      "custom/exit"
+    ]
+  },
+  {
+    "name": "minimal",
+    "output": [],
+    "spacing": 4,
+    "include": [
+      "~/.config/waybar/modules.jsonc"
+    ],
+    "modules-left": [
+      "hyprland/workspaces"
+    ],
+    "modules-center": [
+{{- if .install_vibewatch }}
+      "custom/vibewatch"
+{{- end }}
+    ],
+    "modules-right": [
+      "battery",
+      "tray",
+      "clock",
+      "custom/notification",
+      "custom/exit"
     ]
   }
 ]
