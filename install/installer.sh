@@ -1765,6 +1765,71 @@ enable_selected_services() {
     print_success "Services enabled"
 }
 
+# Configure and enable ClamAV (conditional on security group).
+# ClamAV ships with a poison-pill `Example` line in its configs and a commented
+# LocalSocket; the daemon won't start until these are fixed. On Debian the
+# postinst handles it, but Arch/Fedora require the edits below. We then enable
+# the freshclam updater, wait for the signature DBs to populate, and start the
+# on-access scan daemon (needs DBs present to load).
+setup_clamav() {
+    if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " security " ]]; then
+        return 0
+    fi
+
+    if ! command_exists clamscan && ! command_exists freshclam; then
+        return 0
+    fi
+
+    print_header "Configuring ClamAV"
+
+    local freshclam_conf clamd_conf freshclam_svc clamd_svc
+    case "$DISTRO_FAMILY" in
+        arch|debian)
+            freshclam_conf=/etc/clamav/freshclam.conf
+            clamd_conf=/etc/clamav/clamd.conf
+            freshclam_svc=clamav-freshclam.service
+            clamd_svc=clamav-daemon.service
+            ;;
+        fedora)
+            freshclam_conf=/etc/freshclam.conf
+            clamd_conf=/etc/clamd.d/scan.conf
+            freshclam_svc=clamav-freshclam.service
+            clamd_svc=clamd@scan.service
+            ;;
+        *)
+            print_warning "ClamAV auto-config not implemented for $DISTRO_FAMILY — skipping"
+            return 0
+            ;;
+    esac
+
+    sudo sed -i '/^Example[[:space:]]*$/d' "$freshclam_conf" "$clamd_conf"
+    sudo sed -i '0,/^#[[:space:]]*LocalSocket[[:space:]]/s//LocalSocket /' "$clamd_conf"
+
+    # Apply tmpfiles.d so /run/clamd.scan (Fedora) / /run/clamav (Arch) exists
+    # before starting the daemon — otherwise it fails until first reboot.
+    sudo systemd-tmpfiles --create >/dev/null 2>&1 || true
+
+    # Start freshclam first — clamd needs main.cvd/daily.cvd to load.
+    enable_service "$freshclam_svc"
+
+    local dbs_glob='/var/lib/clamav/main.c?d'
+    if ! compgen -G "$dbs_glob" >/dev/null; then
+        print_info "Waiting for freshclam to download signature DBs (up to 180s)..."
+        local waited=0
+        while ! compgen -G "$dbs_glob" >/dev/null && (( waited < 180 )); do
+            sleep 5
+            (( waited += 5 ))
+        done
+        if compgen -G "$dbs_glob" >/dev/null; then
+            print_success "Signature DBs downloaded"
+        else
+            track_warning "ClamAV signature DBs not yet present — check: journalctl -u $freshclam_svc"
+        fi
+    fi
+
+    enable_service "$clamd_svc"
+}
+
 # Setup SSH key
 setup_ssh() {
     print_header "SSH Key Setup"
@@ -2468,6 +2533,7 @@ main() {
         apply_dark_mode_defaults
     fi
     enable_selected_services
+    setup_clamav
     configure_grub_saved_default
     setup_grub_theme
     setup_btrfs_snapshots
