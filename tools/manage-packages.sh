@@ -14,6 +14,8 @@ source "$DOTFILES_DIR/install/lib/common.sh"
 source "$DOTFILES_DIR/install/lib/detect.sh"
 source "$DOTFILES_DIR/install/lib/services.sh"
 
+install_interrupt_trap
+
 # Detect distro and source distro-specific functions
 DISTRO=$(detect_distro)
 DISTRO_FAMILY=$(get_distro_family "$DISTRO")

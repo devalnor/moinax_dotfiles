@@ -3,22 +3,18 @@
 set -e
 set -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+source "$REPO_DIR/install/lib/common.sh"
+
+install_interrupt_trap
+
 APPIMAGE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/AppImages"
 APP_DESKTOP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 APP_ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/external-apps"
 DISTROBOX_STATE_DIR="$STATE_DIR/distrobox"
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
-print_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-print_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 usage() {
     cat <<'EOF'
@@ -686,11 +682,11 @@ pick_exported_app_id_interactive() {
 
     if [ ${#candidates[@]} -gt 1 ]; then
         if command_exists gum; then
-            printf '%s\n' "${candidates[@]}" | gum choose --header "Pick the desktop entry to export"
+            printf '%s\n' "${candidates[@]}" | gum choose --header "Pick the desktop entry to export" || return 1
         else
-            prompt_with_default "Desktop entry id" "${candidates[0]}" "example.desktop" true
+            prompt_with_default "Desktop entry id" "${candidates[0]}" "example.desktop" true || return 1
         fi
-        return $?
+        return 0
     fi
 
     prompt_with_default "Desktop entry id" "" "example.desktop" true

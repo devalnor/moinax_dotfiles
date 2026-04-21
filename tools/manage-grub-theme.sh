@@ -10,6 +10,8 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_DIR/install/lib/common.sh"
 source "$REPO_DIR/install/lib/detect.sh"
 
+install_interrupt_trap
+
 GRUB_DEFAULT="/etc/default/grub"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/grub-themes"
 CLONE_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/grub-theme-repos"

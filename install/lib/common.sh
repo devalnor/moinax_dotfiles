@@ -33,6 +33,16 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Install a SIGINT/SIGTERM trap so Ctrl+C cleanly exits interactive scripts
+# even when gum (or any child) absorbs the signal first. Idempotent via an
+# exported marker: child processes inherit it and skip installing a second
+# trap, so Ctrl+C only prints one "Interrupted." line across the tree.
+install_interrupt_trap() {
+    [ -n "${_INTERRUPT_TRAP_OWNER:-}" ] && return 0
+    export _INTERRUPT_TRAP_OWNER=$$
+    trap 'echo; print_warning "Interrupted."; exit 130' INT TERM
+}
+
 print_header() {
     echo ""
     echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

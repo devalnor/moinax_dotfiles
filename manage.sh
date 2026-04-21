@@ -8,6 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/install/lib/common.sh"
 source "$SCRIPT_DIR/install/lib/detect.sh"
 
+install_interrupt_trap
+
 CHEZMOI_CONF="$HOME/.config/chezmoi/chezmoi.toml"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -42,7 +44,7 @@ external_apps_available() {
 # ── Actions ──────────────────────────────────────────────────────────────────
 
 do_setup() {
-    exec "$SCRIPT_DIR/tools/setup.sh"
+    "$SCRIPT_DIR/tools/setup.sh"
 }
 
 # Read a string value from chezmoi.toml [data] section
@@ -70,7 +72,7 @@ set_chezmoi_data() {
 do_whisper() {
     if ! command_exists hyprvoice; then
         print_error "hyprvoice is not installed"
-        exit 1
+        return 1
     fi
 
     local current_provider current_model
@@ -111,7 +113,7 @@ do_whisper() {
 
         if [ ${#models[@]} -eq 0 ]; then
             print_error "No whisper models found"
-            exit 1
+            return 1
         fi
 
         local cursor_arg=""
@@ -203,7 +205,7 @@ do_reconfig() {
     if [ ! -f "$CHEZMOI_CONF" ]; then
         print_error "chezmoi.toml not found at $CHEZMOI_CONF"
         print_info "Run the full installer first: ./manage.sh setup"
-        exit 1
+        return 1
     fi
 
     print_header "Reconfigure Chezmoi Data"
@@ -271,11 +273,11 @@ do_reconfig() {
 }
 
 do_cursor() {
-    exec "$SCRIPT_DIR/tools/manage-cursor-extensions.sh" "$@"
+    "$SCRIPT_DIR/tools/manage-cursor-extensions.sh" "$@"
 }
 
 do_packages() {
-    exec "$SCRIPT_DIR/tools/manage-packages.sh" "$@"
+    "$SCRIPT_DIR/tools/manage-packages.sh" "$@"
 }
 
 do_apps() {
@@ -290,11 +292,11 @@ do_apps() {
         return 1
     fi
 
-    exec "$SCRIPT_DIR/tools/manage-external-apps.sh" "$@"
+    "$SCRIPT_DIR/tools/manage-external-apps.sh" "$@"
 }
 
 do_grub_theme() {
-    exec "$SCRIPT_DIR/tools/manage-grub-theme.sh" "$@"
+    "$SCRIPT_DIR/tools/manage-grub-theme.sh" "$@"
 }
 
 do_lazy_lock() {
@@ -303,7 +305,7 @@ do_lazy_lock() {
 
     if [[ ! -f "$src" ]]; then
         print_error "No lazy-lock.json found at $src"
-        exit 1
+        return 1
     fi
 
     cp "$src" "$dest"
@@ -344,14 +346,16 @@ do_menu() {
         local choice
         choice=$(printf '%s\n' "${options[@]}" | gum choose --cursor.foreground="212" --header "What would you like to do?") || break
 
+        # A child tool returning non-zero (e.g. missing dependency, user
+        # cancelled inside it) must not kill the menu — swallow it here.
         case "$choice" in
-            "Manage packages")         do_packages ;;
-            "External apps")           do_apps ;;
-            "Cursor extensions")       do_cursor ;;
-            "Reconfigure flags")       do_reconfig ;;
-            "Update whisper model")    do_whisper ;;
-            "GRUB theme")              do_grub_theme ;;
-            "Full installer")          do_setup ;;
+            "Manage packages")         do_packages || true ;;
+            "External apps")           do_apps || true ;;
+            "Cursor extensions")       do_cursor || true ;;
+            "Reconfigure flags")       do_reconfig || true ;;
+            "Update whisper model")    do_whisper || true ;;
+            "GRUB theme")              do_grub_theme || true ;;
+            "Full installer")          do_setup || true ;;
             "Exit")                    break ;;
         esac
     done
