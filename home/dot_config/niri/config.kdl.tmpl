@@ -169,9 +169,6 @@ spawn-at-startup "sh" "-c" "~/.local/bin/apply-dark-mode.sh"
 {{ if .install_ai -}}
 spawn-at-startup "systemctl" "--user" "start" "hyprvoice.service"
 {{ end -}}
-{{ if .install_vibewatch -}}
-spawn-at-startup "sh" "-c" "~/.cargo/bin/vibewatch daemon"
-{{ end -}}
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 

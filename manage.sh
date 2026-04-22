@@ -59,13 +59,26 @@ do_update() {
     source "$SCRIPT_DIR/install/distros/${family}.sh"
     update_system
 
-    if command_exists vibewatch; then
-        print_info "Refreshing vibewatch from main..."
-        if curl -fsSL https://raw.githubusercontent.com/Moinax/vibewatch/main/install.sh | sh; then
-            print_success "vibewatch updated"
-        else
-            print_warning "vibewatch refresh failed (system update already applied)"
-        fi
+    if ! command_exists vibewatch; then
+        print_info "vibewatch not installed, skipping"
+        return 0
+    fi
+
+    local local_sha
+    if local_sha=$(bash "$SCRIPT_DIR/tools/vibewatch-check-current.sh" --print-sha); then
+        print_info "vibewatch already up to date (${local_sha:-unknown})"
+        return 0
+    fi
+
+    print_info "Refreshing vibewatch (from ${local_sha:-unknown})..."
+    if ! curl -fsSL https://raw.githubusercontent.com/Moinax/vibewatch/main/install.sh | sh; then
+        print_warning "vibewatch refresh failed (system update already applied)"
+        return 0
+    fi
+    print_success "vibewatch updated"
+
+    if systemctl --user restart vibewatch.service 2>/dev/null; then
+        print_success "vibewatch.service restarted"
     fi
 }
 

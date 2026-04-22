@@ -16,10 +16,6 @@ exec-once = wl-paste --type image --watch cliphist store # Stores only image dat
 # Start dictation daemon (via systemd --user so environment.d is loaded)
 exec-once = systemctl --user start hyprvoice.service
 {{- end }}
-{{- if .install_vibewatch }}
-# Start AI agent monitor
-exec-once = ~/.cargo/bin/vibewatch daemon
-{{- end }}
 # Restore dark/light mode
 exec-once = ~/.local/bin/apply-dark-mode.sh
 # Load hyprland plugins
