@@ -25,6 +25,7 @@ Commands:
   reconfig    Reconfigure chezmoi data flags
   whisper     Update whisper model for hyprvoice dictation
   setup       Run full installer (bootstrap + interactive setup)
+  update      Update system packages and refresh vibewatch from source
   grub-theme  Manage GRUB bootloader themes
   lazy-lock   Sync nvim lazy-lock.json back to dotfiles source
   help        Show this help message
@@ -45,6 +46,27 @@ external_apps_available() {
 
 do_setup() {
     "$SCRIPT_DIR/tools/setup.sh"
+}
+
+do_update() {
+    local family
+    family=$(get_distro_family "$(detect_distro)")
+    if [ "$family" = "unknown" ]; then
+        print_error "Unsupported distro, cannot update"
+        return 1
+    fi
+
+    source "$SCRIPT_DIR/install/distros/${family}.sh"
+    update_system
+
+    if command_exists vibewatch; then
+        print_info "Refreshing vibewatch from main..."
+        if curl -fsSL https://raw.githubusercontent.com/Moinax/vibewatch/main/install.sh | sh; then
+            print_success "vibewatch updated"
+        else
+            print_warning "vibewatch refresh failed (system update already applied)"
+        fi
+    fi
 }
 
 # Read a string value from chezmoi.toml [data] section
@@ -341,6 +363,7 @@ do_menu() {
             options+=("GRUB theme")
         fi
         options+=("Full installer")
+        options+=("Update system")
         options+=("Exit")
 
         local choice
@@ -356,6 +379,7 @@ do_menu() {
             "Update whisper model")    do_whisper || true ;;
             "GRUB theme")              do_grub_theme || true ;;
             "Full installer")          do_setup || true ;;
+            "Update system")           do_update || true ;;
             "Exit")                    break ;;
         esac
     done
@@ -365,6 +389,7 @@ do_menu() {
 
 case "${1:-}" in
     setup)      do_setup ;;
+    update)     do_update ;;
     whisper)    do_whisper ;;
     reconfig)   do_reconfig ;;
     packages)   shift; do_packages "$@" ;;
