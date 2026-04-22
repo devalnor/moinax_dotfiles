@@ -34,13 +34,13 @@ GEN_CONFIG="$CACHE_DIR/config-${COMPOSITOR}.json"
 # Inject per-bar outputs by matching each bar's "name" sentinel, then drop
 # bars that ended up with no assigned monitors. Fall back to the raw template
 # if jq fails or produces no bars (e.g. empty classifier output at autostart).
-if jq --argjson cls "$CLASS_JSON" '
+if jq -e --argjson cls "$CLASS_JSON" '
   map(
     if .name == "full"    then .output = $cls.wide
     elif .name == "minimal" then .output = $cls.narrow
     else . end
-  ) | map(select(.output | length > 0))
-' "$CONFIG_FILE" > "$GEN_CONFIG" && [ "$(wc -c < "$GEN_CONFIG")" -gt 2 ]; then
+  ) | map(select(.output | length > 0)) | if length > 0 then . else empty end
+' "$CONFIG_FILE" > "$GEN_CONFIG"; then
     exec waybar -c "$GEN_CONFIG"
 else
     exec waybar -c "$CONFIG_FILE"

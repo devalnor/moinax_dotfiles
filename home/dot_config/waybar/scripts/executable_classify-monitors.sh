@@ -16,16 +16,13 @@ case "$COMPOSITOR" in
         narrow: [$active[] | select((eff) <  1920) | .name] }'
     ;;
   niri)
+    # niri's `logical` rect is already post-scale and post-rotation, so we use
+    # it directly. `current_mode` is an integer index into `modes`, not an
+    # object — don't try to deref fields on it.
     niri msg -j outputs | jq -c '
-      [to_entries[] | select(.value.current_mode != null and .value.logical != null) | {
+      [to_entries[] | select(.value.logical != null) | {
         name: .key,
-        eff: (
-          .value.current_mode as $m |
-          .value.logical as $l |
-          (if (($l.transform // "normal") | tostring | test("90|270"))
-            then $m.height else $m.width end)
-          / (($l.scale // 1) | tonumber)
-        )
+        eff: .value.logical.width
       }] |
       { wide:   [.[] | select(.eff >= 1920) | .name],
         narrow: [.[] | select(.eff <  1920) | .name] }'
