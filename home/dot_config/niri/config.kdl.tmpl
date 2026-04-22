@@ -205,7 +205,7 @@ binds {
     Mod+Ctrl+Alt+C hotkey-overlay-title="Calculator: kcalc" { spawn "kcalc"; }
     Mod+Shift+P hotkey-overlay-title="Color Picker: hyprpicker" { spawn "hyprpicker"; }
     Mod+R hotkey-overlay-title="Theme Selector: rofi" { spawn "rofi-theme-selector"; }
-    Mod+M hotkey-overlay-title="Toggle Monitor Layout" { spawn-sh "~/.config/hypr/scripts/toggle-monitor-layout.sh"; }
+    Mod+M hotkey-overlay-title="Toggle Monitors" { spawn-sh "~/.local/bin/toggle-monitors.sh"; }
     {{ if .install_ai -}}
     Mod+D hotkey-overlay-title="Toggle Dictation: hyprvoice" { spawn-sh "~/.local/bin/toggle-dictation.sh"; }
     {{ end -}}

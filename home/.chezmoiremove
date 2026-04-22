@@ -1,1 +1,3 @@
 .config/waybar/config
+.config/hypr/scripts/toggle-monitor-layout.sh
+.config/hypr/conf/monitor-layouts
