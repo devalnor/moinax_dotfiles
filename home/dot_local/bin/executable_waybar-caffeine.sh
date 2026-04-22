@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Waybar custom module: caffeine status (continuous JSON output)
-# Watches /tmp/caffeine-state via inotifywait and emits new JSON on change.
+# Watches the caffeine state file via inotifywait and emits new JSON on change.
 # Waybar runs this as a long-lived process (continuous exec mode).
 
-STATE_FILE="/tmp/caffeine-state"
+STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/caffeine-state"
 ICON_SLEEP=$(printf '\U000f04b2')
 ICON_COFFEE=$(printf '\uf0f4')
 

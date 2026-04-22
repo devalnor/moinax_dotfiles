@@ -3,13 +3,15 @@
 # Used as rofi script mode: rofi -show "Select App to Kill" -modi "Select App to Kill:rofi-killwindow"
 set -euo pipefail
 
+. "$HOME/.local/lib/compositor.sh"
+
 if [ -z "${1:-}" ]; then
     # Listing mode: output windows for rofi to display with icons
-    if pgrep -xi hyprland &>/dev/null; then
+    if is_hyprland; then
         hyprctl clients -j | jq -r '
             .[] | select(.pid > 0) |
             "\(.class) — \(.title)\u0000icon\u001f\(.class | ascii_downcase)\u001finfo\u001f\(.pid)"'
-    elif pgrep -xi niri &>/dev/null; then
+    elif is_niri; then
         niri msg --json windows | jq -r '
             .[] | select(.pid > 0) |
             "\(.app_id) — \(.title)\u0000icon\u001f\(.app_id)\u001finfo\u001f\(.pid)"'

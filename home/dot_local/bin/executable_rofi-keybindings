@@ -6,9 +6,11 @@ set -euo pipefail
 
 # ── Compositor detection ──────────────────────────────────────────
 
-if [ "${XDG_CURRENT_DESKTOP:-}" = "Hyprland" ] || [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+. "$HOME/.local/lib/compositor.sh"
+
+if is_hyprland; then
     COMPOSITOR="hyprland"
-elif [ "${XDG_CURRENT_DESKTOP:-}" = "niri" ] || pgrep -xi niri &>/dev/null; then
+elif is_niri; then
     COMPOSITOR="niri"
 else
     notify-send -u critical "rofi-keybindings" "No supported compositor detected"

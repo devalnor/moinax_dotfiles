@@ -4,6 +4,8 @@
 # Usage: rofi -show actions -modi "actions:rofi-quickactions"
 set -e
 
+. "$HOME/.local/lib/compositor.sh"
+
 if [ -z "${1:-}" ]; then
     echo "󰒲  Toggle Dark/Light Mode"
     echo "󰅶  Toggle Caffeine"
@@ -28,13 +30,13 @@ else
         *"Lock Screen"*)
             loginctl lock-session ;;
         *"Reload Waybar"*)
-            if pgrep -xi niri &>/dev/null; then
+            if is_niri; then
                 killall -9 waybar 2>/dev/null; ~/.config/waybar/launch-waybar.sh &
             else
                 ~/.config/hypr/scripts/reload-waybar.sh
             fi ;;
         *"Reload Compositor"*)
-            if pgrep -xi niri &>/dev/null; then
+            if is_niri; then
                 niri msg action load-config-file && notify-send -u low 'Niri' 'Config reloaded'
             else
                 ~/.config/hypr/scripts/reload-hyprland.sh

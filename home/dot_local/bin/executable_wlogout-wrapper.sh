@@ -3,9 +3,11 @@
 # Toggle wlogout — dismiss if already open, otherwise launch as centered vertical list
 pkill -x wlogout && exit 0
 
-if [ "$XDG_CURRENT_DESKTOP" = "Hyprland" ] || [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+. "$HOME/.local/lib/compositor.sh"
+
+if is_hyprland; then
     read -r W H < <(hyprctl monitors -j | jq -r '.[] | select(.focused) | "\(.width / .scale | floor) \(.height / .scale | floor)"')
-elif [ "$XDG_CURRENT_DESKTOP" = "niri" ] || pgrep -x "niri" > /dev/null; then
+elif is_niri; then
     read -r W H < <(niri msg -j focused-output 2>/dev/null | jq -r '"\(.logical.width | floor) \(.logical.height | floor)"')
 fi
 

@@ -8,6 +8,8 @@
 # plasma-apply-colorscheme updates the system appearance, and this script only
 # manages repo-local theme files in addition to that KDE scheme switch.
 
+. "$HOME/.local/lib/compositor.sh"
+
 STATE_FILE="$HOME/.local/share/dark-light-mode"
 
 # Determine mode
@@ -102,7 +104,7 @@ if [ -f "$WAYBAR_CSS_SRC" ]; then
 fi
 
 # ---------- Compositor borders ----------
-if pgrep -xi hyprland &>/dev/null; then
+if is_hyprland; then
     if [ "$MODE" = "dark" ]; then
         hyprctl keyword general:col.active_border "rgba(ff64ff80) rgba(9696ffff) 45deg" 2>/dev/null || true
         hyprctl keyword general:col.inactive_border "rgba(6464ff4d)" 2>/dev/null || true
@@ -110,7 +112,7 @@ if pgrep -xi hyprland &>/dev/null; then
         hyprctl keyword general:col.active_border "rgba(8839efcc) rgba(1e66f5cc) 45deg" 2>/dev/null || true
         hyprctl keyword general:col.inactive_border "rgba(7287fd4d)" 2>/dev/null || true
     fi
-elif pgrep -xi niri &>/dev/null; then
+elif is_niri; then
     niri msg action load-config-file 2>/dev/null || true
 fi
 

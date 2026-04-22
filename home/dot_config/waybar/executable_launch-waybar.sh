@@ -2,12 +2,12 @@
 # Waybar launcher: detects compositor, classifies monitors by effective width,
 # and generates a runtime config with per-bar output filters.
 
-if [ "$XDG_CURRENT_DESKTOP" = "Hyprland" ]; then
+. "$HOME/.local/lib/compositor.sh"
+
+if is_hyprland; then
     COMPOSITOR="hyprland"
-elif pgrep -x "niri" > /dev/null; then
+elif is_niri; then
     COMPOSITOR="niri"
-elif [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    COMPOSITOR="hyprland"
 else
     COMPOSITOR="niri"
 fi

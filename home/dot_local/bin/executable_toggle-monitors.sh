@@ -18,9 +18,11 @@ abort() {
     exit 1
 }
 
-if [[ "$XDG_CURRENT_DESKTOP" == "Hyprland" || -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+. "$HOME/.local/lib/compositor.sh"
+
+if is_hyprland; then
     COMPOSITOR=hyprland
-elif [[ "$XDG_CURRENT_DESKTOP" == "niri" ]] || pgrep -x niri >/dev/null; then
+elif is_niri; then
     COMPOSITOR=niri
 else
     abort "Unsupported compositor: ${XDG_CURRENT_DESKTOP:-unknown}"
