@@ -10,7 +10,7 @@ MARK_ON="☑"
 MARK_OFF="☐"
 
 notify() {
-    notify-send -u low "Monitors" "$1" 2>/dev/null || true
+    notify-send -u low -h int:transient:1 "Monitors" "$1" 2>/dev/null || true
 }
 
 abort() {
