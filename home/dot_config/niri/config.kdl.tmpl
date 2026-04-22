@@ -158,7 +158,7 @@ spawn-at-startup "sh" "-c" "wl-paste --type text --watch cliphist store"
 spawn-at-startup "sh" "-c" "wl-paste --type image --watch cliphist store"
 spawn-at-startup "sh" "-c" "~/.local/bin/apply-dark-mode.sh"
 {{ if .install_ai -}}
-spawn-at-startup "hyprvoice" "serve"
+spawn-at-startup "systemctl" "--user" "start" "hyprvoice.service"
 {{ end -}}
 {{ if .install_vibewatch -}}
 spawn-at-startup "sh" "-c" "~/.cargo/bin/vibewatch daemon"

@@ -13,8 +13,8 @@ exec-once = dropbox
 exec-once = wl-paste --type text --watch cliphist store # Stores only text data
 exec-once = wl-paste --type image --watch cliphist store # Stores only image data
 {{- if .install_ai }}
-# Start dictation daemon
-exec-once = hyprvoice serve
+# Start dictation daemon (via systemd --user so environment.d is loaded)
+exec-once = systemctl --user start hyprvoice.service
 {{- end }}
 {{- if .install_vibewatch }}
 # Start AI agent monitor
