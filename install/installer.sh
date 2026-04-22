@@ -37,28 +37,6 @@ HYPRVOICE_MODEL="small"
 HYPRVOICE_PROVIDER="whisper-cpp"
 INSTALL_PURPOSE="desktop"
 
-# Canonicalize a directory path for safe comparisons.
-canonicalize_dir() {
-    local path="$1"
-
-    # Expand a leading ~ for user-provided paths from chezmoi.toml.
-    path="${path/#\~/$HOME}"
-
-    if [ ! -d "$path" ]; then
-        return 1
-    fi
-
-    if command_exists realpath; then
-        realpath "$path"
-    elif readlink -f / >/dev/null 2>&1; then
-        readlink -f "$path"
-    else
-        (
-            cd "$path" >/dev/null 2>&1 && pwd -P
-        )
-    fi
-}
-
 # Regenerate GRUB config (distro-aware: grub-mkconfig vs grub2-mkconfig)
 # Patch a grub-btrfs config file to use Fedora's grub2 paths.
 # $1: path to the config file (e.g. /etc/default/grub-btrfs/config or a clone's config)
@@ -1182,27 +1160,7 @@ setup_dotfiles() {
     mkdir -p "$(dirname "$chezmoi_config")"
     
     local source_dir="$DOTFILES_DIR/home"
-    local canonical_repo_source
-    canonical_repo_source=$(canonicalize_dir "$source_dir") || canonical_repo_source="$source_dir"
 
-    if [[ -f "$chezmoi_config" ]]; then
-        local existing_source
-        existing_source=$(grep -E '^\s*sourceDir\s*=' "$chezmoi_config" | head -1 | sed -E 's/^[^=]*=\s*["]?([^"]*)["]?.*/\1/' | tr -d '"' | tr -d "'")
-
-        if [[ -n "$existing_source" ]]; then
-            local canonical_existing_source
-            canonical_existing_source=$(canonicalize_dir "$existing_source" 2>/dev/null || true)
-
-            if [[ -n "$canonical_existing_source" && "$canonical_existing_source" = "$canonical_repo_source" ]]; then
-                source_dir="$existing_source"
-                print_info "Preserving existing chezmoi sourceDir: $source_dir"
-            elif [[ -n "$canonical_existing_source" ]]; then
-                print_warning "Ignoring existing chezmoi sourceDir outside this repo: $existing_source"
-                print_info "Using dotfiles sourceDir: $source_dir"
-            fi
-        fi
-    fi
-    
     # Determine boolean flags for groups
     local install_hyprland="false"
     local install_niri="false"
@@ -1256,17 +1214,10 @@ sourceDir = "$source_dir"
 EOF
     
     print_info "Chezmoi config created at $chezmoi_config"
-    
-    # Initialize chezmoi with the dotfiles repo
-    print_info "Initializing chezmoi (this may take a while for large dotfiles)..."
-    print_info "Source directory: $source_dir"
-    
-    # Count files to give user an idea of progress
-    local file_count=$(find "$source_dir" -type f | wc -l)
-    print_info "Processing ~$file_count files..."
-    
-    # Run chezmoi (--force to skip overwrite prompts, e.g. rofi themes already on disk)
-    if chezmoi init --source="$source_dir" --apply --force; then
+    print_info "Applying dotfiles from $source_dir..."
+
+    # --force: overwrite files already on disk (e.g. rofi themes).
+    if chezmoi apply --force; then
         print_success "Dotfiles applied successfully"
     else
         print_warning "Chezmoi completed with some warnings"

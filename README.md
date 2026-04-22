@@ -170,15 +170,9 @@ If you previously used GNU Stow, this is the main behavior change to keep in min
 - **Stow mental model**: repo files are symlinked into `$HOME`, so editing the repo is "live" immediately.
 - **Chezmoi mental model**: repo files are the **source state** and your home directory is the **target state**. Changes are applied when you run `chezmoi apply` (or related commands).
 
-### First-time setup (manual)
+### First-time setup
 
-```bash
-# Initialize chezmoi with this repo
-chezmoi init --source=~/dotfiles/home
-
-# Verify source is correct (important)
-chezmoi source-path
-```
+Always run `./manage.sh setup`. The installer is the only supported bootstrap path: it seeds `~/.config/chezmoi/chezmoi.toml` with your group selections and applies the dotfiles. Running `chezmoi init` directly is not supported — the managed configs assume packages and services the installer provisions, so a cold apply would produce broken configs for software that isn't installed.
 
 ### Daily commands (most useful)
 
