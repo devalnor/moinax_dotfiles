@@ -931,6 +931,7 @@ install_common_tools() {
     # Install TPM (Tmux Plugin Manager)
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
         install_git_repo "TPM" "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
+        TMUX_PLUGINS_INSTALLED=true
         print_info "Run tmux and press Ctrl+b I to install plugins"
     else
         print_info "TPM is already installed"
@@ -1802,7 +1803,8 @@ setup_ssh() {
         
         ssh-keygen -t ed25519 -f "$ssh_key" -N "$passphrase"
         chmod 600 "$ssh_key"
-        
+        SSH_KEY_GENERATED=true
+
         print_success "SSH key generated"
         echo ""
         gum style --foreground 39 "Public key:"
@@ -2128,6 +2130,7 @@ setup_shell() {
     
     if gum confirm "Change default shell to zsh?"; then
         chsh -s "$zsh_path"
+        SHELL_CHANGED=true
         print_success "Default shell changed to zsh"
         print_info "Log out and back in for changes to take effect"
     fi
@@ -2353,16 +2356,27 @@ SVCEOF
 show_completion() {
     echo ""
     
-    # Build next steps list
-    local steps=(
-        "  1. Log out and back in (for shell changes)"
-        "  2. Run 'tmux' and press Ctrl+b I (install plugins)"
-        "  3. Add your SSH key to GitHub/GitLab"
-    )
-    local next_step=4
-    
-    # Add Hyprland step if running in Hyprland or if Hyprland was selected
-    if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+    # Build next steps list — only include steps the user actually needs to act on
+    local steps=()
+    local next_step=1
+
+    if [ "$SHELL_CHANGED" = true ]; then
+        steps+=("  $next_step. Log out and back in (for shell changes)")
+        next_step=$((next_step + 1))
+    fi
+
+    if [ "$TMUX_PLUGINS_INSTALLED" = true ]; then
+        steps+=("  $next_step. Run 'tmux' and press Ctrl+b I (install plugins)")
+        next_step=$((next_step + 1))
+    fi
+
+    if [ "$SSH_KEY_GENERATED" = true ]; then
+        steps+=("  $next_step. Add your SSH key to GitHub/GitLab")
+        next_step=$((next_step + 1))
+    fi
+
+    # Hyprland reload only if currently running in Hyprland
+    if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
         steps+=("  $next_step. Run 'hyprctl reload' to reload Hyprland config")
         next_step=$((next_step + 1))
     fi
@@ -2374,13 +2388,6 @@ show_completion() {
 
     if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " ai " ]]; then
         steps+=("  $next_step. Press Mod+D to toggle dictation (hyprvoice)")
-        next_step=$((next_step + 1))
-    fi
-
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
-        steps+=("  $next_step. Install WorkTrunk + Claude Code plugin: claude plugin marketplace add max-sixty/worktrunk && claude plugin install worktrunk@worktrunk")
-        next_step=$((next_step + 1))
-        steps+=("  $next_step. ccstatusline is configured — restart Claude Code to see the Catppuccin status line")
         next_step=$((next_step + 1))
     fi
 
@@ -2410,15 +2417,17 @@ show_completion() {
             "${warning_lines[@]}"
     fi
 
+    local body=("$(gum style --foreground 82 --bold '✅ Installation Complete!')")
+    if [ ${#steps[@]} -gt 0 ]; then
+        body+=("" "Next steps:" "${steps[@]}")
+    fi
+
     gum style \
         --border double \
         --border-foreground 82 \
         --padding "1 2" \
         --margin "1" \
-        "$(gum style --foreground 82 --bold '✅ Installation Complete!')" \
-        "" \
-        "Next steps:" \
-        "${steps[@]}"
+        "${body[@]}"
     echo ""
 }
 
@@ -2429,6 +2438,9 @@ main() {
     SERVICES_TO_ENABLE=()
     PLYMOUTH_CONFIGURED=false
     BTRFS_SNAPSHOTS_CONFIGURED=false
+    SHELL_CHANGED=false
+    SSH_KEY_GENERATED=false
+    TMUX_PLUGINS_INSTALLED=false
     unset GROUP_PACKAGE_MODE GROUP_CUSTOM_PACKAGE_LIST
     declare -gA GROUP_PACKAGE_MODE=()
     declare -gA GROUP_CUSTOM_PACKAGE_LIST=()
