@@ -1,0 +1,24 @@
+if command -v eza &> /dev/null; then
+  alias ls="eza --icons --group-directories-first"
+  alias ll="eza --icons --group-directories-first -l --git"
+  alias lsa="eza --icons --group-directories-first -la --git"
+  alias lt="eza --icons --group-directories-first --tree --level=2"
+fi
+
+alias vim="nvim"
+alias vi="nvim"
+alias v="nvim"
+
+alias lg="lazygit"
+alias ld="lazydocker"
+alias dash="gh dash"
+
+# Top 10 biggest entries (incl. hidden) in CWD
+alias big="sudo du -sh *(D) | sort -rh | head -n 10"
+
+{{- if ne .install_purpose "terminal" }}
+# Auto-copy terminfo to remote servers via kitten ssh
+if command -v kitten &> /dev/null; then
+  alias ssh="kitten ssh"
+fi
+{{- end }}

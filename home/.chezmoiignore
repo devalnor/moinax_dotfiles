@@ -70,6 +70,9 @@ LICENSE
 .config/ccstatusline/**
 .claude
 .claude/**
+.zsh/rc.d/60-worktree.zsh
+.local/bin/wtclean
+.local/bin/wtupdate
 {{- end }}
 
 # Neovim lazy-lock.json — managed via 'manage.sh lazy-lock' instead of chezmoi apply

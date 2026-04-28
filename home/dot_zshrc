@@ -1,0 +1,6 @@
+# Source rc.d fragments in lexicographic order.
+# Each fragment owns a single concern; see ~/.zsh/rc.d/.
+for _rc in ~/.zsh/rc.d/*.zsh(N); do
+  source "$_rc"
+done
+unset _rc

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Remove all worktrees whose branches are already merged into main.
+set -euo pipefail
+
+branches=$(wt list --format=json 2>/dev/null | /usr/bin/python3 -c "
+import sys, json
+raw = sys.stdin.read()
+if not raw.strip():
+    sys.exit(0)
+for wt in json.loads(raw):
+    if wt.get('main_state') in ('integrated', 'empty') and not wt.get('is_main'):
+        print(wt['branch'])
+")
+
+if [[ -z "$branches" ]]; then
+  echo "No merged worktrees to clean up."
+  exit 0
+fi
+
+echo "Worktrees to remove:"
+echo "$branches" | sed 's/^/  - /'
+echo
+read -r -p "Remove all? [y/N] " reply
+[[ "$reply" =~ ^[Yy]$ ]] || exit 0
+
+echo "$branches" | xargs wt remove -f

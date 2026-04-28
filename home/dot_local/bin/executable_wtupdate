@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Rebase worktree(s) onto latest origin/main and force-push with lease.
+# Usage: wtupdate [branch]
+set -euo pipefail
+
+branch="${1:-}"
+
+echo "Fetching origin..."
+if ! /usr/bin/git fetch origin; then
+  echo "error: failed to fetch from origin" >&2
+  exit 1
+fi
+
+worktrees=$(wt list --format=json 2>/dev/null | TARGET_BRANCH="$branch" /usr/bin/python3 -c "
+import sys, json, os
+raw = sys.stdin.read()
+if not raw.strip():
+    sys.exit(0)
+target = os.environ.get('TARGET_BRANCH', '')
+for wt in json.loads(raw):
+    if wt.get('is_main') or wt.get('kind') != 'worktree':
+        continue
+    if target and wt['branch'] != target:
+        continue
+    print(wt['branch'] + '\t' + wt['path'])
+")
+
+if [[ -z "$worktrees" ]]; then
+  if [[ -n "$branch" ]]; then
+    echo "error: worktree '$branch' not found" >&2
+    exit 1
+  fi
+  echo "No worktrees to update."
+  exit 0
+fi
+
+failed=()
+while IFS=$'\t' read -r name dir; do
+  echo "Updating $name..."
+  if /usr/bin/git -C "$dir" rebase origin/main; then
+    /usr/bin/git -C "$dir" push --force-with-lease
+  else
+    echo "  Rebase conflict — aborting rebase for $name" >&2
+    /usr/bin/git -C "$dir" rebase --abort
+    failed+=("$name")
+  fi
+done <<< "$worktrees"
+
+if (( ${#failed[@]} > 0 )); then
+  echo
+  echo "Failed to update: ${failed[*]}"
+  exit 1
+fi
