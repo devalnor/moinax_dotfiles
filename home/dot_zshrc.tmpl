@@ -183,11 +183,17 @@ function wtstart() {
     [[ "$PWD" == "$orig_dir" ]] && return 0
   else
     # Create new worktree, or switch to existing one
-    if wt switch --create "$branch" 2>/dev/null; then
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+      wt switch "$branch" || {
+        echo "error: failed to switch to worktree for '$branch'" >&2
+        return 1
+      }
+    else
+      wt switch --create "$branch" || {
+        echo "error: failed to create worktree for '$branch'" >&2
+        return 1
+      }
       is_new=true
-    elif ! wt switch "$branch"; then
-      echo "error: failed to create or switch to worktree for '$branch'" >&2
-      return 1
     fi
 
     # Copy gitignored files (e.g. .env.development.local) for new worktrees only
