@@ -5,7 +5,7 @@ After=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/swayosd-server -s %h/.config/swayosd/style.css
+ExecStart=/usr/bin/swayosd-server -s %h/.config/swayosd/style.css --top-margin 0.15
 Restart=on-failure
 
 [Install]
