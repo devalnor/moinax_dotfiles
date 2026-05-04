@@ -151,7 +151,7 @@ environment {
 {{- end }}
 }
 
-spawn-at-startup "swayosd-server" "-s" "{{ .chezmoi.homeDir }}/.config/swayosd/style.css"
+spawn-at-startup "systemctl" "--user" "start" "swayosd-server.service"
 spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.config/waybar/launch-waybar.sh"
 spawn-at-startup "blueman-applet"
 spawn-at-startup "swayidle" "-w"

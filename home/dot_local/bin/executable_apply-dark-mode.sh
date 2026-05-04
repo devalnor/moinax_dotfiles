@@ -79,9 +79,8 @@ fi
 SWAYOSD_SRC="$HOME/.config/swayosd/style-${MODE}.css"
 if [ -f "$SWAYOSD_SRC" ]; then
     cp "$SWAYOSD_SRC" "$HOME/.config/swayosd/style.css"
-    if pgrep -x swayosd-server &>/dev/null; then
-        pkill -x swayosd-server 2>/dev/null || true
-        swayosd-server -s "$HOME/.config/swayosd/style.css" &disown
+    if systemctl --user is-active --quiet swayosd-server.service 2>/dev/null; then
+        systemctl --user restart swayosd-server.service 2>/dev/null || true
     fi
 fi
 

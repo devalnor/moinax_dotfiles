@@ -45,6 +45,7 @@ LICENSE
 .config/wlogout/**
 .local/share/rofi
 .local/share/rofi/**
+.config/systemd/user/swayosd-server.service
 {{- end }}
 
 # Ignore AI configs if not selected
