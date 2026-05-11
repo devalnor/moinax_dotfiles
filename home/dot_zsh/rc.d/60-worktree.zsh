@@ -6,6 +6,17 @@ fi
 # Create/switch worktree, then launch a kitty dev environment in it.
 # Stays a function (not a script) because `wt switch` requires shell integration.
 wtstart() {
+  local name_override=""
+  while [[ "$1" == -* ]]; do
+    case "$1" in
+      -n)
+        [[ -z "$2" || "$2" == -* ]] && { echo "wtstart: -n requires a name" >&2; return 1; }
+        name_override="$2"; shift 2 ;;
+      --) shift; break ;;
+      *) echo "wtstart: unknown option $1" >&2; return 1 ;;
+    esac
+  done
+
   local branch="$1"
   local is_new=false
   local orig_dir="$PWD"
@@ -33,7 +44,7 @@ wtstart() {
     fi
   fi
 
-  local name="${branch:-$(git branch --show-current)}"
+  local name="${name_override:-${branch:-$(git branch --show-current)}}"
   local dir="$PWD"
 
   kitty --title "$name" --directory "$dir" --session <(kdev-session -n "$name") &>/dev/null & disown
