@@ -152,7 +152,7 @@ environment {
 }
 
 spawn-at-startup "systemctl" "--user" "start" "swayosd-server.service"
-spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.config/waybar/launch-waybar.sh"
+spawn-at-startup "systemctl" "--user" "start" "waybar.service"
 spawn-at-startup "blueman-applet"
 spawn-at-startup "swayidle" "-w"
 spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.local/bin/swayidle-resume-reset.sh"
@@ -305,7 +305,7 @@ binds {
     Mod+Alt+Ctrl+Down  { move-column-to-monitor-down; }
 
     // ── 11. Reload Configs ───────────────────────────────────────────
-    Mod+Shift+B hotkey-overlay-title="Reload Waybar" { spawn-sh "killall -9 waybar; ~/.config/waybar/launch-waybar.sh &"; }
+    Mod+Shift+B hotkey-overlay-title="Reload Waybar" { spawn-sh "systemctl --user restart waybar.service"; }
     Mod+Shift+W hotkey-overlay-title="Reload Wallpaper" { spawn-sh "killall swaybg; swaybg -m fill -i ~/Wallpapers/colorful.jpg &"; }
     Mod+Shift+M hotkey-overlay-title="Reload SwayNC" { spawn-sh "swaync-client -R && swaync-client -rs"; }
     Mod+Shift+R hotkey-overlay-title="Reload Niri Config" { spawn-sh "niri msg action load-config-file && notify-send -u low 'Niri' 'Config reloaded'"; }

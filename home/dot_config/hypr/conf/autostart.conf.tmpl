@@ -1,6 +1,6 @@
 # Execute your favorite apps at launch
 exec-once = systemctl --user start swayosd-server.service
-exec-once = ~/.config/waybar/launch-waybar.sh
+exec-once = systemctl --user start waybar.service
 exec-once = hyprpaper
 exec-once = swaync
 exec-once = /usr/lib/polkit-kde-authentication-agent-1 &

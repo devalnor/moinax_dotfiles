@@ -1,0 +1,15 @@
+[Unit]
+Description=Waybar (compositor-aware launcher)
+Documentation=https://github.com/Alexays/Waybar/wiki/
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.config/waybar/launch-waybar.sh
+ExecReload=/usr/bin/kill -SIGUSR2 $MAINPID
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=graphical-session.target
