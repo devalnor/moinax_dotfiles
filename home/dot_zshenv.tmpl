@@ -24,6 +24,12 @@ esac
 
 # Lazy docker, zoxide, ...
 export PATH="$HOME/.local/bin:$PATH"
+
+# Silence zoxide's "configuration issue" doctor. It fires a false positive in
+# Claude Code's Bash tool: the shell snapshot replays zoxide's `cd` wrapper but
+# not the `chpwd_functions+=(__zoxide_hook)` line from `zoxide init`, so the
+# doctor sees a missing hook on every command. Zoxide still works fine.
+export _ZO_DOCTOR=0
 {{- if or .install_hyprland .install_niri }}
 # Rofi scripts
 export PATH="$HOME/.config/rofi/scripts:$PATH"
