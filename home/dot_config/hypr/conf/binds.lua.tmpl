@@ -43,18 +43,23 @@ hl.bind(mod .. " + down",          hl.dsp.focus({ direction = "d" }))
 hl.bind(mod .. " + SHIFT + Tab",   hl.dsp.window.cycle_next({ next = false }))            -- Cycle prev window
 
 -- ── 4. Move Window / Column ──────────────────────────────────────
--- Replicate the old `movewindoworgroup`: enter an adjacent group, or exit
--- the current one. Lua 0.55 has no single dispatcher for this — we shell
--- out to a helper that picks between `into_group` and `out_of_group`.
--- Safe because `hl.exec_cmd` is async; an `io.popen` here would deadlock.
+-- Mod+Ctrl+Arrow: group-aware swap within the current monitor (in-group →
+-- out, adjacent-group → in, else swap with the visual neighbor). Lua 0.55
+-- has no single dispatcher for this, so we shell out; `hl.exec_cmd` is
+-- async, so it's safe — an `io.popen` from a Lua bind would deadlock.
 hl.bind(mod .. " + CTRL + right", hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh r"))
 hl.bind(mod .. " + CTRL + left",  hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh l"))
 hl.bind(mod .. " + CTRL + up",    hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh u"))
 hl.bind(mod .. " + CTRL + down",  hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh d"))
-hl.bind(mod .. " + ALT + right",  hl.dsp.window.swap({ direction = "r" }))
-hl.bind(mod .. " + ALT + left",   hl.dsp.window.swap({ direction = "l" }))
-hl.bind(mod .. " + ALT + up",     hl.dsp.window.swap({ direction = "u" }))
-hl.bind(mod .. " + ALT + down",   hl.dsp.window.swap({ direction = "d" }))
+
+-- Mod+Alt+Arrow: plain directional movewindow. No group entry/exit — when
+-- the focus is inside a group, this moves the entire group container as
+-- one unit through the tile tree. At the monitor edge, the window crosses
+-- to the adjacent monitor automatically.
+hl.bind(mod .. " + ALT + right",  hl.dsp.window.move({ direction = "r" }))
+hl.bind(mod .. " + ALT + left",   hl.dsp.window.move({ direction = "l" }))
+hl.bind(mod .. " + ALT + up",     hl.dsp.window.move({ direction = "u" }))
+hl.bind(mod .. " + ALT + down",   hl.dsp.window.move({ direction = "d" }))
 
 -- ── 5. Resize ────────────────────────────────────────────────────
 hl.bind(mod .. " + SHIFT + right", hl.dsp.window.resize({ x =  30, y =   0, relative = true }), { repeating = true })

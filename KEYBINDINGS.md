@@ -66,14 +66,14 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Move left | `Mod+Ctrl+Left` | `Mod+Ctrl+Left` | Hyprland: movewindoworgroup; Niri: move-column-left |
-| Move right | `Mod+Ctrl+Right` | `Mod+Ctrl+Right` | Hyprland: movewindoworgroup; Niri: move-column-right |
-| Move up | `Mod+Ctrl+Up` | `Mod+Ctrl+Up` | Hyprland: movewindoworgroup; Niri: move-window-up |
-| Move down | `Mod+Ctrl+Down` | `Mod+Ctrl+Down` | Hyprland: movewindoworgroup; Niri: move-window-down |
-| Swap window left | `Mod+Alt+Left` | `Mod+Alt+Left` | Niri: swap-window-left |
-| Swap window right | `Mod+Alt+Right` | `Mod+Alt+Right` | Niri: swap-window-right |
-| Swap window up | `Mod+Alt+Up` | — | Hyprland only; Niri uses `Mod+Alt+Up` for workspace move |
-| Swap window down | `Mod+Alt+Down` | — | Hyprland only; Niri uses `Mod+Alt+Down` for workspace move |
+| Swap with neighbor / group | `Mod+Ctrl+Left` | `Mod+Ctrl+Left` | Hyprland: group-aware swap (in-group→out / adjacent-group→in / else→swap); Niri: move-column-left |
+| Swap with neighbor / group | `Mod+Ctrl+Right` | `Mod+Ctrl+Right` | Hyprland: group-aware swap; Niri: move-column-right |
+| Swap with neighbor / group | `Mod+Ctrl+Up` | `Mod+Ctrl+Up` | Hyprland: group-aware swap; Niri: move-window-up |
+| Swap with neighbor / group | `Mod+Ctrl+Down` | `Mod+Ctrl+Down` | Hyprland: group-aware swap; Niri: move-window-down |
+| Move window (whole group as unit) | `Mod+Alt+Left` | `Mod+Alt+Left` | Hyprland: `move({ direction = "l" })` — moves the focused window or group container; crosses monitor at edge; Niri: swap-window-left |
+| Move window (whole group as unit) | `Mod+Alt+Right` | `Mod+Alt+Right` | Hyprland: `move({ direction = "r" })`; Niri: swap-window-right |
+| Move window (whole group as unit) | `Mod+Alt+Up` | — | Hyprland only; Niri uses `Mod+Alt+Up` for workspace move |
+| Move window (whole group as unit) | `Mod+Alt+Down` | — | Hyprland only; Niri uses `Mod+Alt+Down` for workspace move |
 | Move column to first | — | `Mod+Ctrl+Home` | Niri only |
 | Move column to last | — | `Mod+Ctrl+End` | Niri only |
 
