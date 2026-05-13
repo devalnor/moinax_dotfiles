@@ -1,0 +1,24 @@
+-- Apps started at Hyprland launch
+local home = assert(os.getenv("HOME"), "HOME not set")
+
+hl.on("hyprland.start", function()
+    hl.exec_cmd("systemctl --user start swayosd-server.service")
+    hl.exec_cmd("systemctl --user start waybar.service")
+    hl.exec_cmd("hyprpaper")
+    hl.exec_cmd("swaync")
+    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+    hl.exec_cmd("hypridle")
+    hl.exec_cmd("blueman-applet")
+    hl.exec_cmd("dropbox")
+    -- Clipboard history (text + images)
+    hl.exec_cmd("wl-paste --type text  --watch cliphist store")
+    hl.exec_cmd("wl-paste --type image --watch cliphist store")
+{{- if .install_ai }}
+    -- Dictation daemon (via systemd --user so environment.d is loaded)
+    hl.exec_cmd("systemctl --user start hyprvoice.service")
+{{- end }}
+    -- Restore dark/light mode
+    hl.exec_cmd(home .. "/.local/bin/apply-dark-mode.sh")
+    -- Load Hyprland plugins
+    hl.exec_cmd("hyprpm reload -n")
+end)
