@@ -2,8 +2,20 @@
 local home = assert(os.getenv("HOME"), "HOME not set")
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("systemctl --user start swayosd-server.service")
-    hl.exec_cmd("systemctl --user start waybar.service")
+    -- Push Hyprland's env into systemd/dbus so --user services can find the
+    -- Wayland display, then start them. Without this, services launched via
+    -- `systemctl --user start` race the env push and crash with
+    -- "cannot open display:" before hitting the systemd start-limit.
+    local env_vars = "WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE"
+    local user_services = "swayosd-server.service waybar.service"
+{{- if .install_ai }}
+    user_services = user_services .. " hyprvoice.service"
+{{- end }}
+    hl.exec_cmd(
+        "dbus-update-activation-environment --systemd " .. env_vars ..
+        " && systemctl --user start " .. user_services
+    )
+
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("swaync")
     hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
@@ -13,10 +25,6 @@ hl.on("hyprland.start", function()
     -- Clipboard history (text + images)
     hl.exec_cmd("wl-paste --type text  --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
-{{- if .install_ai }}
-    -- Dictation daemon (via systemd --user so environment.d is loaded)
-    hl.exec_cmd("systemctl --user start hyprvoice.service")
-{{- end }}
     -- Restore dark/light mode
     hl.exec_cmd(home .. "/.local/bin/apply-dark-mode.sh")
     -- Load Hyprland plugins
