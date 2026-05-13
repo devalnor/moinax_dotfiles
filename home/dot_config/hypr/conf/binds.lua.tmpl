@@ -74,6 +74,19 @@ hl.bind("ALT + TAB",            hl.dsp.group.next())                            
 hl.bind("ALT + SHIFT + TAB",    hl.dsp.group.prev())                                       -- Cycle group backward
 hl.bind("ALT + CTRL + TAB",     hl.dsp.group.move_window({ forward = true }))              -- Move window in group
 
+-- ── 6b. Scrolling Layout (no-op on dwindle/vstack workspaces) ───
+hl.bind(mod .. " + W",               hl.dsp.layout("colresize +conf"))                     -- Cycle preset column widths
+hl.bind(mod .. " + ALT + W",         hl.dsp.layout("colresize -conf"))                     -- Cycle preset widths (reverse)
+hl.bind(mod .. " + period",          hl.dsp.layout("move +col"))                           -- Scroll tape right (one column)
+hl.bind(mod .. " + comma",           hl.dsp.layout("move -col"))                           -- Scroll tape left (one column)
+hl.bind(mod .. " + ALT + period",    hl.dsp.layout("swapcol r"))                           -- Swap column with right neighbor
+hl.bind(mod .. " + ALT + comma",     hl.dsp.layout("swapcol l"))                           -- Swap column with left neighbor
+hl.bind(mod .. " + ALT + J",         hl.dsp.layout("consume_or_expel next"))               -- Consume from / expel to next column
+hl.bind(mod .. " + ALT + SHIFT + J", hl.dsp.layout("consume_or_expel prev"))               -- Consume from / expel to prev column
+hl.bind(mod .. " + ALT + P",         hl.dsp.layout("promote"))                             -- Window to its own column
+hl.bind(mod .. " + ALT + Z",         hl.dsp.layout("inhibit_scroll"))                      -- Pin tape position (toggle)
+hl.bind(mod .. " + ALT + T",         hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-workspace-scrolling.sh")) -- Toggle workspace scrolling ↔ baseline
+
 -- ── 7. Workspace Navigation ──────────────────────────────────────
 -- QWERTY 1-7
 for i = 1, 7 do
