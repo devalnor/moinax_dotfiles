@@ -43,16 +43,14 @@ hl.bind(mod .. " + down",          hl.dsp.focus({ direction = "d" }))
 hl.bind(mod .. " + SHIFT + Tab",   hl.dsp.window.cycle_next({ next = false }))            -- Cycle prev window
 
 -- ── 4. Move Window / Column ──────────────────────────────────────
--- NOTE: the old hyprlang `movewindoworgroup` is not 1:1 in the Lua API —
--- `hl.dsp.window.move` only moves the tile, never reorders within a group.
--- Within-group reordering is bound separately on ALT+CTRL+TAB (see section 6).
--- DO NOT introspect with io.popen("hyprctl ...") here: it deadlocks the
--- compositor (Hyprland's main thread blocks waiting for hyprctl, which is
--- waiting on Hyprland's IPC socket).
-hl.bind(mod .. " + CTRL + right", hl.dsp.window.move({ direction = "r" }))
-hl.bind(mod .. " + CTRL + left",  hl.dsp.window.move({ direction = "l" }))
-hl.bind(mod .. " + CTRL + up",    hl.dsp.window.move({ direction = "u" }))
-hl.bind(mod .. " + CTRL + down",  hl.dsp.window.move({ direction = "d" }))
+-- Replicate the old `movewindoworgroup`: enter an adjacent group, or exit
+-- the current one. Lua 0.55 has no single dispatcher for this — we shell
+-- out to a helper that picks between `into_group` and `out_of_group`.
+-- Safe because `hl.exec_cmd` is async; an `io.popen` here would deadlock.
+hl.bind(mod .. " + CTRL + right", hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh r"))
+hl.bind(mod .. " + CTRL + left",  hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh l"))
+hl.bind(mod .. " + CTRL + up",    hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh u"))
+hl.bind(mod .. " + CTRL + down",  hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh d"))
 hl.bind(mod .. " + ALT + right",  hl.dsp.window.swap({ direction = "r" }))
 hl.bind(mod .. " + ALT + left",   hl.dsp.window.swap({ direction = "l" }))
 hl.bind(mod .. " + ALT + up",     hl.dsp.window.swap({ direction = "u" }))
