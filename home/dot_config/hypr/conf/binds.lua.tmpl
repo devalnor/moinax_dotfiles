@@ -43,6 +43,12 @@ hl.bind(mod .. " + down",          hl.dsp.focus({ direction = "d" }))
 hl.bind(mod .. " + SHIFT + Tab",   hl.dsp.window.cycle_next({ next = false }))            -- Cycle prev window
 
 -- ── 4. Move Window / Column ──────────────────────────────────────
+-- NOTE: the old hyprlang `movewindoworgroup` is not 1:1 in the Lua API —
+-- `hl.dsp.window.move` only moves the tile, never reorders within a group.
+-- Within-group reordering is bound separately on ALT+CTRL+TAB (see section 6).
+-- DO NOT introspect with io.popen("hyprctl ...") here: it deadlocks the
+-- compositor (Hyprland's main thread blocks waiting for hyprctl, which is
+-- waiting on Hyprland's IPC socket).
 hl.bind(mod .. " + CTRL + right", hl.dsp.window.move({ direction = "r" }))
 hl.bind(mod .. " + CTRL + left",  hl.dsp.window.move({ direction = "l" }))
 hl.bind(mod .. " + CTRL + up",    hl.dsp.window.move({ direction = "u" }))
