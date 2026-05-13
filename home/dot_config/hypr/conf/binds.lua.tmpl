@@ -1,0 +1,141 @@
+-- Hyprland Keybindings
+-- See https://wiki.hypr.land/Configuring/Basics/Binds/ for more
+
+local mod  = "SUPER"
+local home = assert(os.getenv("HOME"), "HOME not set")
+
+-- ── 1. Application Shortcuts ──────────────────────────────────────
+hl.bind(mod .. " + RETURN",       hl.dsp.exec_cmd("kitty"))                                                                  -- Open terminal
+hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd(home .. "/.local/bin/kdev-launch.sh"))                                     -- Pick directory & open dev terminal (kitty splits)
+hl.bind(mod .. " + SPACE",        hl.dsp.exec_cmd("rofi -show drun"))                                                        -- App launcher
+hl.bind(mod .. " + B",            hl.dsp.exec_cmd("zen-browser"))                                                            -- Open browser (Zen)
+hl.bind(mod .. " + ALT + B",      hl.dsp.exec_cmd("google-chrome-stable --password-store=basic"))                            -- Open browser (Chrome)
+hl.bind(mod .. " + E",            hl.dsp.exec_cmd("dolphin"))                                                                -- Open file manager
+hl.bind(mod .. " + I",            hl.dsp.exec_cmd(home .. "/.local/bin/emoji-picker.sh"))                                    -- Emoji selector
+hl.bind(mod .. " + A",            hl.dsp.exec_cmd(home .. "/.local/bin/toggle-audio-switch.sh"))                             -- Switch audio output
+hl.bind(mod .. " + K",            hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-keyboard-layout.sh"))                -- Switch keyboard layout
+hl.bind(mod .. " + TAB",          hl.dsp.exec_cmd("rofi -show window -window-thumbnail"))                                    -- Window switcher
+hl.bind(mod .. " + Escape",       hl.dsp.exec_cmd([[rofi -show "Select App to Kill" -modi "Select App to Kill:rofi-killwindow"]])) -- Kill window (rofi)
+hl.bind(mod .. " + V",            hl.dsp.exec_cmd([[bash -c 'cliphist list | rofi -dmenu -p "Clipboard" | cliphist decode | wtype -']])) -- Clipboard
+{{- if ne .chezmoi.osRelease.id "fedora" }}
+hl.bind(mod .. " + C",            hl.dsp.exec_cmd("rofi -show calc"))                                                        -- Calculator (rofi)
+{{- end }}
+hl.bind(mod .. " + ALT + C",      hl.dsp.exec_cmd("kcalc"))                                                                  -- Open calculator
+hl.bind(mod .. " + SHIFT + P",    hl.dsp.exec_cmd("hyprpicker"))                                                             -- Color picker
+hl.bind(mod .. " + R",            hl.dsp.exec_cmd("rofi-theme-selector"))                                                    -- Theme selector
+hl.bind(mod .. " + M",            hl.dsp.exec_cmd(home .. "/.local/bin/toggle-monitors.sh"))                                 -- Toggle monitors on/off
+{{- if .install_ai }}
+hl.bind(mod .. " + D",            hl.dsp.exec_cmd(home .. "/.local/bin/toggle-dictation.sh"))                                -- Toggle dictation
+{{- end }}
+
+-- ── 2. Window Management ──────────────────────────────────────────
+hl.bind(mod .. " + Q",       hl.dsp.window.close())                                       -- Close window
+hl.bind(mod .. " + T",       hl.dsp.window.float({ action = "toggle" }))                  -- Toggle floating
+hl.bind(mod .. " + F",       hl.dsp.window.fullscreen({ mode = "maximized" }))            -- Fullscreen (with bar)
+hl.bind(mod .. " + ALT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }))           -- True fullscreen
+hl.bind(mod .. " + P",       hl.dsp.window.pin())                                         -- Pin window
+
+-- ── 3. Focus Navigation ──────────────────────────────────────────
+hl.bind(mod .. " + left",          hl.dsp.focus({ direction = "l" }))
+hl.bind(mod .. " + right",         hl.dsp.focus({ direction = "r" }))
+hl.bind(mod .. " + up",            hl.dsp.focus({ direction = "u" }))
+hl.bind(mod .. " + down",          hl.dsp.focus({ direction = "d" }))
+hl.bind(mod .. " + SHIFT + Tab",   hl.dsp.window.cycle_next({ next = false }))            -- Cycle prev window
+
+-- ── 4. Move Window / Column ──────────────────────────────────────
+-- Replicate the old `movewindoworgroup`: enter an adjacent group, or exit
+-- the current one. Lua 0.55 has no single dispatcher for this — we shell
+-- out to a helper that picks between `into_group` and `out_of_group`.
+-- Safe because `hl.exec_cmd` is async; an `io.popen` here would deadlock.
+hl.bind(mod .. " + CTRL + right", hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh r"))
+hl.bind(mod .. " + CTRL + left",  hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh l"))
+hl.bind(mod .. " + CTRL + up",    hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh u"))
+hl.bind(mod .. " + CTRL + down",  hl.dsp.exec_cmd(home .. "/.local/bin/hypr-move-or-group.sh d"))
+hl.bind(mod .. " + ALT + right",  hl.dsp.window.swap({ direction = "r" }))
+hl.bind(mod .. " + ALT + left",   hl.dsp.window.swap({ direction = "l" }))
+hl.bind(mod .. " + ALT + up",     hl.dsp.window.swap({ direction = "u" }))
+hl.bind(mod .. " + ALT + down",   hl.dsp.window.swap({ direction = "d" }))
+
+-- ── 5. Resize ────────────────────────────────────────────────────
+hl.bind(mod .. " + SHIFT + right", hl.dsp.window.resize({ x =  30, y =   0, relative = true }), { repeating = true })
+hl.bind(mod .. " + SHIFT + left",  hl.dsp.window.resize({ x = -30, y =   0, relative = true }), { repeating = true })
+hl.bind(mod .. " + SHIFT + up",    hl.dsp.window.resize({ x =   0, y = -30, relative = true }), { repeating = true })
+hl.bind(mod .. " + SHIFT + down",  hl.dsp.window.resize({ x =   0, y =  30, relative = true }), { repeating = true })
+
+-- ── 6. Column / Group Operations ─────────────────────────────────
+hl.bind(mod .. " + J",          hl.dsp.layout("togglesplit"))                              -- Toggle split (dwindle)
+hl.bind(mod .. " + G",          hl.dsp.group.toggle())                                     -- Toggle group
+hl.bind("ALT + TAB",            hl.dsp.group.next())                                       -- Cycle group forward
+hl.bind("ALT + SHIFT + TAB",    hl.dsp.group.prev())                                       -- Cycle group backward
+hl.bind("ALT + CTRL + TAB",     hl.dsp.group.move_window({ forward = true }))              -- Move window in group
+
+-- ── 7. Workspace Navigation ──────────────────────────────────────
+-- QWERTY 1-7
+for i = 1, 7 do
+    hl.bind(mod .. " + " .. tostring(i), hl.dsp.focus({ workspace = tostring(i) }))
+end
+-- AZERTY 1-7
+local azerty_top_row = {
+    [1] = "ampersand", [2] = "eacute", [3] = "quotedbl", [4] = "apostrophe",
+    [5] = "parenleft", [6] = "minus",  [7] = "egrave",
+}
+for ws, key in pairs(azerty_top_row) do
+    hl.bind(mod .. " + " .. key, hl.dsp.focus({ workspace = tostring(ws) }))
+end
+
+-- ── 8. Move to Workspace ─────────────────────────────────────────
+-- QWERTY 1-7
+for i = 1, 7 do
+    hl.bind(mod .. " + SHIFT + " .. tostring(i), hl.dsp.window.move({ workspace = tostring(i) }))
+end
+-- AZERTY 1-7
+for ws, key in pairs(azerty_top_row) do
+    hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = tostring(ws) }))
+    -- Silent move (no follow)
+    hl.bind(mod .. " + CTRL + "  .. key, hl.dsp.window.move({ workspace = tostring(ws), follow = false }))
+end
+
+-- ── 10. Scratchpad (default unnamed special workspace) ──────────
+hl.bind(mod .. " + S",         hl.dsp.workspace.toggle_special(""))                                                    -- Toggle scratchpad
+hl.bind(mod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special" }))                                          -- Move to scratchpad
+hl.bind(mod .. " + CTRL + S",  hl.dsp.window.move({ workspace = "special", follow = false }))                          -- Move to scratchpad (silent)
+
+-- ── 11. Reload Configs ───────────────────────────────────────────
+hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/reload-waybar.sh"))                      -- Reload Waybar
+hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/reload-hyprpaper.sh"))                   -- Reload hyprpaper
+hl.bind(mod .. " + SHIFT + M", hl.dsp.exec_cmd("swaync-client -R && swaync-client -rs"))                               -- Reload SwayNC
+hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/reload-hyprland.sh"))                    -- Reload hyprland
+
+-- ── 12. Screenshots ──────────────────────────────────────────────
+hl.bind("PRINT",                hl.dsp.exec_cmd("hyprshot -m output"))                     -- Screenshot a monitor
+hl.bind(mod .. " + PRINT",         hl.dsp.exec_cmd("hyprshot -m window"))                  -- Screenshot a window
+hl.bind(mod .. " + SHIFT + PRINT", hl.dsp.exec_cmd("hyprshot -m region"))                  -- Screenshot a region
+
+-- ── 13. Media & Volume ───────────────────────────────────────────
+hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("swayosd-client --output-volume raise"))
+hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("swayosd-client --output-volume lower"))
+hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"))
+hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"))
+hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("swayosd-client --brightness raise"), { repeating = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("swayosd-client --brightness lower"), { repeating = true })
+
+-- ── 14. Session & System ─────────────────────────────────────────
+hl.bind(mod .. " + N",         hl.dsp.exec_cmd(home .. "/.local/bin/toggle-dark-mode.sh"))                 -- Toggle dark/light mode
+hl.bind(mod .. " + ALT + N",   hl.dsp.exec_cmd(home .. "/.local/bin/toggle-caffeine.sh"))                  -- Toggle caffeine mode
+hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd(home .. "/.local/bin/toggle-tailscale.sh"))                 -- Toggle Tailscale VPN
+hl.bind(mod .. " + SHIFT + Q", hl.dsp.exit())                                                              -- Exit Hyprland
+hl.bind(mod .. " + L",         hl.dsp.exec_cmd("wlogout-wrapper.sh"))                                      -- Power menu (wlogout)
+hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("loginctl lock-session"))                                   -- Lock screen
+hl.bind(mod .. " + CTRL + L",  hl.dsp.exec_cmd("systemctl suspend"))                                       -- Suspend
+hl.bind(mod .. " + SHIFT + L", hl.dsp.exec_cmd(home .. "/.local/bin/compositor-logout.sh"))                -- Logout
+hl.bind(mod .. " + H",         hl.dsp.exec_cmd("rofi-keybindings"))                                        -- Keybinding help
+hl.bind(mod .. " + U",         hl.dsp.exec_cmd("swaync-client -t"))                                        -- Toggle notification center
+hl.bind(mod .. " + ALT + U",   hl.dsp.exec_cmd("swaync-client -d"))                                        -- Toggle DND
+
+-- ── 15. Mouse ────────────────────────────────────────────────────
+hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })                   -- Move window
+hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })                   -- Resize window
+
+-- ── 16. Opacity toggles (matched by windowrules.lua) ─────────────
+hl.bind(mod .. " + o",         hl.dsp.window.tag({ tag = "switch_opacity" }))
+hl.bind(mod .. " + SHIFT + o", hl.dsp.window.tag({ tag = "switch_opacity_half" }))

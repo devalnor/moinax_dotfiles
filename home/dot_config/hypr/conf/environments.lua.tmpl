@@ -1,0 +1,38 @@
+-- Ensure ~/.local/bin is in PATH for all spawned processes
+hl.env("PATH", (os.getenv("HOME") or "") .. "/.local/bin:" .. (os.getenv("PATH") or ""))
+
+-- XDG Desktop Portal
+hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
+hl.env("XDG_SESSION_TYPE",    "wayland")
+hl.env("XDG_SESSION_DESKTOP", "Hyprland")
+hl.env("XDG_MENU_PREFIX",     "plasma-")
+
+-- Qt
+hl.env("QT_QPA_PLATFORM",                  "wayland;xcb")
+hl.env("QT_QPA_PLATFORMTHEME",             "kde")
+hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
+hl.env("QT_AUTO_SCREEN_SCALE_FACTOR",      "1")
+
+-- GTK
+hl.env("GDK_SCALE", "1")
+
+-- Mozilla
+hl.env("MOZ_ENABLE_WAYLAND", "1")
+
+-- Cursor size for xcursor
+hl.env("XCURSOR_SIZE", "24")
+
+-- Ozone (Chromium / Electron)
+hl.env("OZONE_PLATFORM", "wayland")
+
+-- For KVM virtual machines (commented out by default)
+-- hl.env("WLR_NO_HARDWARE_CURSORS", "1")
+-- hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")
+{{- if .has_nvidia }}
+
+-- NVIDIA https://wiki.hypr.land/Nvidia/
+hl.env("LIBVA_DRIVER_NAME",         "nvidia")
+hl.env("GBM_BACKEND",               "nvidia-drm")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("__GL_VRR_ALLOWED",          "1")
+{{- end }}

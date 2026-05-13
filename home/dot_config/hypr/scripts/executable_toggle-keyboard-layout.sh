@@ -1,28 +1,27 @@
 #!/bin/bash
-
-# Path to the active input configuration file
-ACTIVE_INPUT_CONF="$HOME/.config/hypr/conf/input.conf"
+set -e
 
 # Directory containing your input layout template files
 LAYOUTS_DIR="$HOME/.config/hypr/conf/input-layouts"
 
-# Ensure the layouts directory exists
-mkdir -p "$LAYOUTS_DIR"
-
-# Ensure the active input conf file exists (it should, as hyprland sources it)
-touch "$ACTIVE_INPUT_CONF"
-
-# --- Discover available layouts and their order ---
-# Read all .conf files from the layouts directory into an array, sorted alphabetically.
-# We'll store full paths for direct copying.
-mapfile -t LAYOUT_FILES < <(find "$LAYOUTS_DIR" -maxdepth 1 -name "*.conf" | sort)
-
-# Check if any layout files were found
-if [ ${#LAYOUT_FILES[@]} -eq 0 ]; then
-    notify-send -u critical "Hyprland Keyboard Layout Toggle Error" "No keyboard layout files found in: $LAYOUTS_DIR/*.conf"
-    echo "Error: No keyboard layout files found in $LAYOUTS_DIR/*.conf" >&2
+# Detect the deployed flavor (Lua for Hyprland >= 0.55, hyprlang .conf otherwise).
+# We rely on whatever extension chezmoi materialised in the layouts dir.
+if compgen -G "$LAYOUTS_DIR/*.lua" > /dev/null; then
+    EXT="lua"
+elif compgen -G "$LAYOUTS_DIR/*.conf" > /dev/null; then
+    EXT="conf"
+else
+    notify-send -u critical "Hyprland Keyboard Layout Toggle Error" "No keyboard layout files found in: $LAYOUTS_DIR (.lua or .conf)"
+    echo "Error: No keyboard layout files found in $LAYOUTS_DIR (.lua or .conf)" >&2
     exit 1
 fi
+
+# Path to the active input configuration file (matches the detected flavor)
+ACTIVE_INPUT_CONF="$HOME/.config/hypr/conf/input.$EXT"
+
+# --- Discover available layouts and their order ---
+# We'll store full paths for direct copying.
+mapfile -t LAYOUT_FILES < <(find "$LAYOUTS_DIR" -maxdepth 1 -name "*.$EXT" | sort)
 
 # --- Prepare layout names for Rofi and map them to their full paths ---
 declare -A layout_paths # Associative array to map display name to file path
@@ -30,7 +29,7 @@ layout_display_names=() # Array to store names for Rofi display
 
 for layout_file_path in "${LAYOUT_FILES[@]}"; do
     # Extract the display name (e.g., "English" from "1_english.conf")
-    display_name=$(basename "$layout_file_path" | sed -E 's/^[0-9]+_//' | sed 's/\.conf$//' | sed 's/_/ /g' | sed 's/\b\(.\)/\U\1/g')
+    display_name=$(basename "$layout_file_path" | sed -E 's/^[0-9]+_//' | sed -E "s/\.$EXT$//" | sed 's/_/ /g' | sed 's/\b\(.\)/\U\1/g')
 
     layout_paths["$display_name"]="$layout_file_path"
     layout_display_names+=("$display_name")
