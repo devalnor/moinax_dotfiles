@@ -31,6 +31,10 @@
       "state": "transient",
       "summary": "^Hyprland$"
     },
+    "hyprland-layout": {
+      "state": "transient",
+      "app-name": "^Hyprland layout$"
+    },
     "waybar-reload": {
       "state": "transient",
       "summary": "^Waybar$"
