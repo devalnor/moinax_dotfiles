@@ -938,7 +938,7 @@ install_common_tools() {
     fi
 
     # Install rofi themes when a Wayland compositor group is selected
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+    if group_selected hyprland || group_selected niri; then
         print_info "Installing Rofi themes collection..."
         local temp_dir="/tmp/rofi-themes-collection"
         local themes_dir="$HOME/.local/share/rofi/themes"
@@ -961,7 +961,7 @@ install_common_tools() {
     fi
 
     # Setup hyprvoice (AI group)
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " ai " ]]; then
+    if group_selected ai; then
         # Install hyprvoice binary (Fedora only — Arch uses AUR package)
         if [ "$DISTRO_FAMILY" = "fedora" ] && ! command_exists hyprvoice; then
             install_curl_tool "hyprvoice" \
@@ -1227,8 +1227,7 @@ EOF
 
 # Migrate from old notification daemons (mako/dunst) to swaync
 migrate_notification_daemon() {
-    if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]] && \
-       ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+    if ! group_selected hyprland && ! group_selected niri; then
         return 0
     fi
 
@@ -1442,7 +1441,7 @@ install_nvidia_drivers() {
     fi
 
     local gaming_selected=false
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " gaming " ]]; then
+    if group_selected gaming; then
         gaming_selected=true
     fi
 
@@ -1517,10 +1516,10 @@ setup_nvidia() {
 
         # Install compositor STOP/CONT services to prevent deadlock during GPU suspend.
         # ONLY for <595 — do NOT move outside the else branch (see comment above).
-        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+        if group_selected hyprland; then
             install_compositor_suspend_services "Hyprland" "hyprland"
         fi
-        if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+        if group_selected niri; then
             install_compositor_suspend_services "niri" "niri"
         fi
     fi
@@ -1690,17 +1689,17 @@ enable_selected_services() {
     done
     
     # Add user to docker group if development is selected
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]]; then
+    if group_selected development; then
         add_user_to_group "docker"
     fi
 
     # Add user to input group for swayosd caps-lock detection (Hyprland/Niri)
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]] || [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+    if group_selected hyprland || group_selected niri; then
         add_user_to_group "input"
     fi
 
     # Set tailscale operator and authenticate if development is selected and tailscale is installed
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " development " ]] && command -v tailscale &>/dev/null; then
+    if group_selected development && command -v tailscale &>/dev/null; then
         print_info "Setting Tailscale operator to $USER"
         sudo tailscale set --operator="$USER"
         print_success "Tailscale operator set (no sudo needed for tailscale commands)"
@@ -1724,7 +1723,7 @@ enable_selected_services() {
 # the freshclam updater, wait for the signature DBs to populate, and start the
 # on-access scan daemon (needs DBs present to load).
 setup_clamav() {
-    if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " security " ]]; then
+    if ! group_selected security; then
         return 0
     fi
 
@@ -1782,6 +1781,135 @@ setup_clamav() {
     enable_service "$clamd_svc"
 }
 
+# Configure fingerprint authentication (fprintd + PAM) and Bitwarden biometric unlock.
+setup_biometric() {
+    group_selected biometric || return 0
+    if ! command_exists fprintd-enroll; then
+        track_warning "fprintd not installed — skipping biometric setup"
+        return 0
+    fi
+
+    print_header "Configuring Biometric Authentication"
+
+    if fprintd-list "$USER" 2>&1 | grep -q '^Fingerprints for user'; then
+        print_info "Fingerprint(s) already enrolled for $USER"
+    elif gum confirm "Enroll a fingerprint now?"; then
+        print_info "Touch the sensor several times when prompted..."
+        # Use sudo: polkit's enroll rule requires an "active" session with auth_admin,
+        # which fails from many terminal contexts (subterminals, IDE shells, tmux).
+        # fprintd-enroll defaults to right-index-finger; user can re-run for other fingers.
+        if sudo fprintd-enroll "$USER"; then
+            print_success "Fingerprint enrolled"
+        else
+            track_warning "fprintd-enroll failed — run 'sudo fprintd-enroll \$USER' manually later"
+        fi
+    fi
+
+    # PAM fingerprint covers login, sudo, AND polkit — Bitwarden's biometric unlock goes via polkit.
+    if gum confirm "Enable fingerprint for system auth (login, sudo, polkit, Bitwarden)?"; then
+        case "$DISTRO_FAMILY" in
+            fedora)
+                if ! command_exists authselect; then
+                    track_warning "authselect not found — enable PAM fingerprint manually"
+                elif authselect current 2>/dev/null | grep -q 'with-fingerprint'; then
+                    print_info "authselect 'with-fingerprint' feature already enabled"
+                elif sudo authselect enable-feature with-fingerprint; then
+                    print_success "Enabled authselect 'with-fingerprint'"
+                else
+                    track_warning "Failed to enable authselect 'with-fingerprint'"
+                fi
+                ;;
+            arch|debian)
+                local pam_file
+                if [ "$DISTRO_FAMILY" = "arch" ]; then
+                    pam_file=/etc/pam.d/system-local-login
+                    [ -f /etc/pam.d/system-auth ] && pam_file=/etc/pam.d/system-auth
+                else
+                    pam_file=/etc/pam.d/common-auth
+                fi
+                if sudo grep -q 'pam_fprintd.so' "$pam_file" 2>/dev/null; then
+                    print_info "pam_fprintd already configured in $pam_file"
+                else
+                    print_info "Adding pam_fprintd.so to $pam_file"
+                    sudo cp "$pam_file" "${pam_file}.bak.$(date +%s)"
+                    sudo sed -i '0,/^auth/s//auth      sufficient   pam_fprintd.so\n&/' "$pam_file"
+                    print_success "PAM fingerprint enabled (backup: ${pam_file}.bak.*)"
+                fi
+                ;;
+            *)
+                track_warning "PAM fingerprint setup not implemented for $DISTRO_FAMILY"
+                ;;
+        esac
+    fi
+
+    # Hyprlock / swaylock PAM stacks default to `auth include login`, which pulls in
+    # system-auth where pam_fprintd sits before pam_unix — so typing a password waits
+    # for the fprintd timeout (~10s) before falling through. Switch to password-auth
+    # (no fprintd) for instant password fallback. Fingerprint at the lockscreen is
+    # handled by hyprlock natively via D-Bus (auth.fingerprint in hyprlock.conf),
+    # independently from this PAM stack.
+    local pam_file ts
+    ts=$(date +%s)
+    for pam_file in /etc/pam.d/hyprlock /etc/pam.d/swaylock; do
+        [ -f "$pam_file" ] || continue
+        if grep -qE '^auth\s+include\s+password-auth\s*$' "$pam_file"; then
+            print_info "$(basename "$pam_file") PAM already uses password-auth"
+            continue
+        fi
+        if ! grep -qE '^auth\s+include\s+login\s*$' "$pam_file"; then
+            print_info "$(basename "$pam_file") PAM uses a non-default stack — leaving as is"
+            continue
+        fi
+        print_info "Patching $pam_file to skip fprintd timeout on password"
+        sudo cp "$pam_file" "${pam_file}.bak.${ts}"
+        sudo sed -i 's|^auth\s\+include\s\+login\s*$|auth        include      password-auth|' "$pam_file"
+        print_success "$pam_file patched (backup: ${pam_file}.bak.${ts})"
+    done
+
+    # Bitwarden Flatpak needs talk access to the Secret Service (libsecret) — the
+    # desktop stores its biometric-unlock key there. Browser integration is NOT
+    # supported on Linux (Bitwarden limitation, not a Flatpak one), so we don't
+    # bother granting access to browser config dirs.
+    if flatpak info com.bitwarden.desktop &>/dev/null; then
+        print_info "Applying Flatpak overrides for Bitwarden"
+        if flatpak override --user com.bitwarden.desktop \
+            --talk-name=org.freedesktop.secrets 2>/dev/null; then
+            print_success "Bitwarden Flatpak overrides applied"
+        else
+            track_warning "Failed to apply Bitwarden Flatpak overrides"
+        fi
+
+        # The Flatpak sandbox can't install the polkit action that Bitwarden needs for
+        # "Unlock with system authentication" — drop it in manually from upstream.
+        # https://bitwarden.com/help/biometrics/#linux-flatpak
+        local bw_policy=/usr/share/polkit-1/actions/com.bitwarden.Bitwarden.policy
+        local bw_policy_url=https://raw.githubusercontent.com/bitwarden/clients/main/apps/desktop/resources/com.bitwarden.desktop.policy
+        if [ -f "$bw_policy" ]; then
+            print_info "Bitwarden polkit policy already present"
+        else
+            print_info "Installing Bitwarden polkit policy"
+            if sudo wget -q -O "$bw_policy" "$bw_policy_url" && sudo chown root:root "$bw_policy"; then
+                # SELinux contexts (Fedora/RHEL) — chcon is a no-op without SELinux, skip if missing.
+                command_exists chcon && sudo chcon system_u:object_r:usr_t:s0 "$bw_policy" 2>/dev/null || true
+                print_success "Bitwarden polkit policy installed"
+            else
+                track_warning "Failed to install Bitwarden polkit policy — see https://bitwarden.com/help/biometrics/#linux-flatpak"
+                sudo rm -f "$bw_policy"
+            fi
+        fi
+    fi
+
+    echo ""
+    gum style --foreground 39 --bold "Next steps inside Bitwarden Desktop:"
+    echo "  1. Open Bitwarden Desktop and log in with your master password"
+    echo "  2. Settings → Security → enable 'Unlock with system authentication'"
+    echo "     (confirms with your fingerprint via polkit)"
+    echo ""
+    print_warning "Bitwarden does NOT support browser-extension biometric unlock on Linux."
+    print_info "    Workaround: enable 'Unlock with PIN' in the extension for fast unlock."
+    print_info "    Master password is still required on the first unlock after login/reboot."
+}
+
 # Setup SSH key
 setup_ssh() {
     print_header "SSH Key Setup"
@@ -1817,7 +1945,7 @@ setup_ssh() {
 # Setup SDDM (wallpaper, Wayland compositor, display manager)
 setup_sddm() {
     # Only run if a compositor group was selected
-    if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]] && ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " hyprland " ]]; then
+    if ! group_selected niri && ! group_selected hyprland; then
         return
     fi
 
@@ -2181,7 +2309,7 @@ configure_grub_saved_default() {
 # Setup BTRFS snapshots with Snapper (conditional on BTRFS + productivity group)
 setup_btrfs_snapshots() {
     # Only run if productivity group was selected
-    if ! [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " productivity " ]]; then
+    if ! group_selected productivity; then
         return 0
     fi
 
@@ -2381,12 +2509,12 @@ show_completion() {
         next_step=$((next_step + 1))
     fi
 
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " niri " ]]; then
+    if group_selected niri; then
         steps+=("  $next_step. Log out, choose Niri in your display manager, and log back in")
         next_step=$((next_step + 1))
     fi
 
-    if [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " ai " ]]; then
+    if group_selected ai; then
         steps+=("  $next_step. Press Mod+D to toggle dictation (hyprvoice)")
         next_step=$((next_step + 1))
     fi
@@ -2452,6 +2580,12 @@ main() {
         print_info "NVIDIA GPU detected"
     fi
 
+    HAS_FINGERPRINT=false
+    if has_fingerprint_reader; then
+        HAS_FINGERPRINT=true
+        print_info "Fingerprint reader detected"
+    fi
+
     # Check for gum
     check_gum
     
@@ -2470,6 +2604,8 @@ main() {
     IFS=$'\n' group_files=($(printf '%s\n' "${group_files[@]}" | sort))
     unset IFS
     for group_file in "${group_files[@]}"; do
+        local group_name
+        group_name=$(basename "$group_file" .yaml)
         # Filter groups by environment when in terminal mode
         if [ "$INSTALL_PURPOSE" = "terminal" ]; then
             local env
@@ -2478,7 +2614,11 @@ main() {
                 continue
             fi
         fi
-        SELECTED_GROUP_NAMES+=("$(basename "$group_file" .yaml)")
+        if [ "$group_name" = "biometric" ] && [ "$HAS_FINGERPRINT" != "true" ]; then
+            print_info "Skipping 'biometric' group — no fingerprint reader detected"
+            continue
+        fi
+        SELECTED_GROUP_NAMES+=("$group_name")
     done
     select_group_packages
     
@@ -2497,6 +2637,7 @@ main() {
     fi
     enable_selected_services
     setup_clamav
+    setup_biometric
     configure_grub_saved_default
     setup_grub_theme
     setup_btrfs_snapshots

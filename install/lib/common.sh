@@ -43,6 +43,11 @@ install_interrupt_trap() {
     trap 'echo; print_warning "Interrupted."; exit 130' INT TERM
 }
 
+# Test whether a group is in SELECTED_GROUP_NAMES.
+group_selected() {
+    [[ " ${SELECTED_GROUP_NAMES[*]} " =~ " $1 " ]]
+}
+
 print_header() {
     echo ""
     echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

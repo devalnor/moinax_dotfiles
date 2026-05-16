@@ -113,6 +113,15 @@ get_nvidia_driver_version() {
     echo "${version%%.*}"
 }
 
+# Check if the system has a fingerprint reader.
+# Pre-install detection: scan lsusb for "fingerprint"/"biometric" strings or for the
+# vendor IDs of dedicated fingerprint chip makers — Goodix (27c6), Validity (138a),
+# AuthenTec (08ff), Upek (147e).
+has_fingerprint_reader() {
+    command -v lsusb &>/dev/null || return 1
+    lsusb 2>/dev/null | grep -qiE 'fingerprint|biometric|ID (27c6|138a|08ff|147e):'
+}
+
 # Check if the NVIDIA driver supports kernel suspend notifiers (driver 595+).
 # See the version-dependent suspend comment in setup_nvidia() (installer.sh) for implications.
 # Returns 0 if supported, 1 otherwise (including when version is undetectable — safe fallback).
