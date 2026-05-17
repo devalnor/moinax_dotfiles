@@ -79,25 +79,42 @@ bind = SUPER, apostrophe, workspace, 4
 bind = SUPER, parenleft, workspace, 5
 bind = SUPER, minus, workspace, 6
 bind = SUPER, egrave, workspace, 7
+# Relative prev/next workspace (Niri-style up/down). `r±1` walks rule-defined
+# workspaces on the current monitor including empty ones.
+bind = SUPER, Page_Up, workspace, r-1
+bind = SUPER, Page_Down, workspace, r+1
+# Wheel inverted vs Page keys: scroll up advances to next workspace
+# (natural-scroll feel).
+bind = SUPER, mouse_up, workspace, r+1
+bind = SUPER, mouse_down, workspace, r-1
 
 # ── 8. Move to Workspace ─────────────────────────────────────────
-# QWERTY
-bind = SUPER SHIFT, 1, movetoworkspace, 1
-bind = SUPER SHIFT, 2, movetoworkspace, 2
-bind = SUPER SHIFT, 3, movetoworkspace, 3
-bind = SUPER SHIFT, 4, movetoworkspace, 4
-bind = SUPER SHIFT, 5, movetoworkspace, 5
-bind = SUPER SHIFT, 6, movetoworkspace, 6
-bind = SUPER SHIFT, 7, movetoworkspace, 7
-# AZERTY
-bind = SUPER SHIFT, ampersand, movetoworkspace, 1
-bind = SUPER SHIFT, eacute, movetoworkspace, 2
-bind = SUPER SHIFT, quotedbl, movetoworkspace, 3
-bind = SUPER SHIFT, apostrophe, movetoworkspace, 4
-bind = SUPER SHIFT, parenleft, movetoworkspace, 5
-bind = SUPER SHIFT, minus, movetoworkspace, 6
-bind = SUPER SHIFT, egrave, movetoworkspace, 7
-# Silent move (AZERTY)
+# Convention: ALT = move with follow, CTRL = silent move (no follow).
+# QWERTY (follow)
+bind = SUPER ALT, 1, movetoworkspace, 1
+bind = SUPER ALT, 2, movetoworkspace, 2
+bind = SUPER ALT, 3, movetoworkspace, 3
+bind = SUPER ALT, 4, movetoworkspace, 4
+bind = SUPER ALT, 5, movetoworkspace, 5
+bind = SUPER ALT, 6, movetoworkspace, 6
+bind = SUPER ALT, 7, movetoworkspace, 7
+# QWERTY (silent)
+bind = SUPER CTRL, 1, movetoworkspacesilent, 1
+bind = SUPER CTRL, 2, movetoworkspacesilent, 2
+bind = SUPER CTRL, 3, movetoworkspacesilent, 3
+bind = SUPER CTRL, 4, movetoworkspacesilent, 4
+bind = SUPER CTRL, 5, movetoworkspacesilent, 5
+bind = SUPER CTRL, 6, movetoworkspacesilent, 6
+bind = SUPER CTRL, 7, movetoworkspacesilent, 7
+# AZERTY (follow)
+bind = SUPER ALT, ampersand, movetoworkspace, 1
+bind = SUPER ALT, eacute, movetoworkspace, 2
+bind = SUPER ALT, quotedbl, movetoworkspace, 3
+bind = SUPER ALT, apostrophe, movetoworkspace, 4
+bind = SUPER ALT, parenleft, movetoworkspace, 5
+bind = SUPER ALT, minus, movetoworkspace, 6
+bind = SUPER ALT, egrave, movetoworkspace, 7
+# AZERTY (silent)
 bind = SUPER CTRL, ampersand, movetoworkspacesilent, 1
 bind = SUPER CTRL, eacute, movetoworkspacesilent, 2
 bind = SUPER CTRL, quotedbl, movetoworkspacesilent, 3
@@ -105,10 +122,19 @@ bind = SUPER CTRL, apostrophe, movetoworkspacesilent, 4
 bind = SUPER CTRL, parenleft, movetoworkspacesilent, 5
 bind = SUPER CTRL, minus, movetoworkspacesilent, 6
 bind = SUPER CTRL, egrave, movetoworkspacesilent, 7
+# Relative prev/next (mirror of focus binds above).
+bind = SUPER ALT, Page_Up, movetoworkspace, r-1
+bind = SUPER ALT, Page_Down, movetoworkspace, r+1
+bind = SUPER CTRL, Page_Up, movetoworkspacesilent, r-1
+bind = SUPER CTRL, Page_Down, movetoworkspacesilent, r+1
+bind = SUPER ALT, mouse_up, movetoworkspace, r+1
+bind = SUPER ALT, mouse_down, movetoworkspace, r-1
+bind = SUPER CTRL, mouse_up, movetoworkspacesilent, r+1
+bind = SUPER CTRL, mouse_down, movetoworkspacesilent, r-1
 
 # ── 10. Scratchpad ────────────────────────────────────────────────
 bind = SUPER, S, togglespecialworkspace, # Open the scratchpad
-bind = SUPER SHIFT, S, movetoworkspace, special # Move to scratchpad
+bind = SUPER ALT, S, movetoworkspace, special # Move to scratchpad
 bind = SUPER CTRL, S, movetoworkspacesilent, special # Move to scratchpad (silent)
 
 # ── 11. Reload Configs ───────────────────────────────────────────

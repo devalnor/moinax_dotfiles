@@ -45,8 +45,8 @@
 | Center column | — | `Mod+Alt+C` | Niri only |
 | Center visible columns | — | `Mod+Ctrl+C` | Niri only |
 | Maximize column | — | `Mod+Alt+M` | Niri only |
-| Preset column widths | `Mod+W` | `Mod+W` | Hyprland: `colresize +conf` (scrolling layout only); cycles preset widths |
-| Preset column widths (reverse) | `Mod+Alt+W` | `Mod+Alt+W` | Hyprland: `colresize -conf` (scrolling layout only); Niri: preset window heights |
+| Preset column widths | — | `Mod+W` | Niri only |
+| Preset column widths (reverse) | — | `Mod+Alt+W` | Niri only (preset window heights) |
 | Preset window heights | — | `Mod+Alt+W` | Niri only |
 | Reset window height | — | `Mod+Ctrl+W` | Niri only |
 | Switch float/tile focus | — | `Mod+P` | Niri only |
@@ -91,14 +91,8 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Consume into / expel from next column | `Mod+Alt+J` | `Mod+J` | Hyprland: scrolling-layout `consume_or_expel next`; Niri: `consume-window-into-column` |
-| Consume into / expel from prev column | `Mod+Alt+Shift+J` | `Mod+Shift+J` | Hyprland: scrolling-layout `consume_or_expel prev`; Niri: `expel-window-from-column` |
-| Promote window to own column | `Mod+Alt+P` | — | Hyprland scrolling layout only |
-| Pin tape (inhibit scroll) | `Mod+Alt+Z` | — | Hyprland scrolling layout only (per-workspace toggle) |
-| Move tape right (one column) | `Mod+Period` | — | Hyprland scrolling layout only |
-| Move tape left (one column) | `Mod+Comma` | — | Hyprland scrolling layout only |
-| Swap column with right neighbor | `Mod+Alt+Period` | — | Hyprland scrolling layout only |
-| Swap column with left neighbor | `Mod+Alt+Comma` | — | Hyprland scrolling layout only |
+| Consume into column | — | `Mod+J` | Niri only (consume-window-into-column) |
+| Expel from column | — | `Mod+Shift+J` | Niri only (expel-window-from-column) |
 | Toggle tabbed display | — | `Mod+G` | Niri: toggle-column-tabbed-display |
 | Normal display | — | `Mod+Shift+G` | Niri: set-column-display "normal" |
 | Toggle group | `Mod+G` | — | Hyprland only (togglegroup) |
@@ -107,9 +101,7 @@
 | Swap in group | `Alt+Ctrl+Tab` | — | Hyprland only (movegroupwindow) |
 | Toggle split | `Mod+J` | — | Hyprland only (togglesplit, dwindle layout) |
 
-> **Note**: Hyprland's scrolling-layout binds (`Mod+W`, `Mod+Period`, `Mod+Comma`, `Mod+Alt+J/P/Z`, etc.) are layout messages — they only have an effect on workspaces currently using the `scrolling` layout. On dwindle workspaces they are silent no-ops.
-
-> **Layout note**: `Mod+Period` / `Mod+Comma` (and their `Mod+Alt+…` variants) are double-bound to the AZERTY equivalents `Mod+Colon` / `Mod+Semicolon`, so the same finger position works on QWERTY and BE/FR keyboards.
+> **Scrolling layout**: when a workspace is flipped to `scrolling` (via `Mod+Alt+T`), the standard arrow binds above (focus / movewindow / group-swap / resize) all work — Hyprland routes them through the active layout. Column-stacking ops (consume/expel/promote) and viewport pan are not bound.
 
 > **Key reuse**: `Mod+J` and `Mod+G` serve different but analogous purposes in each compositor.
 > Hyprland: `J` = toggle split layout, `G` = toggle group.
@@ -133,37 +125,43 @@
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Focus workspace up | — | `Mod+Page_Up` | Niri only |
-| Focus workspace down | — | `Mod+Page_Down` | Niri only |
+| Focus workspace up | `Mod+Page_Up` | `Mod+Page_Up` | Hyprland: `workspace r-1` (cycles rule-defined WS on current monitor, incl. empty) |
+| Focus workspace down | `Mod+Page_Down` | `Mod+Page_Down` | Hyprland: `workspace r+1` |
+| Focus next workspace (mouse) | `Mod+WheelUp` | `Mod+WheelDown` | Hyprland wheel inverted vs page keys (`r+1` on scroll up); Niri throttles 150ms |
+| Focus prev workspace (mouse) | `Mod+WheelDown` | `Mod+WheelUp` | Hyprland: `r-1` on scroll down |
 
 ## 8. Move to Workspace
+
+> **Hyprland convention**: `Alt` = move with focus follow, `Ctrl` = silent move (window goes, focus stays). `Shift` is reserved for less common actions (reload configs, etc.).
 
 ### By number (QWERTY)
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Move to WS 1–7 | `Mod+Shift+1` .. `Mod+Shift+7` | `Mod+Shift+1` .. `Mod+Shift+7` | |
+| Move to WS 1–7 (follow) | `Mod+Alt+1` .. `Mod+Alt+7` | `Mod+Shift+1` .. `Mod+Shift+7` | |
+| Silent move to WS 1–7 | `Mod+Ctrl+1` .. `Mod+Ctrl+7` | — | Hyprland only (movetoworkspacesilent) |
 
 ### By number (AZERTY)
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Move to WS 1–7 | `Mod+Shift+&` .. `Mod+Shift+è` | `Mod+Shift+&` .. `Mod+Shift+è` | |
-
-### Silent move (AZERTY)
-
-| Action | Hyprland | Niri | Notes |
-|---|---|---|---|
-| Silent move to WS 1–7 | `Mod+Ctrl+&` .. `Mod+Ctrl+è` | — | Hyprland only (movetoworkspacesilent) |
+| Move to WS 1–7 (follow) | `Mod+Alt+&` .. `Mod+Alt+è` | `Mod+Shift+&` .. `Mod+Shift+è` | |
+| Silent move to WS 1–7 | `Mod+Ctrl+&` .. `Mod+Ctrl+è` | — | Hyprland only |
 
 ### Directional
 
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
-| Move column to WS up | — | `Mod+Shift+Page_Up` | Niri only |
-| Move column to WS down | — | `Mod+Shift+Page_Down` | Niri only |
-| Reorder workspace up | — | `Mod+Alt+Page_Up` | Niri only (move-workspace-up) |
-| Reorder workspace down | — | `Mod+Alt+Page_Down` | Niri only (move-workspace-down) |
+| Move window to WS up (follow) | `Mod+Alt+Page_Up` | `Mod+Shift+Page_Up` | Hyprland: `movetoworkspace r-1` |
+| Move window to WS down (follow) | `Mod+Alt+Page_Down` | `Mod+Shift+Page_Down` | Hyprland: `movetoworkspace r+1` |
+| Silent move to WS up | `Mod+Ctrl+Page_Up` | — | Hyprland: `movetoworkspacesilent r-1` |
+| Silent move to WS down | `Mod+Ctrl+Page_Down` | — | Hyprland: `movetoworkspacesilent r+1` |
+| Move to next WS (mouse, follow) | `Mod+Alt+WheelUp` | — | Hyprland: `movetoworkspace r+1` (wheel inverted vs page keys) |
+| Move to prev WS (mouse, follow) | `Mod+Alt+WheelDown` | — | Hyprland: `movetoworkspace r-1` |
+| Silent move to next WS (mouse) | `Mod+Ctrl+WheelUp` | `Mod+Ctrl+WheelDown` | Hyprland: `movetoworkspacesilent r+1` |
+| Silent move to prev WS (mouse) | `Mod+Ctrl+WheelDown` | `Mod+Ctrl+WheelUp` | Hyprland: `movetoworkspacesilent r-1` |
+| Reorder workspace up | — | `Mod+Alt+Page_Up` | Niri only (key shadowed on Hyprland by follow-move) |
+| Reorder workspace down | — | `Mod+Alt+Page_Down` | Niri only |
 
 ## 9. Monitor Navigation
 
@@ -181,7 +179,7 @@
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Toggle scratchpad | `Mod+S` | — | Hyprland only (special workspace) |
-| Move to scratchpad | `Mod+Shift+S` | — | Hyprland only |
+| Move to scratchpad | `Mod+Alt+S` | — | Hyprland only |
 | Move to scratchpad (silent) | `Mod+Ctrl+S` | — | Hyprland only |
 
 ## 11. Reload Configs
@@ -280,8 +278,5 @@ Keys that do **different things** in each compositor:
 |---|---|---|
 | `Mod+G` | Toggle group | Tabbed column display |
 | `Mod+J` | Toggle split (dwindle) | Consume into column |
-| `Mod+Alt+J` | Scrolling: consume_or_expel next | *(unbound)* |
-| `Mod+Alt+P` | Scrolling: promote to own column | Power off monitors |
-| `Mod+Alt+Comma` / `Mod+Alt+Period` | Scrolling: swap column with neighbor | Focus monitor left/right |
 | `Mod+Alt+Up/Down` | Swap window | Workspace reorder |
 | `Mod+Alt+T` | Toggle workspace scrolling ↔ baseline | *(unbound)* |
