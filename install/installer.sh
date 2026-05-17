@@ -1866,6 +1866,16 @@ setup_biometric() {
         print_success "$pam_file patched (backup: ${pam_file}.bak.${ts})"
     done
 
+    # SDDM (display manager) is left untouched. Enabling fingerprint at the
+    # greeter requires switching the auth stack to one that includes
+    # pam_fprintd, but PAM is serial (cf. man pam_fprintd) and SDDM lacks
+    # GDM-style parallel auth UI — so any fprintd timeout becomes either a
+    # short fingerprint window (silent, since the Breeze theme gives no
+    # scanning feedback) or a multi-second wait after typing a password.
+    # Neither trade-off is worth it given hyprlock already provides
+    # fingerprint at the lockscreen via native D-Bus. Reboots fall back to
+    # password at the SDDM greeter.
+
     # Bitwarden Flatpak needs talk access to the Secret Service (libsecret) — the
     # desktop stores its biometric-unlock key there. Browser integration is NOT
     # supported on Linux (Bitwarden limitation, not a Flatpak one), so we don't
