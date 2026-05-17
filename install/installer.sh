@@ -1774,6 +1774,68 @@ enable_selected_services() {
     print_success "Services enabled"
 }
 
+# Trim services that gate the system graphical.target so uwsm can launch the
+# compositor sooner after SDDM login.
+#
+# Diagnosed via `systemd-analyze critical-chain`:
+#   graphical.target @25.6s
+#     └─multi-user.target @25.6s
+#       └─docker.service @20.7s +4.9s
+#         └─network-online.target @20.7s
+#           └─NetworkManager-wait-online.service @5.4s +15.3s
+#
+# Net result: ~12s of black screen between SDDM login and Hyprland appearing.
+tune_boot_performance() {
+    if [ "$INSTALL_PURPOSE" != "desktop" ]; then
+        return 0
+    fi
+
+    print_header "Tuning Boot Performance"
+
+    source "$SCRIPT_DIR/lib/services.sh"
+
+    # 1. NetworkManager-wait-online — adds 15s+ before graphical.target.
+    # Safe to disable on a workstation; no service in our stack needs the
+    # network fully online before the user session starts.
+    disable_service NetworkManager-wait-online.service
+
+    # 2. Docker — stock unit has Wants=network-online.target, which would
+    # re-pull NetworkManager-wait-online (or any equivalent) and also chains
+    # ~5s of dockerd startup onto multi-user.target. Drop both the Wants= and
+    # After=network-online.target via a system drop-in so docker starts in
+    # parallel and doesn't gate graphical.target. Re-add the rest of the stock
+    # After= list and Wants=containerd.service so functionality is preserved.
+    if [[ " ${SERVICES_TO_ENABLE[*]} " == *" docker "* ]]; then
+        local docker_dropin_dir=/etc/systemd/system/docker.service.d
+        local docker_dropin_file="$docker_dropin_dir/no-network-online.conf"
+        print_info "Installing docker drop-in: drop Wants/After=network-online.target"
+        sudo mkdir -p "$docker_dropin_dir"
+        sudo tee "$docker_dropin_file" > /dev/null << 'EOF'
+# Managed by dotfiles installer (tune_boot_performance).
+# Drops network-online.target dependency so docker doesn't gate graphical.target.
+[Unit]
+Wants=
+Wants=containerd.service
+After=
+After=nss-lookup.target docker.socket firewalld.service containerd.service time-set.target
+EOF
+        sudo systemctl daemon-reload
+        print_success "Docker drop-in installed at $docker_dropin_file"
+    fi
+
+    # 3. vibewatch — upstream installer enables the unit via default.target.wants,
+    # which fires it before the compositor exists. Remove that stale symlink;
+    # the chezmoi drop-in rebinds the lifecycle to graphical-session.target.
+    local stale_vibewatch_link="$HOME/.config/systemd/user/default.target.wants/vibewatch.service"
+    if [ -L "$stale_vibewatch_link" ]; then
+        print_info "Removing stale vibewatch enable symlink in default.target.wants/"
+        rm -f "$stale_vibewatch_link"
+        systemctl --user daemon-reload 2>/dev/null || true
+    fi
+
+    print_success "Boot performance tuned"
+}
+
 # Configure and enable ClamAV (conditional on security group).
 # ClamAV ships with a poison-pill `Example` line in its configs and a commented
 # LocalSocket; the daemon won't start until these are fixed. On Debian the
@@ -2717,6 +2779,7 @@ main() {
         apply_dark_mode_defaults
     fi
     enable_selected_services
+    tune_boot_performance
     setup_clamav
     setup_biometric
     configure_grub_saved_default
