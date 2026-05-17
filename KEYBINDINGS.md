@@ -109,6 +109,8 @@
 
 > **Note**: Hyprland's scrolling-layout binds (`Mod+W`, `Mod+Period`, `Mod+Comma`, `Mod+Alt+J/P/Z`, etc.) are layout messages — they only have an effect on workspaces currently using the `scrolling` layout. On dwindle workspaces they are silent no-ops.
 
+> **Layout note**: `Mod+Period` / `Mod+Comma` (and their `Mod+Alt+…` variants) are double-bound to the AZERTY equivalents `Mod+Colon` / `Mod+Semicolon`, so the same finger position works on QWERTY and BE/FR keyboards.
+
 > **Key reuse**: `Mod+J` and `Mod+G` serve different but analogous purposes in each compositor.
 > Hyprland: `J` = toggle split layout, `G` = toggle group.
 > Niri: `J` = consume/expel column, `G` = toggle tabbed display.

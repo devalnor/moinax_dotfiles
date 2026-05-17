@@ -77,10 +77,17 @@ hl.bind("ALT + CTRL + TAB",     hl.dsp.group.move_window({ forward = true }))   
 -- ── 6b. Scrolling Layout (no-op on dwindle/vstack workspaces) ───
 hl.bind(mod .. " + W",               hl.dsp.layout("colresize +conf"))                     -- Cycle preset column widths
 hl.bind(mod .. " + ALT + W",         hl.dsp.layout("colresize -conf"))                     -- Cycle preset widths (reverse)
-hl.bind(mod .. " + period",          hl.dsp.layout("move +col"))                           -- Scroll tape right (one column)
-hl.bind(mod .. " + comma",           hl.dsp.layout("move -col"))                           -- Scroll tape left (one column)
-hl.bind(mod .. " + ALT + period",    hl.dsp.layout("swapcol r"))                           -- Swap column with right neighbor
-hl.bind(mod .. " + ALT + comma",     hl.dsp.layout("swapcol l"))                           -- Swap column with left neighbor
+-- Dual keysym bindings so the same finger position works on QWERTY (`,` `.`)
+-- and AZERTY (`;` `:`). The hyprland-lua wrapper does not pass through the
+-- `code:NN` syntax, so we bind both keysyms instead.
+hl.bind(mod .. " + period",            hl.dsp.layout("move +col"))                         -- Scroll tape right (one column)
+hl.bind(mod .. " + colon",             hl.dsp.layout("move +col"))                         -- AZERTY equivalent
+hl.bind(mod .. " + comma",             hl.dsp.layout("move -col"))                         -- Scroll tape left (one column)
+hl.bind(mod .. " + semicolon",         hl.dsp.layout("move -col"))                         -- AZERTY equivalent
+hl.bind(mod .. " + ALT + period",      hl.dsp.layout("swapcol r"))                         -- Swap column with right neighbor
+hl.bind(mod .. " + ALT + colon",       hl.dsp.layout("swapcol r"))                         -- AZERTY equivalent
+hl.bind(mod .. " + ALT + comma",       hl.dsp.layout("swapcol l"))                         -- Swap column with left neighbor
+hl.bind(mod .. " + ALT + semicolon",   hl.dsp.layout("swapcol l"))                         -- AZERTY equivalent
 hl.bind(mod .. " + ALT + J",         hl.dsp.layout("consume_or_expel next"))               -- Consume from / expel to next column
 hl.bind(mod .. " + ALT + SHIFT + J", hl.dsp.layout("consume_or_expel prev"))               -- Consume from / expel to prev column
 hl.bind(mod .. " + ALT + P",         hl.dsp.layout("promote"))                             -- Window to its own column
