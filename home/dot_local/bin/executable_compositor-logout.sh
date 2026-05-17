@@ -10,10 +10,7 @@ set -e
 if is_hyprland && command -v uwsm >/dev/null && uwsm check is-active >/dev/null 2>&1; then
     uwsm stop
 elif is_hyprland; then
-    # Hyprland 0.55+ parses `hyprctl dispatch` args as Lua, so a bare
-    # `exit` identifier no longer resolves. Passing an empty second arg
-    # forces the legacy parser, which both 0.55 (Arch) and <0.55 (Fedora)
-    # accept — so this single call works across versions.
+    # Empty 2nd arg forces hyprctl's legacy parser, working on 0.55 (Lua) and <0.55.
     hyprctl dispatch exit ""
 elif is_niri; then
     niri msg action quit --skip-confirmation

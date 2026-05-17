@@ -163,8 +163,6 @@ spawn-at-startup "/usr/libexec/polkit-kde-authentication-agent-1"
 {{ else -}}
 spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
 {{ end -}}
-spawn-at-startup "sh" "-c" "wl-paste --type text --watch cliphist store"
-spawn-at-startup "sh" "-c" "wl-paste --type image --watch cliphist store"
 spawn-at-startup "sh" "-c" "~/.local/bin/apply-dark-mode.sh"
 {{ if .install_ai -}}
 spawn-at-startup "systemctl" "--user" "start" "hyprvoice.service"

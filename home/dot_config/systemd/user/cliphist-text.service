@@ -1,0 +1,18 @@
+[Unit]
+Description=Clipboard history watcher (text) — wl-paste → cliphist
+Documentation=https://github.com/sentriz/cliphist
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+# Shadows Arch's distro-shipped /usr/lib/systemd/user/cliphist.service so
+# behavior is identical on Fedora (which ships none).
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/wl-paste --type text --watch cliphist store
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

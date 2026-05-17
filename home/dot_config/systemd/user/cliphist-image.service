@@ -1,0 +1,15 @@
+[Unit]
+Description=Clipboard history watcher (image) — wl-paste → cliphist
+Documentation=https://github.com/sentriz/cliphist
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/wl-paste --type image --watch cliphist store
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

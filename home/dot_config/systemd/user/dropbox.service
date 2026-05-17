@@ -5,9 +5,7 @@ PartOf=graphical-session.target
 After=graphical-session.target
 Requisite=graphical-session.target
 
-# Stay inactive (no crash-loop) until the user installs Dropbox via the
-# bypass path — see commit 4a75437. The graphical-session.target.wants
-# symlink can stay; systemd skips a unit whose condition is false.
+# Skip cleanly until the user has installed Dropbox via the bypass path.
 ConditionPathExists=%h/.dropbox-dist/dropboxd
 
 [Service]
