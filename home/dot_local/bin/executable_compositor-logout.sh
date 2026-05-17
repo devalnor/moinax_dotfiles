@@ -7,12 +7,14 @@ set -e
 # first, then the compositor) — no broken-pipe SIGABRTs, no drkonqi cascade.
 . "$HOME/.local/lib/compositor.sh"
 
-if is_hyprland && command -v uwsm >/dev/null && uwsm check active >/dev/null 2>&1; then
+if is_hyprland && command -v uwsm >/dev/null && uwsm check is-active >/dev/null 2>&1; then
     uwsm stop
 elif is_hyprland; then
-    # Non-uwsm fallback. Hyprland 0.55 parses `hyprctl dispatch` args as Lua,
-    # so the bare `exit` identifier no longer resolves — use the Lua form.
-    hyprctl dispatch 'hl.dsp.exit()'
+    # Hyprland 0.55+ parses `hyprctl dispatch` args as Lua, so a bare
+    # `exit` identifier no longer resolves. Passing an empty second arg
+    # forces the legacy parser, which both 0.55 (Arch) and <0.55 (Fedora)
+    # accept — so this single call works across versions.
+    hyprctl dispatch exit ""
 elif is_niri; then
     niri msg action quit --skip-confirmation
 else

@@ -1,0 +1,20 @@
+[Unit]
+Description=Clipboard history daemon (cliphist via wl-paste --watch)
+Documentation=https://github.com/sentriz/cliphist
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+# Arch's cliphist package ships its own user unit; ours lives in ~/.config
+# and takes precedence so the lifecycle is identical to Fedora (where the
+# package doesn't ship a unit at all). Two wl-paste watchers in one sh -c
+# match the previous spawn-at-startup layout for niri/hypr.
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c 'wl-paste --type text --watch cliphist store & wl-paste --type image --watch cliphist store & wait'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
