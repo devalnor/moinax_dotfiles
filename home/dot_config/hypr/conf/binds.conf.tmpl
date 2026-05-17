@@ -148,7 +148,8 @@ bindm = SUPER, mouse:272, movewindow # Move window
 bindm = SUPER, mouse:273, resizewindow # Resize window
 
 # ── 16. Opacity ───────────────────────────────────────────────────
+# Pre-0.55 syntax (windowrulev2 with tag: selector); see windowrules.conf header.
 bind = SUPER, o, tagwindow, switch_opacity
-windowrule = match:tag switch_opacity, opacity 1 override
+windowrulev2 = opacity 1 override, tag:switch_opacity
 bind = SUPER SHIFT, o, tagwindow, switch_opacity_half
-windowrule = match:tag switch_opacity_half, opacity 0.5 override
+windowrulev2 = opacity 0.5 override, tag:switch_opacity_half
