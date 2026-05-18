@@ -43,5 +43,14 @@ fi
 
 # keychain: hold ssh key for git/etc. -q silences the status banner.
 if command -v keychain &> /dev/null; then
+  # If the inherited SSH_AUTH_SOCK points to a dead agent (exit 2 from
+  # ssh-add -l means "could not connect"), unset it so keychain falls
+  # back to its own cache instead of trusting the stale socket. Do NOT
+  # wipe keychain's cache here — that would kill the live agent other
+  # shells are using and force a fresh passphrase prompt.
+  if [[ -n "$SSH_AUTH_SOCK" ]]; then
+    ssh-add -l &>/dev/null
+    [[ $? -eq 2 ]] && unset SSH_AUTH_SOCK SSH_AGENT_PID
+  fi
   eval "$(keychain --eval --quiet id_ed25519)"
 fi
