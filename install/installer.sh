@@ -1540,68 +1540,94 @@ setup_nvidia() {
     nvidia_major=$(get_nvidia_driver_version) || nvidia_major="unknown"
     print_info "NVIDIA driver version detected: ${nvidia_major}"
 
-    # --- Version-dependent suspend mechanism ---
-    # IMPORTANT: Driver 595+ uses kernel suspend notifiers (NVreg_UseKernelSuspendNotifiers=1)
-    # which handle the entire GPU suspend/resume lifecycle natively. The old systemd services
-    # (nvidia-suspend/resume/hibernate) and compositor STOP/CONT services MUST NOT be enabled
-    # on 595+ — they interfere with the kernel notifier mechanism and cause NVIDIA GSP heartbeat
-    # timeouts on resume (black screen, POST code "01"). This was verified empirically: enabling
-    # compositor STOP/CONT services on 595+ causes display loss on second resume cycle.
-    # Driver <595 still needs the systemd service approach and compositor STOP/CONT services.
-    #
-    # Always clean up legacy units first so an upgrade from <595 to 595+ on an existing
-    # install is self-healing — we then re-install them below only if still on <595.
-    cleanup_legacy_nvidia_suspend_services
-    if [ "$nvidia_major" != "unknown" ] && [ "$nvidia_major" -ge 595 ] 2>/dev/null; then
-        print_info "Driver ${nvidia_major}+ uses kernel suspend notifiers — no systemd services needed"
-    else
-        print_info "Driver ${nvidia_major} requires systemd suspend services"
+    # NVIDIA's kernel suspend notifier path is not reliable on this desktop:
+    # logs showed hard resets after "PM: suspend entry (deep)" when the legacy
+    # services were removed, while the service-based path resumed correctly.
+    # Keep the explicit systemd suspend/resume path even on driver 595+.
+    print_info "Using NVIDIA systemd suspend/resume services"
 
-        # Enable NVIDIA suspend/resume/hibernate services for GPU memory preservation
-        # Use enable without --now: these are oneshot services meant to run only during actual suspend/resume
-        for svc in nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service; do
-            if systemctl is-enabled "$svc" &>/dev/null; then
-                print_info "Service $svc is already enabled"
+    # Enable NVIDIA suspend/resume/hibernate services for GPU memory preservation.
+    # Use enable without --now: these are oneshot services meant to run only during actual suspend/resume.
+    for svc in nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service; do
+        if systemctl is-enabled "$svc" &>/dev/null; then
+            print_info "Service $svc is already enabled"
+        else
+            print_info "Enabling service: $svc"
+            if sudo systemctl enable "$svc"; then
+                print_success "Service $svc enabled"
             else
-                print_info "Enabling service: $svc"
-                if sudo systemctl enable "$svc"; then
-                    print_success "Service $svc enabled"
-                else
-                    print_warning "Failed to enable service $svc"
-                fi
+                print_warning "Failed to enable service $svc"
             fi
-        done
+        fi
+    done
 
-        # Install compositor STOP/CONT services to prevent deadlock during GPU suspend.
-        # ONLY for <595 — do NOT move outside the else branch (see comment above).
-        if group_selected hyprland; then
-            install_compositor_suspend_services "Hyprland" "hyprland"
-        fi
-        if group_selected niri; then
-            install_compositor_suspend_services "niri" "niri"
-        fi
+    # Install compositor STOP/CONT services to prevent GPU/compositor deadlocks during suspend.
+    if group_selected hyprland; then
+        install_compositor_suspend_services "Hyprland" "hyprland"
+    fi
+    if group_selected niri; then
+        install_compositor_suspend_services "niri" "niri"
     fi
 
     # --- Common configuration (required regardless of driver version) ---
 
-    # Configure modprobe to preserve VRAM across suspend/resume
+    # Configure modprobe for NVIDIA suspend/resume.
     local modprobe_conf="/etc/modprobe.d/nvidia.conf"
-    if ! grep -rqs 'NVreg_PreserveVideoMemoryAllocations=1' /etc/modprobe.d/; then
+    local nvidia_modprobe_options="NVreg_PreserveVideoMemoryAllocations=1"
+    local modprobe_changed=false
+
+    if ! grep -qs '^options[[:space:]]\+nvidia[[:space:]]' "$modprobe_conf"; then
         print_info "Configuring NVIDIA modprobe options..."
-        printf '%s\n' \
-            "options nvidia NVreg_PreserveVideoMemoryAllocations=1" \
-            "options nvidia-drm modeset=1" \
-            "options nvidia-drm fbdev=1" \
-            | sudo tee "$modprobe_conf" > /dev/null
+        printf '%s\n' "options nvidia $nvidia_modprobe_options" | sudo tee -a "$modprobe_conf" > /dev/null
+        modprobe_changed=true
         print_success "NVIDIA modprobe config written to $modprobe_conf"
     else
-        print_success "NVIDIA modprobe options already configured"
+        local missing_options=()
+        for option in $nvidia_modprobe_options; do
+            if ! grep -rqs "$option" /etc/modprobe.d/; then
+                missing_options+=("$option")
+            fi
+        done
+
+        if [ ${#missing_options[@]} -gt 0 ]; then
+            print_info "Adding missing NVIDIA modprobe options: ${missing_options[*]}"
+            local escaped_options
+            escaped_options=$(printf ' %s' "${missing_options[@]}")
+            sudo sed -i "/^options[[:space:]]\\+nvidia[[:space:]]/s/$/${escaped_options}/" "$modprobe_conf"
+            modprobe_changed=true
+            print_success "NVIDIA modprobe options updated in $modprobe_conf"
+        else
+            print_success "NVIDIA modprobe options already configured"
+        fi
+    fi
+    if grep -qs 'NVreg_UseKernelSuspendNotifiers=0' "$modprobe_conf"; then
+        print_info "Removing local NVIDIA kernel suspend notifier override (package default applies)"
+        sudo sed -i 's/[[:space:]]*NVreg_UseKernelSuspendNotifiers=0//g' "$modprobe_conf"
+        modprobe_changed=true
+        print_success "Local NVIDIA kernel suspend notifier override removed from $modprobe_conf"
+    fi
+    if ! grep -rqs '^options[[:space:]]\+nvidia-drm.*modeset=1' /etc/modprobe.d/; then
+        echo "options nvidia-drm modeset=1" | sudo tee -a "$modprobe_conf" > /dev/null
+        modprobe_changed=true
+    fi
+    if ! grep -rqs '^options[[:space:]]\+nvidia-drm.*fbdev=1' /etc/modprobe.d/; then
+        echo "options nvidia-drm fbdev=1" | sudo tee -a "$modprobe_conf" > /dev/null
+        modprobe_changed=true
     fi
 
-    # Disable vblank semaphore control to prevent GPU-accelerated app hangs after suspend
-    if ! grep -rqs 'vblank_sem_control=0' /etc/modprobe.d/; then
+    # Disable vblank semaphore control to prevent GPU-accelerated app hangs after suspend.
+    # Driver 595 no longer accepts this parameter, so remove stale copies on newer branches.
+    if [ "$nvidia_major" != "unknown" ] && [ "$nvidia_major" -ge 595 ] 2>/dev/null; then
+        if grep -qs 'vblank_sem_control=0' "$modprobe_conf"; then
+            print_info "Removing obsolete NVIDIA vblank_sem_control option"
+            sudo sed -i '/vblank_sem_control=0/d' "$modprobe_conf"
+            modprobe_changed=true
+            print_success "Obsolete NVIDIA vblank_sem_control option removed from $modprobe_conf"
+        fi
+    elif ! grep -rqs 'vblank_sem_control=0' /etc/modprobe.d/; then
         print_info "Adding vblank_sem_control=0 to prevent post-suspend rendering hangs..."
         echo "options nvidia_modeset vblank_sem_control=0" | sudo tee -a "$modprobe_conf" > /dev/null
+        modprobe_changed=true
         print_success "vblank_sem_control=0 added to $modprobe_conf"
     fi
 
@@ -1615,9 +1641,19 @@ setup_nvidia() {
     if ! grep -rqs 'blacklist spd5118' /etc/modprobe.d/; then
         print_info "Blacklisting spd5118 module (DDR5 temp sensor — causes S3 resume failures)..."
         echo "blacklist spd5118" | sudo tee /etc/modprobe.d/blacklist-spd5118.conf > /dev/null
+        modprobe_changed=true
         print_success "spd5118 module blacklisted"
     else
         print_success "spd5118 module already blacklisted"
+    fi
+
+    if [ "$modprobe_changed" = true ] && command -v mkinitcpio &>/dev/null; then
+        print_info "Rebuilding initramfs so early-loaded NVIDIA modules use updated modprobe options..."
+        if sudo mkinitcpio -P; then
+            print_success "Initramfs rebuilt"
+        else
+            print_warning "Failed to rebuild initramfs; reboot may still use stale NVIDIA options"
+        fi
     fi
 
     print_success "NVIDIA GPU setup complete"
@@ -1686,6 +1722,13 @@ install_compositor_suspend_services() {
 
     if [ -f "$suspend_svc" ] && [ -f "$resume_svc" ]; then
         print_info "${process_name} suspend/resume services already installed"
+        for svc in "${service_prefix}-suspend.service" "${service_prefix}-resume.service"; do
+            if ! systemctl is-enabled "$svc" &>/dev/null; then
+                if ! sudo systemctl enable "$svc"; then
+                    print_warning "Failed to enable $svc"
+                fi
+            fi
+        done
         return 0
     fi
 
