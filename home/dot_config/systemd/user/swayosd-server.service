@@ -5,6 +5,7 @@ After=graphical-session.target
 Requisite=graphical-session.target
 
 [Service]
+Slice=background-graphical.slice
 Type=simple
 ExecStart=/usr/bin/swayosd-server -s %h/.config/swayosd/style.css
 Restart=on-failure

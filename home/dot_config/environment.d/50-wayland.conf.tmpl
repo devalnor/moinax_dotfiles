@@ -33,6 +33,9 @@ XCURSOR_SIZE=24
 # of `hyprland-`.
 XDG_MENU_PREFIX=plasma-
 
+# Extra settle pause after WAYLAND_DISPLAY appears; default 0.2s races Qt clients. See uwsm(1).
+UWSM_WAIT_VARNAMES_SETTLETIME=0.3
+
 {{- if .has_nvidia }}
 
 # NVIDIA — https://wiki.hypr.land/Nvidia/

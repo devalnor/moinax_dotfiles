@@ -6,6 +6,7 @@ After=graphical-session.target
 Requisite=graphical-session.target
 
 [Service]
+Slice=background-graphical.slice
 Type=simple
 ExecStart=%h/.config/waybar/launch-waybar.sh
 ExecReload=/usr/bin/kill -SIGUSR2 $MAINPID

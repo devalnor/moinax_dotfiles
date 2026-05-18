@@ -151,18 +151,12 @@ environment {
 {{- end }}
 }
 
-// reset-failed first: a previous session's broken-pipe exit may have left
-// these units in start-limit-hit, which makes `start` a silent no-op.
-spawn-at-startup "sh" "-c" "systemctl --user reset-failed swayosd-server.service waybar.service && systemctl --user start swayosd-server.service waybar.service"
-spawn-at-startup "blueman-applet"
-spawn-at-startup "swayidle" "-w"
-spawn-at-startup "sh" "-c" "{{ .chezmoi.homeDir }}/.local/bin/swayidle-resume-reset.sh"
-spawn-at-startup "swaybg" "-m" "fill" "-i" "{{ .chezmoi.homeDir }}/Wallpapers/colorful.jpg"
-{{ if eq .chezmoi.osRelease.id "fedora" -}}
-spawn-at-startup "/usr/libexec/polkit-kde-authentication-agent-1"
-{{ else -}}
-spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
-{{ end -}}
+// Daemons with their own user unit autostart via graphical-session.target.wants/.
+// Inline daemons go through `uwsm app --` so they live in app-graphical.slice
+// and stop with the session instead of being orphaned niri children.
+spawn-at-startup "uwsm" "app" "--" "swayidle" "-w"
+spawn-at-startup "uwsm" "app" "--" "{{ .chezmoi.homeDir }}/.local/bin/swayidle-resume-reset.sh"
+spawn-at-startup "uwsm" "app" "--" "swaybg" "-m" "fill" "-i" "{{ .chezmoi.homeDir }}/Wallpapers/colorful.jpg"
 spawn-at-startup "sh" "-c" "~/.local/bin/apply-dark-mode.sh"
 {{ if .install_ai -}}
 spawn-at-startup "systemctl" "--user" "start" "hyprvoice.service"

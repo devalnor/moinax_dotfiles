@@ -9,6 +9,7 @@ Requisite=graphical-session.target
 ConditionPathExists=%h/.dropbox-dist/dropboxd
 
 [Service]
+Slice=background-graphical.slice
 Type=simple
 ExecStart=%h/.dropbox-dist/dropboxd
 Restart=on-failure

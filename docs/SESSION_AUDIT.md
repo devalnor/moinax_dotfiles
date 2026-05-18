@@ -8,7 +8,33 @@ Comparison of the current Hyprland session lifecycle against the standard patter
 
 ---
 
+## Session-manager decision: uwsm (post-migration, May 2026)
+
+> Companion: `SESSION_MIGRATION_PLAYBOOK.md` documents the apply procedure.
+
+We migrated to **`uwsm`** (commits `bf60fae`, `fab5291`, `8073778`, `e9b03bd`, `26f25f9`) — every deviation in the table below that pointed at "no uwsm" is now resolved.
+
+### Why uwsm and not `start-hyprland`
+
+Hyprland 0.53 added `start-hyprland`, a native systemd-aware launcher built with `USES_SYSTEMD`. It's tempting because the Hyprland wiki hedges on uwsm ("for advanced users, has quirks"). We stay on uwsm anyway because:
+
+1. **We run both Hyprland and niri.** `start-hyprland` is Hyprland-only; static alternatives (`hyperverse/hyprland-systemd`, `Loara/hyprland-target`) are Hyprland-only too. uwsm is the only mechanism that gives both compositors the same `graphical-session-pre.target` → `wayland-wm@*.service` → `graphical-session.target` → `xdg-desktop-autostart.target` lifecycle.
+2. **Per Hyprland maintainer vaxry** (hyprwm/Hyprland discussion #12805): *"uwsm should just launch start-hyprland."* They're complementary, not competitors — uwsm is the session-lifecycle layer, `start-hyprland` is a thin launcher.
+3. **All our daemon units already assume uwsm.** `PartOf=graphical-session.target` + `WantedBy=graphical-session.target` only fire if something activates that target. Only uwsm does, in this stack.
+
+### Race fix: env-settle, not shell loops
+
+uwsm declares `graphical-session.target` reached once `WAYLAND_DISPLAY` lands in the systemd activation environment. On fast hardware, downstream Qt clients (notably `plasma-polkit-agent`) can fire before the actual `$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY` socket is on disk. Use uwsm's supported escape hatch — `UWSM_WAIT_VARNAMES_SETTLETIME` (set in `home/dot_config/environment.d/50-wayland.conf.tmpl`) — *not* per-service `ExecStartPre` poll loops.
+
+### Slice placement
+
+Daemon units carry `Slice=background-graphical.slice` (one of uwsm's `{session,app,background}-graphical.slice` cgroup trio). The compositor scope itself lives in `session-graphical.slice` automatically; inline `spawn-at-startup` / `exec-once` daemons routed through `uwsm app --` land in `app-graphical.slice`. One-shots (`apply-dark-mode.sh`, `hyprpm reload`) stay inline — they don't need a slice.
+
+---
+
 ## TL;DR
+
+> **Historical (pre-migration).** Items #1–#3, #5, #6 in the table below are resolved. See the "Session-manager decision" section above for current state. Kept here as the as-found analysis.
 
 The session is plumbed by hand instead of using **`uwsm`** (Universal Wayland Session Manager — the post-0.45 standard). Most of the unique pain in this repo (the env-push race, the `start-limit-hit` recovery dance, services surviving the compositor exit, the broken-pipe SIGABRTs that triggered the drkonqi cascade) traces back to that single decision. Adopting `uwsm` would let us delete most of the workarounds and replace them with one-liners.
 

@@ -9,6 +9,7 @@ Requisite=graphical-session.target
 # behavior is identical on Fedora (which ships none).
 
 [Service]
+Slice=background-graphical.slice
 Type=exec
 ExecStart=/usr/bin/wl-paste --type text --watch cliphist store
 Restart=on-failure

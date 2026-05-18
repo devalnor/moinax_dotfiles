@@ -53,6 +53,7 @@ descriptions:
   plasma-nm: KDE network management widget
   xdg-desktop-portal-kde: KDE portal backend (color-scheme, file chooser, etc.)
   xdg-desktop-portal-hyprland: Hyprland portal backend (screenshot, screencast)
+  uwsm: Universal Wayland Session Manager (wraps Niri in a systemd unit)
 
 packages:
   arch:
@@ -63,6 +64,7 @@ packages:
     # Niri core
     - niri
     - xwayland-satellite
+    - uwsm
 
     # Status bar and menus
     - waybar
@@ -125,6 +127,7 @@ packages:
     # Niri core
     - niri
     - xwayland-satellite
+    - uwsm
 
     # Status bar and menus
     - waybar
@@ -184,6 +187,10 @@ packages:
     # Install manually from source: https://github.com/YaLTeR/niri
     # The packages below are Wayland companion tools available via apt.
     # (niri itself will be skipped — install it separately after running this installer)
+
+    # uwsm landed in Debian trixie (13); on Ubuntu 24.04 it's not packaged.
+    # Install from source if missing — see install/installer.sh setup helpers.
+    - uwsm
 
     # Status bar and menus
     - waybar
