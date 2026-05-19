@@ -15,6 +15,8 @@ descriptions:
   discord: Voice and text chat for gamers
   mangohud: FPS and performance overlay
   gamemode: Game performance optimization daemon
+  heroic-games-launcher-bin: Launcher for Epic, GOG, and Amazon Prime games (Arch AUR)
+  heroic-games-launcher: Launcher for Epic, GOG, and Amazon Prime games
 
 packages:
   arch:
@@ -22,6 +24,7 @@ packages:
     - discord
     - mangohud  # Optional: FPS overlay
     - gamemode  # Optional: Game performance optimization
+    - heroic-games-launcher-bin  # AUR — Epic/GOG/Amazon Prime games
 
   fedora:
     - steam

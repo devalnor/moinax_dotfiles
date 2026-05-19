@@ -17,6 +17,7 @@ packages:
     - eza
     - fd
     - fzf
+    - ripgrep
     - television
     - fastfetch
     - tldr
@@ -44,6 +45,9 @@ packages:
 
     # Peripherals
     - headsetcontrol
+
+    # GPU monitor
+    - nvtop
 
     # Fonts
     - ttf-firacode-nerd

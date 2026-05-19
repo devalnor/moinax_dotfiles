@@ -18,6 +18,8 @@ descriptions:
   ImageMagick: Image manipulation toolkit (Fedora)
   gimp: GNU Image Manipulation Program
   inkscape: Vector graphics editor
+  easyeffects: PipeWire audio effects (RNNoise mic suppression for Discord/OBS)
+  gpu-screen-recorder: Low-overhead NVENC/VA-API screen recorder with instant replay
 
 packages:
   arch:
@@ -27,6 +29,8 @@ packages:
     - imagemagick
     - gimp
     - inkscape
+    - easyeffects
+    - gpu-screen-recorder
 
   fedora:
     - mpv

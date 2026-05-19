@@ -45,6 +45,8 @@ descriptions:
   worktrunk: Git worktree manager for AI workflows
   claude-code: AI-powered coding assistant CLI
   ccstatusline: Claude Code status line with Catppuccin Powerline theme
+  bun: Fast all-in-one JavaScript runtime, bundler, and package manager
+  direnv: Per-directory environment variables (auto-loads .env)
 
 desktop_only:
   - cursor-bin
@@ -107,6 +109,10 @@ packages:
     # Worktree management
     - worktrunk-bin  # AUR
 
+    # JS runtime & per-project env
+    - bun
+    - direnv
+
   fedora:
     # Editors
     - neovim
@@ -134,6 +140,10 @@ packages:
 
     # Task runner
     - just
+
+    # JS runtime & per-project env
+    - bun
+    - direnv
 
   debian:
     # Editors
@@ -163,6 +173,10 @@ packages:
     # Task runner
     - just
 
+    # Per-project env
+    - direnv
+
+    # Note: bun is not in apt — install via `curl -fsSL https://bun.sh/install | bash`
     # Note: lazygit is not in apt — installed via binary (install_lazygit in debian.sh)
     # Note: lazydocker is not in apt — install manually after setup
 
