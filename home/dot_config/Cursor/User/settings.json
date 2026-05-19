@@ -3,7 +3,7 @@
   "workbench.activityBar.orientation": "vertical",
   "git.autofetch": true,
   "workbench.colorTheme": "Catppuccin Mocha",
-  "editor.fontFamily": "JetBrains Mono",
+  "editor.fontFamily": "Maple Mono NF",
   "git.confirmSync": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
