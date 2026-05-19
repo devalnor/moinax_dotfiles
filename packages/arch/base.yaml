@@ -53,6 +53,7 @@ packages:
     - ttf-firacode-nerd
     - ttf-fira-sans
     - ttf-font-awesome
+    - maplemono-nf  # AUR — primary terminal/UI mono with ligatures
 
     # AppImage runtime support
     - fuse2

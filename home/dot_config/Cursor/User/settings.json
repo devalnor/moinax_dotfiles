@@ -21,7 +21,7 @@
   "git.openRepositoryInParentFolders": "never",
   "git.enableSmartCommit": true,
   "githubPullRequests.pullBranch": "never",
-  "terminal.integrated.fontFamily": "Fira Code",
+  "terminal.integrated.fontFamily": "Maple Mono NF",
   "terminal.integrated.fontLigatures.enabled": true,
   "workbench.iconTheme": "catppuccin-mocha",
   "diffEditor.maxComputationTime": 0,
