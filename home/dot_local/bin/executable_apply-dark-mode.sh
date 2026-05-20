@@ -45,10 +45,16 @@ if command -v plasma-apply-colorscheme &>/dev/null; then
     plasma-apply-colorscheme "$KDE_SCHEME" 2>/dev/null || true
 fi
 
-# ---------- GNOME color-scheme + cursor ----------
-# Keep gsettings in sync so GTK/GNOME-aware apps reading
-# org.gnome.desktop.interface color-scheme don't hold a stale value.
+# ---------- GTK / GNOME appearance ----------
+# gsettings org.gnome.desktop.interface is the authoritative GTK config
+# source — it overrides ~/.config/gtk-{3,4}.0/settings.ini. GTK4/libadwaita
+# apps follow the portal color-scheme on their own, but GTK3 apps (e.g.
+# nm-connection-editor) have no portal-driven dark switch: the theme NAME
+# must flip. Breeze and Breeze-Dark ship as separate themes, so switching
+# the name is unambiguous and needs no prefer-dark variant juggling.
 GNOME_SCHEME=$( [ "$MODE" = "dark" ] && echo "prefer-dark" || echo "prefer-light" )
+GTK_THEME_NAME=$( [ "$MODE" = "dark" ] && echo "Breeze-Dark" || echo "Breeze" )
+GTK_ICON_THEME=$( [ "$MODE" = "dark" ] && echo "breeze-dark" || echo "breeze" )
 # Cursor tone is inverted relative to background: white-toned cursor on
 # dark mode, black-toned on light mode (Catppuccin's -light/-dark suffix
 # names the cursor color, NOT the palette it pairs with).
@@ -57,6 +63,8 @@ CURSOR_THEME="catppuccin-${FLAVOR}-${CURSOR_TONE}-cursors"
 CURSOR_SIZE=24
 if command -v gsettings &>/dev/null; then
     gsettings set org.gnome.desktop.interface color-scheme "$GNOME_SCHEME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME_NAME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface icon-theme "$GTK_ICON_THEME" 2>/dev/null || true
     gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_THEME" 2>/dev/null || true
     gsettings set org.gnome.desktop.interface cursor-size "$CURSOR_SIZE" 2>/dev/null || true
 fi
