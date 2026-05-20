@@ -22,7 +22,6 @@ packages:
     - fastfetch
     - tldr
     - btop
-    - keychain
     - jq
     - yq
     - rsync
@@ -38,6 +37,9 @@ packages:
 
     # GTK theme integration for KDE
     - breeze-gtk
+
+    # SSH askpass — GUI passphrase prompt for ssh/git run without a terminal
+    - ksshaskpass
 
     # Desktop app containers
     - distrobox

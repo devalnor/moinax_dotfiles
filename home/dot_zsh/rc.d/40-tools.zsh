@@ -41,16 +41,30 @@ if command -v tv &> /dev/null; then
   }
 fi
 
-# keychain: hold ssh key for git/etc. -q silences the status banner.
-if command -v keychain &> /dev/null; then
-  # If the inherited SSH_AUTH_SOCK points to a dead agent (exit 2 from
-  # ssh-add -l means "could not connect"), unset it so keychain falls
-  # back to its own cache instead of trusting the stale socket. Do NOT
-  # wipe keychain's cache here — that would kill the live agent other
-  # shells are using and force a fresh passphrase prompt.
-  if [[ -n "$SSH_AUTH_SOCK" ]]; then
-    ssh-add -l &>/dev/null
-    [[ $? -eq 2 ]] && unset SSH_AUTH_SOCK SSH_AGENT_PID
+# ssh-agent. Where OpenSSH's systemd `ssh-agent.socket` user unit is active
+# (Arch), adopt its socket: it lives in $XDG_RUNTIME_DIR (tmpfs), so it can't
+# go stale across a reboot. environment.d exports SSH_AUTH_SOCK session-wide
+# too; setting it here also covers shells started before that import.
+if [[ -S "${XDG_RUNTIME_DIR}/ssh-agent.socket" ]]; then
+  export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
+
+# Otherwise fall back to keychain (Debian/Ubuntu). keychain reuses a cached
+# agent from ~/.keychain/<host>-*, but since OpenSSH 10.x moved the agent
+# socket into persistent $HOME that cache can point at a dead agent that
+# survived a reboot -- so probe before trusting it. `ssh-add -l` exit 2 means
+# "could not connect" (dead); a reachable agent (exit 0/1) is left alone so
+# agents shared with other shells aren't disturbed.
+elif command -v keychain &> /dev/null; then
+  _agent_dead() { ssh-add -l &>/dev/null; [[ $? -eq 2 ]]; }
+  # inherited env: drop a dead socket so keychain falls back to its cache
+  if [[ -n "$SSH_AUTH_SOCK" ]] && _agent_dead; then
+    unset SSH_AUTH_SOCK SSH_AGENT_PID
   fi
+  # keychain's pidfile: delete a dead cache so keychain spawns a fresh agent
+  _kc_base="$HOME/.keychain/${HOST}"
+  if [[ -f "$_kc_base-sh" ]] && ( source "$_kc_base-sh" && _agent_dead ); then
+    rm -f "$_kc_base"-{sh,csh,fish}
+  fi
+  unfunction _agent_dead; unset _kc_base
   eval "$(keychain --eval --quiet id_ed25519)"
 fi
