@@ -1,0 +1,17 @@
+[Unit]
+Description=awww wallpaper daemon (renamed swww — animated transitions, IPC)
+Documentation=https://codeberg.org/LGFae/awww
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+ConditionEnvironment=WAYLAND_DISPLAY
+
+[Service]
+Slice=background-graphical.slice
+Type=exec
+ExecStart=/usr/bin/awww-daemon
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

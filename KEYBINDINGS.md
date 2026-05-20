@@ -187,7 +187,7 @@
 | Action | Hyprland | Niri | Notes |
 |---|---|---|---|
 | Reload Waybar | `Mod+Shift+B` | `Mod+Shift+B` | |
-| Reload wallpaper | `Mod+Shift+W` | `Mod+Shift+W` | Hyprland: hyprpaper; Niri: swaybg |
+| Wallpaper picker (rofi) | `Mod+Shift+W` | `Mod+Shift+W` | Picks from `~/Wallpapers/`, applies via awww |
 | Reload SwayNC | `Mod+Shift+M` | `Mod+Shift+M` | `swaync-client -R && swaync-client -rs` |
 | Reload compositor | `Mod+Shift+R` | `Mod+Shift+R` | |
 

@@ -134,7 +134,7 @@ hl.bind(mod .. " + CTRL + S",  hl.dsp.window.move({ workspace = "special", follo
 
 -- ── 11. Reload Configs ───────────────────────────────────────────
 hl.bind(mod .. " + SHIFT + B", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/reload-waybar.sh"))                      -- Reload Waybar
-hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/reload-hyprpaper.sh"))                   -- Reload hyprpaper
+hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd(home .. "/.local/bin/wallpaper-picker.sh"))                            -- Wallpaper picker (rofi)
 hl.bind(mod .. " + SHIFT + M", hl.dsp.exec_cmd("swaync-client -R && swaync-client -rs"))                               -- Reload SwayNC
 hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/reload-hyprland.sh"))                    -- Reload hyprland
 

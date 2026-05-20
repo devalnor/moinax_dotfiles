@@ -19,8 +19,14 @@ env = GDK_SCALE,1
 # Mozilla
 env = MOZ_ENABLE_WAYLAND,1
 
-# Set the cursor size for xcursor
+# Cursor: white-toned on mocha, black-toned on latte (the suffix names the
+# cursor color, not the palette). hyprcursor falls back to xcursor.
+{{ $cursor_theme := "catppuccin-mocha-dark-cursors" -}}
+{{- if eq .dark_mode "light" }}{{ $cursor_theme = "catppuccin-latte-light-cursors" }}{{ end }}
+env = XCURSOR_THEME,{{ $cursor_theme }}
 env = XCURSOR_SIZE,24
+env = HYPRCURSOR_THEME,{{ $cursor_theme }}
+env = HYPRCURSOR_SIZE,24
 
 # OZONE
 env = OZONE_PLATFORM,wayland

@@ -55,6 +55,11 @@ packages:
     - ttf-font-awesome
     - maplemono-nf  # AUR — primary terminal/UI mono with ligatures
 
+    # Theming
+    - catppuccin-cursors-mocha  # AUR — Catppuccin Mocha cursor pack (dark mode)
+    - catppuccin-cursors-latte  # AUR — Catppuccin Latte cursor pack (light mode)
+    - matugen                   # Material You palette generator from wallpaper
+
     # AppImage runtime support
     - fuse2
 

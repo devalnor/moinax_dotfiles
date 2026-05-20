@@ -38,7 +38,8 @@ descriptions:
   hyprlock: Screen locker
   swayidle: Idle management daemon
   python-pywayland: Python Wayland bindings (idle inhibitor for caffeine mode)
-  swaybg: Wallpaper setter for Wayland
+  swaybg: Wallpaper setter for Wayland (kept as fallback)
+  awww: Animated wallpaper daemon (renamed swww) with IPC and transitions
   polkit-kde-agent: Polkit authentication agent
   pavucontrol-qt: PulseAudio volume control GUI (Qt)
   blueman: Bluetooth device manager
@@ -90,6 +91,7 @@ packages:
 
     # Wallpaper
     - swaybg
+    - awww  # provides swww/swww-daemon — animated wallpaper daemon
 
     # Polkit agent
     - polkit-kde-agent

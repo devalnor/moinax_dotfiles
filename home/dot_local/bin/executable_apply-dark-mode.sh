@@ -45,12 +45,29 @@ if command -v plasma-apply-colorscheme &>/dev/null; then
     plasma-apply-colorscheme "$KDE_SCHEME" 2>/dev/null || true
 fi
 
-# ---------- GNOME color-scheme ----------
+# ---------- GNOME color-scheme + cursor ----------
 # Keep gsettings in sync so GTK/GNOME-aware apps reading
 # org.gnome.desktop.interface color-scheme don't hold a stale value.
 GNOME_SCHEME=$( [ "$MODE" = "dark" ] && echo "prefer-dark" || echo "prefer-light" )
+# Cursor tone is inverted relative to background: white-toned cursor on
+# dark mode, black-toned on light mode (Catppuccin's -light/-dark suffix
+# names the cursor color, NOT the palette it pairs with).
+CURSOR_TONE=$( [ "$MODE" = "dark" ] && echo "dark" || echo "light" )
+CURSOR_THEME="catppuccin-${FLAVOR}-${CURSOR_TONE}-cursors"
+CURSOR_SIZE=24
 if command -v gsettings &>/dev/null; then
     gsettings set org.gnome.desktop.interface color-scheme "$GNOME_SCHEME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_THEME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface cursor-size "$CURSOR_SIZE" 2>/dev/null || true
+fi
+
+# ---------- Compositor cursor (live) ----------
+# env = XCURSOR_THEME/HYPRCURSOR_THEME in hypr/niri config sets the boot-time
+# theme; this updates the running compositor so Mod+N flips it without re-login.
+# Niri has no runtime cursor command — its `niri msg action load-config-file`
+# below re-reads the env block, but already-spawned children keep the old cursor.
+if is_hyprland; then
+    hyprctl setcursor "$CURSOR_THEME" "$CURSOR_SIZE" 2>/dev/null || true
 fi
 
 # ---------- Kitty ----------
@@ -103,14 +120,15 @@ if [ -f "$WAYBAR_CSS_SRC" ]; then
 fi
 
 # ---------- Compositor borders ----------
+# Hyprland 0.55+ on Lua config rejects `hyprctl keyword` ("non-legacy parsers").
+# Use `hyprctl eval` with `hl.config({...})` instead; gradients are tables.
 if is_hyprland; then
-    if [ "$MODE" = "dark" ]; then
-        hyprctl keyword general:col.active_border "rgba(ff64ff80) rgba(9696ffff) 45deg" 2>/dev/null || true
-        hyprctl keyword general:col.inactive_border "rgba(6464ff4d)" 2>/dev/null || true
-    else
-        hyprctl keyword general:col.active_border "rgba(8839efcc) rgba(1e66f5cc) 45deg" 2>/dev/null || true
-        hyprctl keyword general:col.inactive_border "rgba(7287fd4d)" 2>/dev/null || true
-    fi
+    # Border colors stay on the dark palette in both modes — pink/lavender
+    # gradient reads well on either kitty theme and avoids the visual jolt
+    # of swapping accent colors on Mod+N.
+    ACTIVE='{ colors = {"rgba(ff64ff80)", "rgba(9696ffff)"}, angle = 45 }'
+    INACTIVE='"rgba(6464ff4d)"'
+    hyprctl eval "hl.config({ general = { [\"col.active_border\"] = ${ACTIVE}, [\"col.inactive_border\"] = ${INACTIVE} } })" >/dev/null 2>&1 || true
 elif is_niri; then
     niri msg action load-config-file 2>/dev/null || true
 fi
@@ -131,6 +149,7 @@ if command -v chezmoi &>/dev/null; then
         ~/.config/starship.toml \
         ~/.config/yazi/theme.toml \
         ~/.config/niri/config.kdl \
+        ~/.local/share/rofi/themes/wallpaper.rasi \
         2>/dev/null || true
 fi
 

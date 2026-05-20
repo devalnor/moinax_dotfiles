@@ -19,8 +19,14 @@ hl.env("GDK_SCALE", "1")
 -- Mozilla
 hl.env("MOZ_ENABLE_WAYLAND", "1")
 
--- Cursor size for xcursor
-hl.env("XCURSOR_SIZE", "24")
+-- Cursor: white-toned on mocha, black-toned on latte (the suffix names the
+-- cursor color, not the palette). hyprcursor falls back to xcursor.
+{{ $cursor_theme := "catppuccin-mocha-dark-cursors" -}}
+{{- if eq .dark_mode "light" }}{{ $cursor_theme = "catppuccin-latte-light-cursors" }}{{ end }}
+hl.env("XCURSOR_THEME",   "{{ $cursor_theme }}")
+hl.env("XCURSOR_SIZE",    "24")
+hl.env("HYPRCURSOR_THEME","{{ $cursor_theme }}")
+hl.env("HYPRCURSOR_SIZE", "24")
 
 -- Ozone (Chromium / Electron)
 hl.env("OZONE_PLATFORM", "wayland")
