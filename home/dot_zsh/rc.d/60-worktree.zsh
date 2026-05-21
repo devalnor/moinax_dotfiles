@@ -5,13 +5,17 @@ fi
 
 # Create/switch worktree, then launch a kitty dev environment in it.
 # Stays a function (not a script) because `wt switch` requires shell integration.
+#   -n <name>  override the kitty title / Claude session name
+#   -s         auto-run `/start <branch>` in the Claude pane on launch
 wtstart() {
   local name_override=""
+  local send_start=false
   while [[ "$1" == -* ]]; do
     case "$1" in
       -n)
         [[ -z "$2" || "$2" == -* ]] && { echo "wtstart: -n requires a name" >&2; return 1; }
         name_override="$2"; shift 2 ;;
+      -s) send_start=true; shift ;;
       --) shift; break ;;
       *) echo "wtstart: unknown option $1" >&2; return 1 ;;
     esac
@@ -44,10 +48,22 @@ wtstart() {
     fi
   fi
 
-  local name="${name_override:-${branch:-$(git branch --show-current)}}"
+  local resolved_branch="${branch:-$(git branch --show-current)}"
+  local name="${name_override:-$resolved_branch}"
   local dir="$PWD"
 
-  kitty --title "$name" --directory "$dir" --session <(kdev-session -n "$name") &>/dev/null & disown
+  # A bare positional arg becomes claude's auto-submitted initial prompt;
+  # -s uses that to make Claude run `/start <branch>` on launch.
+  local -a claude_args=(-n "$name")
+  if $send_start; then
+    if [[ -n "$resolved_branch" ]]; then
+      claude_args+=("/start $resolved_branch")
+    else
+      echo "wtstart: -s set but no branch resolved; skipping /start" >&2
+    fi
+  fi
+
+  kitty --title "$name" --directory "$dir" --session <(kdev-session "${claude_args[@]}") &>/dev/null & disown
 
   builtin cd -- "$orig_dir"
 }
