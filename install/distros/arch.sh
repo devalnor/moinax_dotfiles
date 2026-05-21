@@ -25,6 +25,22 @@ _run_pkg_cmd() {
     return "${PIPESTATUS[0]}"
 }
 
+# Drop packages pinned via pacman's IgnorePkg. An explicit `pacman -S --noconfirm`
+# would otherwise auto-answer the "install anyway?" prompt and override the pin.
+# Echoes the surviving packages, one per line.
+_strip_ignored_pkgs() {
+    local ignored
+    ignored="$(pacman-conf IgnorePkg 2>/dev/null)" || { printf '%s\n' "$@"; return; }
+    local pkg
+    for pkg in "$@"; do
+        if grep -qxF -- "$pkg" <<<"$ignored"; then
+            print_warning "Skipping pinned package (IgnorePkg): $pkg" >&2
+        else
+            printf '%s\n' "$pkg"
+        fi
+    done
+}
+
 # Check if paru is installed, install if not
 ensure_paru() {
     if command_exists paru; then
@@ -71,7 +87,12 @@ install_pacman_packages() {
     if [ ${#packages[@]} -eq 0 ]; then
         return 0
     fi
-    
+
+    mapfile -t packages < <(_strip_ignored_pkgs "${packages[@]}")
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
     print_info "Installing ${#packages[@]} packages with pacman..."
     _run_pkg_cmd sudo pacman -S --needed --noconfirm "${packages[@]}"
 }
@@ -83,9 +104,14 @@ install_paru_packages() {
     if [ ${#packages[@]} -eq 0 ]; then
         return 0
     fi
-    
+
+    mapfile -t packages < <(_strip_ignored_pkgs "${packages[@]}")
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
     ensure_paru
-    
+
     print_info "Installing ${#packages[@]} packages with paru..."
     _run_pkg_cmd paru -S --needed --noconfirm "${packages[@]}"
 }
@@ -97,9 +123,14 @@ install_packages() {
     if [ ${#packages[@]} -eq 0 ]; then
         return 0
     fi
-    
+
+    mapfile -t packages < <(_strip_ignored_pkgs "${packages[@]}")
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
     ensure_paru
-    
+
     print_info "Installing ${#packages[@]} packages..."
     _run_pkg_cmd paru -S --needed --noconfirm "${packages[@]}"
 }
